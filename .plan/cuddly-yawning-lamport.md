@@ -1,0 +1,371 @@
+# Operation Clean — Fusion Quantization Overhaul + Review-Fix Execution
+
+## Context
+
+The Fusion workspace (transformers-fusion C++ engine) ships a 105-name quantization format
+ladder that audits show to be name inflation over ~20 distinct codecs, with real quality
+failures (MX family -21..-37 dB vs industrial refs, 8-bit K-variants -6.15 dB on real
+weights), 27 name-vs-wire BPW mismatches, a 1-byte tail overrun (quant_6k), a stack overflow
+(dequant_grp8_compound), duplicate registry mappings, and doc claims that contradict code.
+The user's rules define the target ladder and demand zero defects — "pure dominance, this is
+a superintelligence engine, no mistake may remain."
+
+Execution is blocked on review workflow `wf_ce1d51d7-91d` reaching 100% (Review phase in
+flight; resume loop handles 429 failures). After that: ONE TASK AT A TIME to 100%,
+most-strict-worker style, priorities chosen by me.
+
+## BINDING RULES (user, verbatim intent — these override any inference)
+
+### Ladder / L-M-H (applies to EVERY family: Q_1..Q_24 base AND every Q_G_* GRP family)
+- **L = base, exact .0 BPW** (e.g. Q_1 = 1.00 exact). The old standalone "L" duplicate
+  format is retired; the base IS the L tier.
+- **M = base + .25 exact** (e.g. 1.25, 4.25, 2.25) — mid tier, quality BETWEEN L and H.
+- **H = base + .50 exact** (e.g. 1.50, 4.50, 2.50) — top tier of the family.
+- L/M/H must be genuinely DIFFERENT codecs (today's L≡M≡H identical-call lie ends).
+- **Q_1 family specifics:** L tier = Q_1 = BINARY, exact 1.00. M = 1.25 exact (between).
+  H = 1.50 exact = **PURE TERNARY (−1/0/+1)**, named Q_1_K_H-style. This is where ternary
+  lives (the standalone Q-11 ternary format is CANCELLED).
+- GRP families follow the identical pattern; renamed forms write "formerly known as <old>"
+  comments in code where a name changes.
+- Naming style normalization: e.g. "QG2" → "Q_G_2" (consistent Q_/Q_G_ convention).
+- **BPW granularity: all formats land on exact .0 / .25 / .50 steps.**
+
+### G-5: ZERO BPW violations, project-wide — direction = **REWIRE (cut BPW to match name)**
+- Name says X ⇒ wire costs exactly X. "BPW ko kam karo" — the LAYOUT comes down to the
+  name's BPW (NOT ruler-rename): Q_G_2's wire 2.625 → 2.00, all +0.5/+0.4375/+0.5625 gaps → 0.
+- Plus the quant_6k tail overrun (block_codec.cpp ~1077-1121, n=8..15) gets a real budget
+  guard; hunt ANY other violation (test tolerance must be strict, not +1 allowance).
+- Format count shrinks from 105 to whatever the rules produce; do not pad names.
+
+### Casing rule (new)
+- The ALL-CAPS token `QUANT` must NOT appear in ANY file — code or docs — EXCEPT where
+  all-caps is structurally mandatory (C/C++ macros like QUANT_CHECK, environment variables).
+  Everywhere else: `Quant` (namespace `quant` lowercase is fine, distinct from QUANT).
+  Repo-wide sweep: comments, printf strings, docs, headers, benches.
+
+### Execution policy
+- Everything (quant Operation Clean + all review findings A + docs) runs AFTER the workflow
+  completes, one task at a time to 100%, then the next. I choose the order/priorities.
+- The user wants ALL planning requirements captured in planning docs (this file is the
+  master; supporting docs may be created as the first execution step).
+- Q-10 (bitnet bench hardcoded-victory rewrite) and Q-11 (new standalone ternary format):
+  CANCELLED — do not build. Their real problems are covered by other tasks (bench honesty
+  via C-tasks, ternary via Q_1's H tier).
+
+## DEFECT INVENTORY (source: review-tracking/DEFECTS.md, 129 lines)
+
+- **A** — 79 review findings (5 critical / 27 high / 38 medium / 9 low); verification
+  finishing in workflow. Includes block_codec.cpp:401 sc_f stack overflow, tokenizer,
+  GQA OOB, god-runtime Math.random gates, BYOK budget, etc.
+- **B** — quant quality: Q3/Q6/Q12 scale-fit weak (3-iteration LS, no golden-section;
+  Q_12 plain 46 dB vs K_H 59), MX fixed-ratio allocator catastrophic, Q_G_12 < Q_G_8
+  inversion, K L/M/H no-ops.
+- **C** — bench/audit honesty: Q4_K hollow-win (ref is weak reimpl; adapter cannot even
+  import Q4_K), test_format_audit single-point (N=256, sigma 1.0, tol 1e-3 vs claimed
+  1e-4, PSNR never fails), bitnet bench hardcoded victory strings (Q-10 cancelled as a
+  task; strings still get fixed under this honesty umbrella? — NO: Q-10 cancelled means
+  do NOT rewrite that bench per F-0; note in plan).
+- **E1** — industrial gaps: MX quarantine (1-line + registry note), 8-bit K-variants -6.15
+  dB real, INT8 @8.125 slot gap.
+- **E2** — 27 name-vs-wire gaps (rewire to name), quant_6k tail overrun, weak audit.
+- **E3** — provenance/docs: 54 borrowed K names with zero K-quant internals, 9 half-twins
+  line-identical, Q1≡QG1, registry bugs (format_registry.h :187 half-GRP→Q1,
+  :188-194 Q_MX→QG_MX collapse), README.md:237 false "no external schemes" claim,
+  Q4_K import absent while claimed win.
+
+## EXPLORATION (Phase 1)
+### Agent 1 DONE — format tables & naming flows (key facts, file:line verified):
+- `include/quant/types.h`: Format enum 105 IDs (`:22-166`) + 98 legacy alias names (`:67-165`)
+  = 203 distinct spellings. FORMAT_COUNT=105 (`:167`). format_name `:168-196`;
+  format_bpw (WIRE) `:197-230`; format_nominal_bpw `:236-264`; format_wire_bpw `:265-267`
+  (alias of format_bpw). Predicates are ID-RANGE arithmetic (`:268-276`) — any renumber
+  changes their answers. format_codebook_size `:277-288` + format_to_dtype `:291-305` are
+  DEAD code; both default-0/silent for 16/24/32 + all MX.
+- **Gap census (31 formats, not 27):** 8 GRP base gaps (Q_G_2 +0.625; Q_G_3/4/8/12/16/24
+  +0.5; Q_G_6 +0.5625), 18 K_G gaps (2/3/4 +0.4375; 6 +0.5625; 8/12 +0.5), Q_G_MX_3_5
+  +0.28125, and 4 NEGATIVE gaps (Q_2_5, Q_6_5, Q_G_2_5, Q_G_6_5: name 2.5/6.5 but wire
+  2.4375/6.4375 — encoder calls quant_affine with 2.5f/6.5f budget at block_codec.cpp
+  :2905/:2908/:2915/:2918 while format_bpw claims 2.4375!). Internally inconsistent:
+  Q_G_16 = 16.5 wire, Q_G_16_K_* = 16.0 wire.
+- `format_registry.h`: FORMAT_TO_REGFormat confirmed lossy — `:203-242`: all GRP/K/K_G
+  integer → plain RegFormat; 9 half formats collapse (Q_2_5≡Q_G_2_5 → Q_G_2); Q_MX_* →
+  Q_G_MX_* ids (`:233-239`). Only 16 of 33 RegFormat ids reachable. regformat_nominal/
+  wire_bpw are dead code (`:284-289`).
+- Registry has only 19 singles (K/K_G/half/MX have NO FormatDescriptor → unreachable via
+  parse_format_name/get_single_format/select_best*/get_format_table). parse_format_name
+  normalizes (strips _/., uppercases) and silently returns default descriptor on miss.
+- **Persistence:** `.quant` file stores raw `uint8_t format` per block (quant_format.h:25
+  stale comment "0..14"; quant_format.cpp:238-244 write, :379 read, :456-457/:611-612 +
+  qwen35_engine.cpp:32-33/:145-146 clamp `wire_fmt < FORMAT_COUNT && != 19` else Q_32 —
+  ID 19 = Q_4_K_L explicitly banned, 4 sites). Renumber = file compat break.
+- **Duplicate BPW ladders outside types.h:** format_planner.cpp:74 `{1,2,3,4,6,8,12,16,24,32}`;
+  block_codec.cpp:865 grp16 sizing table; block_codec.cpp:1149 (6.5625), :2753/:2596 etc
+  affine budgets; ste_quantizer.cpp:319-391 THIRD full per-format table; inferno.h:67-73 +
+  inferno_format_info.cpp:19-56 name+BPW literal tables (19 base + 14 mix).
+- **Tests that pin:** test_format.cpp:19 `FORMAT_COUNT==105` + exact names/BPWs; test_all.cpp:32;
+  test_fuzz_codec.cpp:5 `kFormats=105` + kCaps per format; test_format_audit.cpp BPW check
+  `actual <= format_bpw(f) + 1e-3` (loose); test_quant_mix.cpp pins tier ladders
+  (Q_1/Q_3/Q_8/Q_32 etc); test_format_registry_complete.cpp singles>=19, four_mixes>=14;
+  test_mix_components.cpp ladder pins; test_grp_quality_proof.cpp.
+- **Scripts:** format_master_table.py:22-24 asserts enum names==105 (broken: matches 203);
+  plot_comparison_charts.py + generate_comparison_visuals.cpp hardcode old MXQ spellings.
+- Mix table: format_registry.cpp:85-109 — 14 four-mixes, effective_bpw = WIRE
+  (Q_G_MX_3_5 = 3.78125).
+
+### Agent 2 DONE — codec engines & tests (key facts, file:line verified):
+- **block_codec.cpp = 3154 lines.** Engine table: comp8 (Q8, tanh LUT, golden-section in
+  comp8_fit_scale_fp16 :306-358 — ONLY live golden-section in file), lattice Q2/Q4
+  (:443-529, 2 LS iters, NO golden), fixed codebook Q3/Q6/Q12 (:697-732, 3 LS iters, NO
+  golden), grp16 (:813-1020, 4 LS + fac-grid), grp12_compound (:1036-1113, 3 LS),
+  quant_6k (:1132-1378, giters+polish+joint), affine (:1380-1762, 4 LS + fac grid + 5 joint),
+  q16_enhanced (:1765-1882, uniform vmin/vmax grid, no fit), q24 (:1884-1948, FP24),
+  Q1/QG1 slot-sign (:2510-2525 / :2598-2614 — SAME wire, different scale fitter: Q_1 uses
+  rms_scale, Q_G_1 uses q1_fit_scale_fp16), quad_mix (:1950-2454).
+- **fit_scale_true_mse (:632-695) IS ALREADY IN THE FILE BUT DEAD (zero callers)** —
+  artifact of my earlier partially-applied patch; header comment at :622-627 falsely claims
+  it is shared by Q3/Q6/Q12+Q2/Q4. Working tree likely has an uncommitted partial patch —
+  Phase 0 must audit git diff and either complete or revert it. Also grp16_pad_fits
+  (:1039-1043) dead.
+- **BUG #1 confirmed:** dequant_grp8_compound AVX2 path :399-421: `float sc_f[256]` at :401,
+  index g up to ng=n/32 unbounded, first OOB write **n ≥ 8224 (n%32==0)**. fits() :365-369
+  has no upper bound. Reachable via public quantize_block (adapter_core.cpp:199) and
+  probe_t4.cpp:15 + K-path call at :2838. Scalar fallback safe. Reachable formats:
+  Q_G_8/Q_G_8_5/Q_G_8_K_*/Q_8_5 (decode :3030-3035, :3109, :3119).
+- **BUG #2 confirmed:** quant_6k d-only path :1167-1198 — has_d=(n>=8) at :1146 is NOT a
+  budget test; raw pokes at :1195-1196 bypass BitWriter's QUANT_CHECK. **12 violating
+  sizes: n ∈ {8..15, 17, 18, 19, 23}, each exactly +1 byte** (n=8..11 → 8.0 actual BPW vs
+  6.5625 claim). Contract violation (buffer sized to total), not memory corruption.
+  Correct guards exist: quant_grp16 :879-884, affine_budget_ok :1469-1479.
+- **Why tests miss both:** test_fuzz_codec.cpp:278 allows claimed+1 (exactly the overrun);
+  its pass-3 tail sizes include 8 and 15 but only check structure; test_format_audit strict
+  but only N=256; **test_block_codec.cpp does NOT test block_codec at all — it tests GEMM
+  kernels** (block_codec.h:65's "enforced by tests/test_block_codec.cpp" claim is false).
+- **k_tier() :2464-2470 parses the NAME suffix (_L/_M/_H) as a string** — renames silently
+  change encoder effort; re-tiering must rewire this to enum/ID logic.
+- K machinery truth: plain families M≡L byte-identical (knc=1 runs same kits[1]==kits[0]
+  values); H runs 6 (or 2) candidates {iters, smult 0.9/1.1/0.7/1.3}. Q_16_K/Q_24_K trios:
+  literally one body, no k_tier ( :2740-2743 ). Decode never uses k_tier (:3050-3102).
+  kits/ksms ladders: :2634,2653,2672,2691,2710,2729 (plain), :2759,2778,2797,2820,2840,2874 (GRP).
+- **Q_1_5/Q_G_1_5 = quant_affine(1, w, n, 32,6,6, 1.5f)** (:2904/:2914) — affine engine with
+  ASYMMETRIC binary [0,1] lattice — NOT the Q1 slot-sign path, NOT ternary. New ternary H
+  encoder must be written for Q_1_K_H (wire budget 1.50 exact: 16-bit scale + trits + slots).
+- **Q_X_5 ≡ Q_G_X_5: 9 byte-identical encode pairs** (:2904-2912 vs :2914-2922) + 9 decode
+  pairs (:3104-3112 vs :3114-3122) — differ only in types.h format_is_grp.
+- Registry-vs-encoder constant mismatches (all under-spend/fallback, no violation):
+  Q_2_5 2.5f vs 2.4375 (:2905), Q_6_5 6.5f vs 6.4375 (:2908), Q_G_8_K fallback 8.0f vs 8.5
+  (:2833), Q_G_12_K pad 12.0 vs 12.5 (:2865-2867).
+- Wire budget literals to update when rewiring: :1149 (6.5625), :2596/:3044 (2.625),
+  :2753 (2.4375), :2772 (3.4375), :2791 (4.4375), :865 grp16 sizing table, :2911-2922
+  resize pads, block_claimed_bytes :3149-3152 (calls format_bpw — single truth, good).
+- quad_mix: percent tables :2026-2043 (14), guard demotes tiers one-at-a-time :1973-1997,
+  collapse backstop :2007-2020, per-32 dominant scales (dynamic vectors, past stack overflow
+  fixed), scale fit = 2 LS iters only (quality source of MX's catastrophic numbers).
+- **Test inventory (targets + pins):** test_format (FORMAT_COUNT==105, exact names/BPWs,
+  ID-range predicates), test_all (COUNT==105), test_fuzz_codec (kFormats=105, kCaps 105 rows
+  → new format without cap DIES, +1 tail allowance :278, 4 distributions, 3 passes),
+  test_format_audit (strict claim+1e-3 but N=256 only, PSNR print-only), test_quant_mix
+  (tier ladders pinned, +1-per-block allowance :175, wire BPW 3.50/3.78125),
+  test_format_registry_complete (singles>=19, name lookups), test_mix_components
+  (Q_G_MX_12_5 ladder pinned), test_grp_quality_proof (PSNR floors 24/25 dB),
+  test_kv_cache_quant4 (independent codec, unaffected). CMake: quant_format lib owns
+  src/codec; test_fuzz_codec TIMEOUT 900.
+
+### Agent 3 DONE — consumers/persistence/benches/docs (key facts, file:line verified):
+- **Persistence:** `.quant` magic "QUA1", version u32 (never read → no migration logic). 
+  FormatBlockEntry u8 format (quant_format.h:23-27; comment "0..14" stale). 4 clamp sites, 
+  identical predicate `wire_fmt < FORMAT_COUNT && wire_fmt != 19` (quant_format.cpp:452-458, 
+  :610-612, qwen35_engine.cpp:31-33, :144-146). Qwen35Engine decodes via dequantize_block_all :34.
+- **No Format dispatch in src/kernel/ or src/inference/** — dequant is CPU-only (QUANTReader 
+  quant_format.cpp:560 + qwen35_engine). GPU backends get dequantized FP32 (0 Format hits in all 
+  gpu_compute*.cpp). kernel_q3/6/12/24/quant4/8.cpp are GEMM kernels (test_block_codec tests 
+  these — block_codec.h:65's "budget enforced by tests/test_block_codec.cpp" is FALSE).
+- **Bench honesty (worse than known):** adapter_core write_quant_mixed (adapter_core.cpp:319-420) 
+  IGNORES cfg.target_bpw entirely (default Format::Q_G_2 at :332) → all "QUANT Mixed 1.50" 
+  claims (bench_bitnet:177, bench_ollama:180, bench_compare:400-404, bench_full:397) actually 
+  wrote 2.625 BPW. bench_industry_real.cpp:904 `pick(rs, q_ids, 7)` — OOB read (array now 6). 
+  QUANT rows print registry claimed BPW; industry rows print measured bytes (asymmetric basis).
+  bench_bitnet QUANT row bytes = whole file vs others raw payloads. bench_quant_loss:140 
+  hardcoded "negligible" prose. plot_comparison_charts.cpp:12-42 = 30 fully-hardcoded PSNR/MSE 
+  rows (incl. "Beats BitNet +14.25 dB"), old MXQ spellings, writes gitignored html. 
+  bench_compare.cpp:475 hardcoded "95% QUANT, 4% Q4, 1% Q8" composition. bench_poc:6,600,739 
+  prints "No external schemes" (FALSE). bench_format_comparison ref timing = whole-callback 
+  enc+dec total duplicated into both fields (honest comment :492-494).
+- **gguf_bridge.cpp:336-342 unsupported types SILENTLY ZERO-FILLED** (not loud-fail; verbose-gated). 
+  Q4_K unsupported confirmed (gguf_bridge.h:13 type list).
+- **MoEModel::save moe_model.cpp:414 writes fbe.format = 5 (Q_8 label) with RAW FP32 payload** — 
+  label/payload disagree (DenseModel::save :199 correctly writes 9 = Q_32).
+- **ModelZoo production_api.cpp hardcodes "Q_8" metadata** for every scanned .quant (:272,:310,
+  :328-329,:391) — never reads the file's actual format.
+- **parse_format_name whitelist gap** quant_import.cpp:64-84: only Q_1/2/4/8/16/32, Q_G_{1,2,4,8,16},
+  Q_1_5, Q_G_1_5, 7 Q_G_MX_* — no Q_3/Q_6/Q_12/Q_24/K-tiers/Q_G_3/6/12/24.
+- **inferno tables DUPLICATED** (inferno.h:34-74 + inferno_format_info.cpp:19-57, second has no 
+  include); INFERNO_NUM_FORMATS=19 silently drops index ≥19 in record(); cpu_ghz hardcoded 3.0.
+- **Docs:** NO README.md exists. SHA256_TEST_LOG.md ×3 (root PASSED 13/13 vs build/ FAILED 7/13, 
+  stale paths). .gitignore excludes *.csv → audited bench CSV not in tree. No COMPETITOR_ANALYSIS/
+  RESEARCH/WHITEPAPER/bar/docs on disk (gitignored or never materialized).
+- **CMake:** benches default ON; adapters default OFF (EXCLUDE_FROM_ALL). CI builds only bench_kernels.
+
+### Casing scope (QUANT → Quant, verified this session by direct greps):
+**KEEP ALL-CAPS (structurally required):** macros QUANT_CHECK (141 uses, defined types.h:310),
+QUANT_AVX/QUANT_HAS_AVX/QUANT_SEED/QUANT_DEBUG/QUANT_MOE/QUANT_PAGED_KV_DEBUG/QUANT_INFERNO_ENABLED/
+QUANT_HAVE_METAL/QUANT_VULKAN_TYPES_H etc. (#define gates); **environment variables** QUANT_SEED
+(src/core/random.cpp), QUANT_PAGED_KV_DEBUG (src/model/kv_cache.cpp), QUANT_SKIP_FULL/QUANT_SKIP_GLA
+(qwen35_engine.cpp) — env names stay as-is.
+**RENAME (class/type names ~60 uses):** `QUANTReader`→`QuantReader`, `QUANTWriter`→`QuantWriter`,
+`QUANTHeader`→`QuantHeader`, `QUANTWeight`→`QuantWeight` (native_weight.h), `QUANTIdxWriter`/`QUANTHeader`
+in quant_format.cpp, `ExternalFormat::QUANT`→`Quant` (adapter_core.cpp:115,117,135,151 +
+test_adapter_bridges.cpp:64). Namespace `quant` lowercase already fine.
+**RENAME (prose/strings, ~100+):** comments in adapter headers/srcs, printf/argv strings in
+quant_import/quant_ptq/quant_adapt ("QUANT IMPORT — ..."), bench label strings ("QUANT Mixed", "QUANT
+vs BitNet.cpp"), bench_poc_benchmark.cpp prints + its false "No external schemes" comments.
+**Rule:** every remaining ALL-CAPS `QUANT` token in final tree = macro/ENV only. Verify by grep.
+
+### Working tree state (UNCOMMITTED — inherited, Phase 0 must audit):
+9 modified files: .gitignore, CMakeLists.txt (+40), gpu_compute_opencl.h, inferno_bench.cpp,
+bench_industry_real.cpp (my RegFormat fixes), gpu_compute.cpp, gpu_compute_opencl.cpp,
+block_codec.cpp (+75 = DEAD fit_scale_true_mse helper — never called by the 3 MISS'd patches),
+quant_format.cpp (MAGIC write 15→22 bytes — someone's fix, audit).
+### ⚠️ Pre-existing memory-safety note (from Agent 1): external-quantize path adapter_core.cpp:199
+exposes quantize_block with caller n — the sc_f overflow flows through it (probe_t4.cpp:15 too).
+
+### Rewire math for the target ladder (computed — G-5 feasibility):
+Per family base B: L=B.00 (existing engine fits), M=B.25 / H=B.50 (REWIRE value bits):
+| B | value bits M / H (existing → target) | Notes |
+|---|---|---|
+| 1 | 1.0 / 1.0 | H = new PURE TERNARY encoder: 16 slots × 2b trits + FP16 scale = 48b/32w = 1.50 exact. L = Q1 binary 1.0. M = 1.25 refinement variant (25 more bits/group: e.g. 2-bit codebook over kept weights). |
+| 2 | 2.0 / 2.0 | lattice fits as-is; existing Q2_5/Q_G_2_5 (2.4375 affine) → new exact 2.50 |
+| 3 | 3.0 / 3.0 | fixed codebook fits |
+| 4 | 4.0 / 4.0 | lattice fits |
+| 6 | 6.0 / 6.0 | fixed codebook fits |
+| 8 | 8.0 / 8.0 | comp8 fits |
+| 12 | 12.0 / 12.0 | fixed fits |
+| 16 | 16.0 / 16.0 | q16 uniform fits |
+| 24 | 24.0 / 24.0 | q24 fits |
+**Rewire list (27 gaps → exact):** Q_G_2 2.625→2.00, Q_G_3 3.5→3.0, Q_G_4 4.5→4.0, Q_G_8 8.5→8.0,
+Q_G_12 12.5→12.0, Q_G_16 16.5→16.0, Q_G_24 24.5→24.0 (quant_affine budgets at :2596, :3044 + resize
+pads :2911-2922 + sizing table :865 + literal :1149); Q_G_6 6.5625→6.00 (quant_6k :1149 + budget);
+Q_G_2_K 2.4375→2.00? NO — retired K_L; old K_G M/H take the M/H tiers; Q_G_3_K 3.4375→3.00,
+Q_G_4_K 4.4375→4.00, Q_G_8_K 8.5→8.00 (incl. stale 8.0f const at :2833), Q_G_12_K 12.5→12.00
+(pad :2865-2867), Q_G_16_K 16.0 keep (already 16.0 — now L-tier), Q_G_24_K 24.0 keep; Q_2_5 2.4375
+→ retired (half twins fold to tiers), Q_6_5 6.4375 → retired, Q_G_2_5/Q_G_6_5 → retired;
+Q_G_MX_3_5 3.78125 → exact 3.50 (Phase 2-3). Negative gaps Q_2_5/Q_6_5 (2.5/6.5 name vs 2.4375/6.4375
+encoder): fold, no rewire needed.
+**M tiers for GRP: Q_G_B_K_M = B.25 exact** — per-group layout fits (e.g. Q_G_2 M=2.25: 1b weights
++4b sc+4b min+FP16 dm in 16w = 36b = 2.25 exact). H: Q_G_B_K_H = B.50. Name per user: Q_G_x_K_M/Q_G_x_K_H.
+**Final format count:** 9 base (Q_1..Q_24, Q_32 lossless) + 9×2 M/H plain + 9 GRP base + 9×2 GRP M/H
++ 7+7 MX + Q_32 + kept wires ≈ 70ish — shrunk from 105; 98 legacy aliases removed; every name
+carries its wire BPW exactly (0/.25/.50 grid). "formerly known as <old>" comments on reps.
+
+## PLAN SECTIONS (to complete after exploration + 1 Plan agent)
+- Phase 0: prerequisites (workflow 100%, findings.json → verified list, working tree clean
+  audit of the partially-applied fit_scale_true_mse patch, planning docs creation)
+- Phase 1: safety-critical bugs (grp8 sc_f, quant_6k tail guard, GQA/tokenizer/high review
+  criticals as separate 100% tasks)
+- Phase 2: ladder redesign per rules above (new enum/BPW tables, M tiers, ternary H on
+  Q_1, rewire 27 gaps to name, count shrink, L≡M≡H → real tiers, registry bug fixes,
+  aliases with "formerly known as", QUANT→Quant sweep, persistence compatibility)
+- Phase 3: quality (scale-fit golden section, K-variant real search depth or proper
+  dedup, MX quarantine + later adaptive rework, INT8 slot)
+- Phase 4: verification & honesty (strict audit harness: many n, sigma, tails, strict
+  tolerance, PSNR fails; industrial re-bench; README/doc provenance fixes; Q4_K caveat)
+- Phase 5: review findings A (one task each to 100%)
+- Verification section: exact test/bench commands per phase (build-eng2 ninja targets,
+  test_format_audit/test_fuzz_codec/test_block_codec/test_format_registry_complete,
+  bench_format_comparison, bench_industry_real on cached DeepSeek V4.1 Flash)
+
+## Open clarification (asked)
+- Exact meaning of "H me exact .50 jise exact G bolenge" — tier naming detail for G families.
+
+## Additional rules (user, 2026-10-18 session-end additions)
+- **ZERO dead code / stubs remaining** after Operation Clean: every dead helper (fit_scale_true_mse,
+  grp16_pad_fits, format_codebook_size, format_to_dtype, regformat_nominal_bpw/wire_bpw,
+  data_start_, blob_index_, QUANT_FORMAT_COUNT=15, TWI paths, inferno duplicate table...) must be
+  either WIRED UP correctly or DELETED — no orphans left behind.
+- **Documented exceptions (majboori stubs, EXCLUDE from the zero-stub rule, keep as-is):** the ~18
+  GPU/compute backends that exist but are unavailable/unoptimized (e.g. Vulkan SPIR-V validation
+  failing → compute disabled, unavailable optimization backends). These are known-incomplete BY
+  DESIGN until the full backend completion effort; they are NOT to be deleted or half-fixed here —
+  document them accurately instead. Everything else: no stub, no dead code.
+
+## Workflow final result (wf_ce1d51d7-91d, COMPLETED run wahz9nmot)
+- 163 agents total, 115 done, 48 errored (500/429/ECONNRESET waves), 7.28M subagent tokens.
+- Runtime totals: **confirmed=62, refuted=24, incomplete=28** (of 114 deduped findings from 10
+  clusters whose finder results landed in this run; severity counts: critical 1, high 11, medium 23,
+  low 10, undefined 17).
+- Missing: completeness-critic + final-report both failed (500 / ECONNREFUSED) → resume queued.
+- Reconstruction (journal votes × finder results, 147 findings incl. 3 clusters excluded from the
+  runtime set): confirmed 44 voted + 21 low-unverified, refuted 23, incomplete 59 (verify votes
+  lost to 429/500). Saved: review-tracking/findings_verified.json (approximate per-finding labels;
+  runtime 62/24/28 are the exact totals).
+- **tf-core / tf-server explanation (user asked):** they DID launch (runs=5 each) — every attempt
+  died on upstream connection loss / 429 / 500 mid-run, so no result was ever committed for either.
+  Not a design problem, pure infra. ACTION: resume queue = their finders + 3 re-run-failed clusters
+  (cf-infra/cf-misc/tf-infer, whose OLDER results exist in journal but latest run's re-runs died) +
+  critic + final-report. One resume completes the workflow 100%.
+
+---
+# ═══ FINAL EXECUTION PLAN (Phase-2 design, verified 2026-10-18) ═══
+**This section is the authoritative execution order. Corrections vs explorer notes: build-eng2
+is currently ABSENT (recreate in P0.0); working tree = 10 dirty files (tests/CMakeLists.txt +11
+registers test_trainer_engine.cpp — verify compiles or drop hunk).**
+
+## Task DAG (serial; one worker session per task → 100% DoD gate → next)
+```
+P0.1 workflow-wait+findings-reconcile → P0.0 tree-triage+build-eng2 bootstrap → P0.2 planning docs
+→ S1 sc_f overflow → S2 quant_6k tail → S3 kill +1 allowance → S4 TF criticals/highs
+→ L1 types.h enum+validity table → L2 codec rewire+M/H encoders+ternary → L3 registry/planner/
+  inferno/ste_quantizer → L4 persistence compat → L5 consumers → L6 model/production labels
+  → L7 MX quarantine+3.78125→3.50 → T1 test migration+caps regen
+→ Q1 wire fit_scale_true_mse (scale-fit fix) → Q2 bench honesty → Z1 zero-dead-code
+  → Z2 casing QUANT→Quant → Z3 README/docs → V1 final verify+dominance bench
+→ R1..R6 review findings (TF security→TF correctness→TF build→CF criticals→CF highs→CF mediums)
+```
+
+## Key design decisions (from Phase-2 agent, verified)
+1. **ID strategy: KEEP surviving ids + validity table** (renumber would silently reinterpret old
+   .quant checkpoints; format stored as raw uint8, no versioning). FORMAT_COUNT=69 (count),
+   FORMAT_ID_SLOTS=105 (bound), `format_is_valid()` replaces range predicates (types.h:268-276).
+   36 retired holes: plain K_L ids {10,13,16,19,22,25,28,31,34}, GRP K_L {46,49,52,55,58,61,64,
+   67,70}, halves {73-90}. Old id-19 ban becomes uniform validity check.
+2. **Final ladder = 69 formats**: 10 base (incl Q_32 no-tiers — float ceiling), 18 plain M/H,
+   9 GRP base, 18 GRP M/H, 14 MX (quarantined). All name==nominal==wire, .0/.25/.50 grid.
+   Full id/name/BPW/engine table per family: L=B, M=B+.25, H=B+.50 (e.g. Q_G_2 2.625→2.00 rewire,
+   Q_G_6 6.5625→6.00, Q_G_MX_3_5 3.78125→3.50, K_H absorbs old half formats at same BPW).
+3. **M-tier shared encoder**: base layout + 1 refinement byte per 32 weights = 4×2-bit sub-block
+   scale multipliers {×0.75,1.0,×1.25,×1.5} → provably 0.25-exact, engine-agnostic; per-family
+   alternatives (soft-threshold for binary family) pre-authorized by measurement.
+   **Acceptance: PSNR strictly between L and H on 4 fuzz distributions + real weights.**
+4. **Q_1_K_H ternary wire (exact 1.50, n=256)**: `[FP16 scale:16b][232 trits base-3 packed:368b]
+   [24 evenly-spread implicit-zero slots]` = 384b = 48B = 1.5000 exact. Tail sizes: per-size
+   Diophantine solve (T trits + S slots, ⌈T·log2 3⌉+16 = 1.5·n) else fallback chain
+   ternary→M-layout→L — never inflate. Gate: measured Q_1 < Q_1_K_M < Q_1_K_H ordering.
+5. **Persistence compat**: new `include/quant/format_compat.h` with kFormatValid[105] single
+   truth + `wire_format_valid()` used by all 4 clamp sites (quant_format.cpp:456,:611,
+   qwen35_engine.cpp:33,:147) + `legacy_format_id_remap()` on read (K_L→base, halves→_K_H same
+   BPW: 73→12, 74→14, ...), one log line per file; writer asserts validity before write
+   (catches moe_model label bug at write time); NativeFormat (trainer) untouched, documented.
+6. **Test migration**: kCaps regen from measured caps (3× worst of new tier over 4 dists at
+   n∈{256,1024}); retire 36 rows; add ternary ordering row + n=8224/32768 Q_G_8 regression (S1);
+   strict budgets (no +1) at the 12 old overrun sizes; test_format/test_all pins → 69 +
+   validity iteration; test_quant_mix MX 3.78125→3.50 pins; registry test singles≥55 + retired
+   names must FAIL parse (fix silent-default); format_master_table.py 105-asserts → validity parse.
+   **New permanent harness tests/test_wire_budgets.cpp**: every valid format × 15 sizes × 4
+   dists, strict budget + PSNR floors that FAIL (fixes E2c: print-only PSNR, 1e-3→1e-4 tolerance).
+7. **DoD template (exact commands)**: cmake configure (creates build-eng2: -G Ninja Release,
+   QUANT_BUILD_ADAPTERS=ON, TESTS/BENCHMARKS/TOOLS=ON) → `ninja -C build-eng2` (+ named adapter
+   targets since EXCLUDE_FROM_ALL) → quant gate ctest regex
+   `-R "test_format$|test_all|test_fuzz_codec|test_format_audit|test_format_registry_complete|
+   test_quant_mix|test_mix_components|grp_proof_test|test_wire_budgets"` → full ctest for
+   cross-cutting tasks (−E test_paged_kv_4m) → task-specific asserts (grep-zero dead symbols,
+   QUANT grep → macro/env only, git status = intended files only).
+8. **Top risks** tracked in task briefs: L2 wire desync (probe per family), ternary tail
+   feasibility (fallback chain), M-ordering (measured gate), fuzz TIMEOUT 900 (sample large-n),
+   legacy misdecode (L4 fixture: 105 ids × 1 block), casing sweeping macros (whitelist grep first),
+   honest benches may show losses (documented, not gated), compiler.cmake AVX2 scope (full ctest),
+   tree inheritance (P0.0 disposition table), CF scope creep (R4-R6 pausable).
+
+## GATE: All execution starts ONLY after workflow wf_ce1d51d7-91d = 100% (user's rule).
+Current state at writing: Verify re-runs + critic/final-report in flight (journal live).
+If critic+final-report keep failing on infra: fallback = compose final report + critic pass
+manually from findings_verified.json and journal (documented in DECISIONS.md), workflow marked
+complete-by-reconstruction — decision point when we get there.

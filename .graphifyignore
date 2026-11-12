@@ -1,0 +1,28 @@
+# graphify's own output directory — exclude it from the corpus scan.
+# Without this, the wiki/ and obsidian/ exports (100k+ markdown notes) get
+# counted as corpus documents on the next run.
+graphify-out/
+.graphify-stale-artifacts/
+
+# Session/runtime state — changes every session, never knowledge content.
+.mimosa/
+.plan-tmp/
+
+# Pre-restructure copy of the old tree (untracked backup at code-fusion/cf-old/).
+# It holds the *complete* pre-rebrand CodeFusion source plus its installed
+# node_modules and build output (apps/web/dist, .cf-build, scripts/release).
+# Indexing it would duplicate every pre-rebrand symbol next to the live one, so it
+# stays out of the corpus; see code-fusion/cf-old/OLD-TREE-NOTICE.md.
+code-fusion/cf-old/
+
+# Dependency trees — generated, never authored.
+**/node_modules/
+**/.venv/
+
+# Throwaway probe scripts (Oct 23 coverage investigation), not project source.
+code-fusion/tmp/
+
+# Test-snapshot fixtures — recorded expected data (replay.override.json,
+# *.expected.json/txt, 1-pixel PNGs). Data, not extractable knowledge.
+**/tests/snapshots/
+

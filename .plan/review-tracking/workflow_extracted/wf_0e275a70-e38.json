@@ -1,0 +1,155 @@
+{
+ "": {
+  "label": "",
+  "phases": [],
+  "started": 0,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {
+   "launched": 1
+  },
+  "results": [],
+  "failures": [],
+  "agents": [],
+  "agentCount": 0,
+  "withPayload": 0
+ },
+ "loop-transformers": {
+  "label": "loop-transformers",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "ac3591230e98e0e65",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "Important: arXiv 2407.04620 is the TTT paper (Sun et al.), not ALSTA. Let me fetch the correct sources and the full mechanism details."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "arc-agi-3": {
+  "label": "arc-agi-3",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a46152ee7c37df745",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": false,
+    "payload": null
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 0
+ },
+ "provider-adapter": {
+  "label": "provider-adapter",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a88f32e9d9ed0bf76",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": false,
+    "payload": null
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 0
+ },
+ "thinking-preservation": {
+  "label": "thinking-preservation",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "aee4b90e9a4d86525",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "DuckDuckGo HTML is CAPTCHA-blocked. Let me try the lite endpoint and alternative engines."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "gpt6-astra": {
+  "label": "gpt6-astra",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "ab3496a2e9ec7ad57",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "Let me try direct fetching via bash and other search engines."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "google-barium": {
+  "label": "google-barium",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a4da11cd75a8bfe5b",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "DuckDuckGo is serving a CAPTCHA. Let me try other engines."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ }
+}

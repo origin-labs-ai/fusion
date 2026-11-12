@@ -1,0 +1,167 @@
+# Fusion Workspace — Defect Tracker
+Master list. Ek bhi item fix hone bina nahi chhodna. Updated: 2026-10-17
+
+## A. Review findings (workflow wf_ce1d51d7-91d)
+Status legend: [ ] pending · [x] fixed · [~] verified-not-a-bug
+
+### A1. Confirmed by cluster reviewers (57 findings captured)
+Full JSON extract: see findings.json (generated from journal). Severity summary so far:
+- critical: 4 | high: 18 | medium: 28 | low: 7
+- Verification status: PENDING (verifiers died on 429; resume running)
+
+Key critical/high (partial — full list in findings.json):
+- [ ] CRIT code-fusion/packages/cf/src/mad/utils/advanced-memory.ts:427 addToHot() hard-hang
+- [ ] CRIT code-fusion/packages/cf/src/mad/core/god-runtime.ts:3015 unbounded discussion loop
+- [ ] CRIT code-fusion/packages/cf/src/mad/core/god-runtime.ts:3679 VerificationEngine Math.random()
+- [ ] CRIT transformers-fusion/src/codec/block_codec.cpp:401 sc_f[256] stack overflow (n>8192)
+- [ ] HIGH transformers-fusion/src/tokenizer/bpe_tokenizer_bpe.cpp:511 unvalidated vs/len
+- [ ] HIGH transformers-fusion/src/model/transformer.cpp:363 GQA kh OOB
+- [ ] HIGH transformers-fusion/src/inference/inference_paging.cpp:263 pool size wrap
+- [ ] HIGH transformers-fusion/src/model/kv_cache.cpp:876 mutex race
+- [ ] HIGH transformers-fusion/src/inference/generator.cpp:242 empty prompt underflow
+- [ ] HIGH code-fusion BYOK cost/budget/recursion (byok.ts:417)
+- [ ] HIGH god-runtime.ts:5878 Gauntlet simulated
+- [ ] HIGH god-runtime.ts:5264 Production gate fabricated
+- [ ] HIGH god-runtime.ts:401 stream failure -> empty success
+- [ ] HIGH god-runtime.ts:2146 StateManager rejects legal configs
+- [ ] HIGH god-runtime.ts:928 EventBus listener leak
+- [ ] HIGH settings:621 concurrent edit loss
+- [ ] HIGH home-paths:102 migration stranding
+- [ ] HIGH hooks-claude-code:270 infinite stop
+- [ ] HIGH cordis-host-runner:210 orphan fiber
+- [ ] HIGH cordis-client-runner:182 wedged transition
+- [ ] HIGH cordis-host-runner/guard.ts:685 sandbox escapable
+- [ ] HIGH web scaffold.ts:898 Windows no-op
+- [ ] (medium/low list: findings.json)
+
+## B. Quantization quality defects (measured, 2026-10-17)
+Source: test_format_audit + test_fuzz_codec + bench_industry_real + source audit
+
+- [ ] Q-1 Q_12 plain encoder suboptimal scale fit: 41.45 dB@n=256 vs K_H (24 iters) ~59 dB.
+      Root cause: quant_fixed_codebook uses 3x LS iterations only; no golden-section
+      refinement (comp8_fit_scale_fp16 has it, Q12 path lacks it).
+      Fix: shared true-MSE golden-section scale search for fixed-codebook formats.
+- [ ] Q-2 Q_6 same issue (3 iters, no golden section): 31.08 dB@256
+- [ ] Q-3 Q_3 same issue: 11.91 dB@256 (cap 1.0 NMSE barely passes at 0.064)
+- [ ] Q-4 Q_G_12 budget formula suspicious: grp12_compound_fits requires
+      n*12 + (n/32)*16 == ceil(12.5*n). For n=256: 3072+128=3200 vs 3200 ok;
+      for n=1024: 12288+512=12800 vs 12800 ok. Fine for multiples; CHECK tails.
+- [ ] Q-5 Q_12_K_L/M/H: L==M identical wire+search? Audit shows K_L 46.36 == K_M 47.93 slightly better.
+      K_H 58.88dB works (24 iters). So K-variant search depth IS effective; plain path lacks it.
+- [ ] Q-6 MX mixes far behind plain at same BPW (Q_MX_8_5 24.76dB vs Q_8 43.17; Q_G_MX_16_5 40.75 vs Q_16 89.95).
+      Root: magnitude-rank tier split with ratios designed for synthetic data; per-tier
+      uniform quantization of TOP tier (32-bit) costs mix quality. Adaptive allocator
+      exists in FormatRegistry but block codec path (quant_quad_mix) uses fixed ratios.
+- [ ] Q-7 Q_G_12 (43.77 dB) worse than Q_G_8 (45.30 dB) — quality inversion at higher BPW. grp12 compound
+      path caps at 43.77 even though 12-bit levels should give ~57+ dB (level grid).
+- [ ] Q-8 Q_G_16_K_* shows 16.00 claimed vs 16.5 wire in audit row (Q_G_16_K_L 89.95@16.00) — wire table says 16.5. Check types.h format_bpw for Q_G_16_K_* == 16.0? MISMATCH with Q_G_16 = 16.5.
+- [ ] Q-9 test_format_audit Q_MX rows: Q_MX_16_5 45.51 dB vs Q_MX_12_5 46.97 — inversion (16>12 should be better).
+- [ ] Q-10 BitNet comparison bench prints FALSE claims (says "QUANT Mixed (1.50 bpw) WINS at LOWER bpw"
+      while actual bpw=5.16 vs BitNet 4.25). Hardcoded victory strings — bench honesty bug.
+- [ ] Q-11 Ternary (QuantEngine {-1,0,+1}) exists only as in-memory engine; not a wire format.
+      Need ternary wire format at 1.58-2.0 BPW beating BitNet at same BPW.
+- [ ] Q-12 Q_1 (1.0 bpw) 3.53 dB vs BitNet 1-bit — check head-to-head on real weights.
+
+## C. Bench honesty / measurement
+- [ ] C-1 bench_bitnet_comparison hardcoded % claims vs actual bpw (Q-10)
+- [ ] C-2 test_format_audit PSNR floors too lax (cap 20 dB says "sanity"; Q_12 46 dB passes
+      despite being far below its potential; there is no per-format optimum check)
+- [ ] C-3 bench_industry_real: no Q_12/Q_24 in singles list; tiers missing high-BPW bands
+      and ternary formats
+
+## D. Environment / build
+- [x] D-1 bench_industry_real build broken: RegFormat::Q1_5/QG_1_5/Q6_K_M no longer exist (fixed 2026-10-17)
+- [ ] D-2 CMake QUANT_BUILD_ADAPTERS=OFF by default — adapters/tools not built in default CI config
+
+## E. External audit findings (user-supplied, 2026-10-18 — STALE-ISH but problems live)
+Source: parallel audit session with CSV evidence (bench_format_comparison.csv, 224 rows).
+
+### E1. Industrial head-to-head (measured, matched BPW): 12/14 WIN
+- WIN: Q16>FP16 (+16/+18), QG8>Q8_0 (+0.74/+0.62 narrow), QG6>Q6_K (+1.53/+2.48),
+  QG4>Q4_K (+17.8 BUT hollow — ref reimpl is weak at 17-18dB, real llama.cpp not validated),
+  Q1.5>BitNet b1.58 (+1.29/+0.79), QG1>Binary (+8.65/+6.47)
+- LOSS concentrated:
+  - [ ] E1a MX family CATASTROPHIC: -21..-37 dB vs same-BPW refs (Q_MX_8.5 vs Q8_0 -23.6;
+        QG_MX_16.5 vs FP16 -36.8). QUARANTINE from competitive list, experimental flag.
+  - [ ] E1b 8-bit K-variants lose on real data: QG_8_K_L/M/H@8.5 (53.60) vs Q8_0 (59.75) = -6.15.
+        Plain QG_8.5 wins — K-path broken or wrong-budget alias.
+  - [ ] E1c INT8 uniform @8.125: no exact slot (Q8@8.0 -1.9; @8.5 +2.2).
+- CSV integrity: K_H/K_M/K_L bit-identical (10 rows same MSE), ref rows have encode==decode timing
+  (analytic estimates, not measured), Q32 psnr clamped 100 while lossless.
+
+### E2. BPW truth
+- [x] code-vs-claim FIXED (format_bpw() = wire-truth, audit 0 violations)
+- [ ] E2a name-vs-wire 27 GAPS ALIVE: QG2 name says 2.0 wire cuts 2.625 (+31%), QG3/4/8/12/16/24 +0.5,
+  QG6 +0.5625, QG_2/3/4_K (x9) +0.4375, QG_6_K (x3) +0.5625, QG_8/12_K (x6) +0.5, QG_MX_3.5 +0.28125.
+  Mechanism was rename-the-ruler (format_bpw), NOT fit-the-layout. Owner decision: rename QG2->QG2.625
+  or wire-suffix (27 names).
+- [ ] E2b QG6/QG_6_K tails n=8..15 1-byte overrun: quant_6k d-only path (block_codec.cpp:1077-1121)
+  writes levels+2 without budget check (quant_grp16 :801-803 and quant_affine :1393-1403 HAVE it).
+  fuzz's +1 tail allowance (block_codec.h:65-68) hides it. 2-line guard fix + strict test.
+- [ ] E2c test_format_audit weak: only N=256, sigma-1.0, tolerance 1e-3 (header claims 0.0001),
+  PSNR print-only (never fails), no tails/MXQ probes.
+
+### E3. Provenance: borrowed names, own code
+- [ ] E3a 105 names = ~20 distinct codecs. 54 K/K_G names from llama.cpp with ZERO K-quant internals
+  (block_codec.cpp:2519-2540 maps all K to base encoders; :2518 comment "L<M<H search depth" is a LIE —
+  all three letters one case body one call). 9 half-twins line-identical (:2568-2586). Q1==QG1 (:2413-2428
+  vs :2501-2517). Budgets deliberately pegged to GGML (:33-41).
+- [ ] E3b registry bugs: format_registry.h:187 maps all 9 half-GRP -> RegFormat::Q1 (QG_24_5 -> Q1!);
+  :188-194 collapses plain Q_MX_* into QG_MX_* ids. Round-trip broken for registry consumers.
+- [ ] E3c README.md:237 "No external quantization schemes implemented or referenced anywhere" is FALSE
+  (bench refs + adapter dequantizers + competitor docs exist). Fix: "no external schemes in production
+  codec; bench+adapters reference them with attribution".
+- [x] E3d Q4_K hollow-win note: adapter can't even import Q4_K (gguf_bridge.h:13 unsupported) while
+  bench ref claims +17.8 dB. Stop citing until real llama.cpp validated. (recorded)
+- Production code theft NOT proven: encoders own (lattice/affine/compound/quad-mix), bench refs
+  quarantined with [ref] label (bench_format_comparison.cpp:140-266), adapter attributed + honest-fail.
+
+## F. USER RULES (2026-10-18, binding — follow exactly)
+- [ ] F-0 Q-10 (BitNet bench honesty) and Q-11 (NEW ternary wire format) = DO NOT BUILD. Dropped by user.
+- [ ] F-1 L/M/H rule (user's example, apply same pattern across families):
+      base format keeps EXACT integer BPW (Q_1 = 1.0 exactly); separate L (Low) variant = RETIRED/khallas;
+      M variant = NEW exact 1.25 BPW; H variant = 1.50 BPW named "formerly known as...".
+      All three must be genuinely DIFFERENT (the missing difference is hereby defined via BPW tiers).
+- [ ] F-2 Format count will SHRINK from 105 — how many remains is fine, as long as F-1 and all
+      user rules hold. Do NOT pad names.
+- [ ] F-3 ALL of E1/E2/E3 + B (quant defects) + A (review findings) go into the master PLAN now;
+      implementation begins AFTER workflow 100% complete. Execution style: one task at a time to
+      100% (most-strict-worker), then next — everything done eventually.
+
+## G. OPERATION CLEAN — final rules (user, 2026-10-18, supersedes where conflicting)
+- [ ] G-1 Binary: Q_1 = binary, EXACT 1.0 BPW (wire = name). Permanent.
+- [ ] G-2 Ternary: Q_1_5 family ka H variant = PURE TERNARY (−1/0/+1), renamed style Q_1_K_H,
+      EXACT BPW as named (1.50 wire = name). Yehi ternary ka ghar hai — alag Q-11 format NAHI
+      (explains F-0 cancellation: ternary Q_1 hi deliver karega).
+- [ ] G-3 M tier: exact 1.25 BPW; quality must sit BETWEEN L (1.0 binary) and H (1.5 ternary).
+      L = retired (khallas) across families per F-1.
+- [ ] G-4 GRP families (Q_G_*) bhi SAME L/M/H rule follow karenge (L retired / M mid-BPW / H top).
+- [ ] G-5 **ZERO BPW violations project-wide** — name says X => wire cuts exactly X. All 27
+      name-vs-wire gaps (E2a) MUST be fixed, plus E2b QG6 tail overrun, plus ANY other violation
+      found anywhere. No ruler-rename tricks — layout and name must agree.
+- [ ] G-6 Operation name: **Operation Clean**. Scope = G-1..G-5 + E1/E2/E3 + F-1..F-3 + B + A.
+
+## H. CF plan R4–R6 status — 2026-10-27 (new CodeFusion tree)
+
+Path revalidation of every CF R4–R6 finding in this file against the shipped tree
+(`fusion/code-fusion/packages`, `apps/cli/packages`; `node_modules`/`dist` excluded):
+
+- `packages/cf/src/mad/**`, `god-runtime.ts`, `advanced-memory.ts` → **absent**
+- `byok.ts`, `cordis-host-runner.ts`, `cordis-client-runner.ts` → **absent**
+- `home-paths.ts`, `hooks-claude-code.ts`, `web scaffold.ts` → **absent**
+
+Verification command: `rg -l "Gauntlet|god-runtime|VerificationEngine|advanced-memory|BYOK" packages apps --glob '*.ts'`
+returns only `packages/ui/src/i18n/locales/en-US.ts` (a BYOK settings label).
+
+Conclusion:
+
+- [~] R4 CF criticals (advanced-memory hard-hang, god-runtime discussion loop, VerificationEngine
+      `Math.random()`) — not a bug in this tree: the MAD runtime replaced by the CodeFusion agent
+      CLI does not ship these modules.
+- [~] R5 CF highs (BYOK budget/recursion, Gauntlet/Production gate fabrication, EventBus leak,
+      cordis fiber/transition/sandbox findings, settings concurrent-edit, home-paths migration,
+      hooks infinite stop, web scaffold Windows no-op) — same: source paths retired.
+- [~] R6 CF mediums — same: source paths retired.
+
+These are marked verified-not-a-bug for the shipped distribution, not "fixed". Re-open only if
+the legacy CF agent runtime is reintroduced; the findings remain valid for `cf-old/`.

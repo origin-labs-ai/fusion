@@ -1,0 +1,664 @@
+{
+ "": {
+  "label": "",
+  "phases": [],
+  "started": 0,
+  "result_events": 3,
+  "failed_events": 0,
+  "other_events": {
+   "launched": 1
+  },
+  "results": [
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "adb4554d5751639e0",
+    "key": "v2:dff2e7572cc9ab59597cd3d45453f912d22b11ffe19f88905ad9390451f4f36c",
+    "payload": {
+     "area": "NEURONS as a designed/principled unit — existence audit across the whole Fusion workspace (code-fusion/, transformers-fusion/, review-tracking/, .claude/)",
+     "findings": [
+      {
+       "fact": "CATEGORY (c) — NOTHING. There is NO neuron implementation of any kind anywhere in the workspace. No bio-inspired unit, no hybrid/digital/bio-digital neuron, no spiking neuron, no LIF/integrate-and-fire model, no dendrite, synapse, soma, axon, membrane-potential, refractory, tau/time-constant, STDP, or neuromodulator code. This is a net-new build, not a modification of something existing.",
+       "path": "c:/Users/thaku/Workspaces/fusion",
+       "line": "whole-workspace sweep, both projects",
+       "severity": "CRITICAL: The entire Req 1 deliverable (per fusion-full-brief.md: neurons carrying BOTH human-neuron AND AI-neuron capabilities, best of both, but DIGITAL, that AI models train on) currently has ZERO code behind it. Any plan step that says 'wire up the existing neurons' will silently build nothing."
+      },
+      {
+       "fact": "Category (a) false-positive #1: NeuralArchitectureSearch is the ONLY symbol in the C++ sources whose name contains 'Neural'. It is a generic architecture/hyperparameter search over a plain struct `Architecture { int layers; int hidden; float score; }` with mutate/evaluate/search methods — no per-unit state, no time dynamics, no signals. Not a neuron.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/agi.h",
+       "line": "378-385 (impl: src/agi/agi_extended.cpp:199-216)",
+       "severity": "Medium: name collision. A future grep for 'neuron'/'neural' lands here first and can cause the wrong file to be treated as the neuron host. Duplicated too in install_test/include/quant/agi.h."
+      },
+      {
+       "fact": "Category (a) false-positive #2: 'neural' appears in code-fusion only as an Exa web-search retrieval-mode string literal — `searchType: 'auto' | 'keyword' | 'neural'`. Zero relation to any neuron abstraction.",
+       "path": "c:/Users/thaku/Workspaces/fusion/code-fusion/packages/web/web-search-exa/src/types.ts",
+       "line": "13-14 (also src/provider.ts:24,40 and docs/config-catalog.md:3278)",
+       "severity": "Low: pure vocabulary collision, but it surfaces in workspace greps and will waste a cycle during implementation."
+      },
+      {
+       "fact": "Category (b) generic neural-net vocabulary and the only remaining 'neur' hits: bench prose about real ANN weight distributions ('Real neural weights are locally correlated', 'Real neural weights are sparse'), a NAS label, a test string 'transformers are powerful neural network architectures', and `has_vnni` = 'Vector Neural Network Instructions' (an Intel INT8 GEMM ISA flag). None is a neuron unit.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/bench/bench_poc_benchmark.cpp",
+       "line": "321, 641, 731; simd_math.h:221; tests/test_protected.cpp:537; agi.h:378",
+       "severity": "Low: must be classified out honestly so it is never reported as partial neuron coverage."
+      },
+      {
+       "fact": "Category (b) generic 'LIF'-adjacent false-negative risk: `leaky` in the sources is ONLY the LeakyReLU activation string ('leaky_relu' nonlinearity param, and sqrt(2/(1+a^2)) init gain). It is NOT leaky integrate-and-fire.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/engines/trainer/dense/init.h",
+       "line": "23, 26; init.cpp:30",
+       "severity": "Medium: 'leaky' is the single most likely term to be mis-scored as a spiking-neuron match in any automated coverage check. It is a ReLU variant."
+      },
+      {
+       "fact": "Category (b) generic: every 'consolidat*' hit is memory/batch management, never sleep-like biological consolidation. `MemorySystem::consolidate()` merges memory entries whose cosine similarity > 0.95 by averaging them.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/src/agi/agi_extended.cpp",
+       "line": "507-521 (decl include/quant/agi.h:450-459)",
+       "severity": "Medium: the name is suggestive of the biological mechanism but the physics is unrelated (a dedup/average pass, not an offline replay-and-strengthen process)."
+      },
+      {
+       "fact": "REUSABLE BUILDING BLOCK — the strongest existing 'neuron-like' state container is WorldModel's StateMemoryEntry: a state with a float importance_weight, access_count and last_accessed, stored in a bounded deque (max 10000), plus update_importance_weights(), consolidate_memory(), and a Transition struct carrying reward, predicted_reward and prediction_error.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/world_model.h",
+       "line": "28 (importance), 41-43 (reward/prediction_error), 87-91 (StateMemoryEntry), 133-141 (API), 155-157 (caps)",
+       "severity": "High: this is the closest thing to a per-unit importance/decay/trace state that already exists and is the natural host surface for a hybrid neuron. Missing pieces vs a real neuron: no time constant, no threshold, no spike, no refractory period, no local plasticity rule."
+      },
+      {
+       "fact": "REUSABLE BUILDING BLOCK — a real two-timescale stability/plasticity controller exists and is wired into training. StabilityPlasticityParams {forgetting_weight, current_lr_factor, stability_lr_factor, plasticity_lr_factor, forgetting_threshold}; when forgetting exceeds threshold it scales stability up and plasticity down, clamps both to [0.1, 5.0], and returns an effective learning rate.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/inferno_integration.h",
+       "line": "152-193 (struct at 156-162, inferno_hook_stability_plasticity at 164)",
+       "severity": "High: a genuine adaptive-plasticity rule already exists — the module-level analogue of meta-plasticity. A hybrid neuron should reuse this rather than inventing a second one. Note it is gated on QUANT_INFERNO_ENABLED and falls back to pass-through."
+      },
+      {
+       "fact": "REUSABLE BUILDING BLOCK — ECC / Elastic Weight Consolidation is fully implemented: ECCState { fisher_diagonal, anchor_weights } with update_fisher(gradients, n, alpha), update_anchor(weights, n) and regularize(current_weights, n, lambda). The Fisher diagonal is exactly a per-parameter importance score, which is the canonical 'synaptic consolidation' primitive.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/continual_engine.h",
+       "line": "86-100 (ECCState), 78-84 (fisher_importance on replay entries), 88 (comment)",
+       "severity": "High: per-parameter importance + anchoring is the single most directly reusable piece for neuron-level consolidation. Also present in install_test/include/quant/continual_engine.h."
+      },
+      {
+       "fact": "REUSABLE BUILDING BLOCK — Fisher-weighted importance sampling with exponential decay already exists in the replay buffer: CompressedReplayEntry.fisher_importance, plus update_importance(float decay_rate) and importance_resample(). This is a working importance-decay mechanism.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/continual_engine.h",
+       "line": "34 (fisher_importance), 54-55 (update_importance/importance_resample), 28 (comment: 'Fisher-weighted importance sampling for retrieval')",
+       "severity": "Medium: gives a decay_rate-driven importance trace to copy for a neuron's weight trace, though it operates on replay samples, not units."
+      },
+      {
+       "fact": "REUSABLE BUILDING BLOCK — full reward / prediction-error / curiosity stack: RewardModel (score_pair, reward_loss, compute_abstention_reward, importance_factor=8.0), CuriosityDrivenExplorer::intrinsic_reward(state) with a visited_states_ history, plus WorldModelStats.avg_prediction_error and avg_reward_prediction_error. WorldModel also exposes predict_with_uncertainty and UncertaintyEstimate splitting epistemic vs aleatoric.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/reward.h",
+       "line": "18-56 (RewardModel); agi.h:365-373 (CuriosityDrivenExplorer); world_model.h:94-99 (stats), 131-132 (uncertainty API)",
+       "severity": "High: this supplies the dopamine-analogue (reward prediction error) and the novelty/curiosity signal a digital neuron would need for local credit assignment, without a global backward pass."
+      },
+      {
+       "fact": "REUSABLE BUILDING BLOCK — gating already exists at two levels: (1) MoE gating/importance, `const float* importance` passed into a MoE enhance path; (2) the flywheel's hard pass gate. Neither is a per-unit neural gate, but the MoE router is the natural place a 'which unit fires' decision would live.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/moe_enhance.h",
+       "line": "13 (importance param); agi_flywheel.cpp:950-952, 1948-1950, 2421-2423, 2456 (flywheel gates)",
+       "severity": "Medium: the gating primitive exists but is routing-shaped, not membrane-threshold-shaped."
+      },
+      {
+       "fact": "The AGI subsystem that would host a neuron abstraction is real and substantial: agi.cpp 44.2K, agi_extended.cpp 34.0K, agi_flywheel.cpp 102.9K, agi_guardrails.cpp 11.2K, meta_cognition.cpp 30.7K, multi_agent.cpp 27.3K, self_eval.cpp 31.5K, world_model.cpp 25.0K, plus agi.h 19.3K. Host classes present: SelfMonitor, MemorySystem, PlanningEngine, ToolUse, EvaluationHarness, Flywheel, CapabilityAmplifier, CuriosityDrivenExplorer, HPOptimizer, ContinuousLearner, KnowledgeDistillation.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/src/agi/",
+       "line": "directory listing + include/quant/agi.h class map",
+       "severity": "High: confirms an excellent scaffolding exists to hang a neuron type on (namespace quant::agi, existing headers, build wiring) — the absence is of the neuron itself, not of a place to put it."
+      },
+      {
+       "fact": "Everything AGI-related is duplicated into install_test/include/quant/ (agi.h, world_model.h, continual_engine.h, simd_math.h, etc.). Any neuron work must land in BOTH trees or the install_test copy drifts.",
+       "path": "c:/Users/thaku/Workspaces/fusion/transformers-fusion/install_test/include/quant/",
+       "line": "agi.h, world_model.h, continual_engine.h, sops_integration.h",
+       "severity": "Medium: a real, easy-to-miss duplication trap; the two trees already contain divergent filenames (sops_integration.h vs inferno_integration.h)."
+      },
+      {
+       "fact": "code-fusion/packages contains no neuron-analogue, and no reward/prediction-error/gating machinery to reuse. Its matches for reward/gate/importance are all unrelated infrastructure: verification 'proof gate' (gatePassed), workflow worker cancellation gates, and token-meter/ralph test strings.",
+       "path": "c:/Users/thaku/Workspaces/fusion/code-fusion/packages/mad/verification/src/index.ts",
+       "line": "60, 114-115, 134, 184-197 (proof gate); cf/, context/, goal/, core/, llm/, workflow/ also checked",
+       "severity": "Medium: correctly rules out code-fusion as a source of hybrid-neuron building blocks. Per the brief code-fusion is 'bas harness hai' — a harness, not the neural substrate. The neuron must live in transformers-fusion.",
+       "severity_note": ""
+      },
+      {
+       "fact": "The requirement itself exists ONLY as prose in agent memory, never in-project. fusion-full-brief.md section 1 states it verbatim; fusion-transcript-2-neurons-j-rsi.md supplies the design rationale (AI neuron = a mathematical function in/out; biological neuron = a living cell with electrical signals, chemicals, timing and thousands of interactions).",
+       "path": "c:/Users/thaku/.claude/projects/c--Users-thaku-Workspaces-fusion/memory/fusion-full-brief.md",
+       "line": "section 1 'Req 1 — NEURONS'; transcript-2 section '[03:02] Why AI neurons are not brain neurons'",
+       "severity": "High: no design doc, spec, header, TODO or issue in either repo encodes the neuron requirement. Grepping the workspace for it returns nothing, so the implementation has no in-repo anchor and will be re-litigated unless a spec is written first."
+      }
+     ],
+     "notes": "VERDICT: Category (c) — NOTHING. There is no implemented neuron-like unit anywhere in the Fusion workspace. This is stated plainly and is the headline answer.\n\nMETHOD. I swept the entire tree with rg --no-ignore --hidden (the repo has ignore files that silently hid results on the first pass — notably code-fusion/.rgignore and a large .gitignore chain, so a default grep gives FALSE CLEAN results here; this must be repeated with --no-ignore by anyone re-checking). Term battery run case-insensitively: neuron/neurons/neuronal/neurone, dendrite, synapse, action-potential, spike/spiking, SNN, membrane, leaky, integrate-and-fire, LIF, tau, time-constant, refractory, neuromodulat, dopamine, serotonin, plasticity, hebbian, homeostat, sleep, consolidation, meta-plasticity, soma, axon, digital-neuron, hybrid-neuron, dual-neuron, bio-digital, neuro-engine, neuron-engine, NPU, neuromorphic, brain-inspired, brain-like. Also swept every doc/notes/archive/review-tracking location: code-fusion/docs, code-fusion/.agents, code-fusion/archive, code-fusion/.claude, review-tracking/, and the session memory dir.\n\nTHE ONE REAL 'neuron' HIT workspace-wide is prose in an unrelated news-source list (code-fusion/skills/ai-news-collectors/references/sources.md). Excluding skills/ and vendor/, the whole workspace has ZERO occurrences of 'neuron'. Every other 'neur' hit is one of three collisions I verified by reading: NeuralArchitectureSearch (generic NAS), Exa's 'neural' search mode, and ANN-prose/'Vector Neural Network Instructions'.\n\nTHE THREE CATEGORIES, CLEANLY SEPARATED:\n(a) Real neuron implementation: NONE. No file, no class, no struct, no function.\n(b) Generic NN vocabulary misread as neuron-like: NeuralArchitectureSearch (agi.h:378 — the only 'Neural' symbol in C++), leaky_relu (init.h:23,26 — mistakenly lava-adjacent to leaky-integrate-and-fire), consolidate (agi_extended.cpp:507, world_model.cpp:630, production.h:129 — memory/batch, not sleep), NPU (backend.cpp:84,1429,2118; gpu_compute_openvino.cpp:62-277; gpu_compute_zdnn.h:22 — it is a hardware target, NOT Neural Processing Unit code; several of those comments exist precisely to say NPU work is NOT really running), stability/plasticity (inferno_integration.h:152-193 — real but module-level, not per-unit), 'neural' search mode.\n(c) Nothing: everything else.\n\nA SHARP DISTINCTION WORTH CARRYING FORWARD. The workspace is rich in MODULE-LEVEL analogues of the mechanisms a neuron needs, but has no UNIT-LEVEL implementation of any of them. Concretely, the following neuron primitives exist only at the wrong granularity: plasticity (a scalar LR factor applied to a whole trainer, inferno_integration.h:164 / continual_trainer.cpp:152), importance (a per-parameter Fisher diagonal, continual_engine.h:86-100, or a per-memory-entry weight, world_model.h:87-91 — never a per-unit weight trace), decay (update_importance(decay_rate), continual_engine.h:54, over replay samples), reward/prediction-error (RewardModel and WorldModelStats, real and usable, reward.h:18 / world_model.h:96-97), gating (MoE router, moe_enhance.h:13). What is absent entirely: any notion of TIME inside a unit (no tau, no time constant, no timestep), any THRESHOLD or spike, any refractory period, any per-unit local update rule, any soma-like state integration. A hybrid bio-digital neuron therefore needs a NEW unit type whose per-unit state sits on top of these existing signals — it cannot be assembled by renaming or exposing what is there.\n\nHONEST CAVEAT ON THE REQUIREMENT ITSELF. The brief's framing ('neuron carrying BOTH human-neuron and AI-neuron capabilities, best performer of both, but DIGITAL, that models then train on') is a legitimate engineering direction, but note the transcript it derives from explicitly says the biological side is NOT fully understood — 'we ourselves still don't have a complete answer' to how memory forms, how one experience permanently changes the brain, how regions synchronize, how chemicals alter attention and learning. So there is no known complete spec to implement against; the implementable subset is the one whose primitives already exist here: per-unit importance/decay, thresholded activation, local plasticity driven by reward prediction error, and offline consolidation. Anyone planning this should scope it to that subset rather than implying the biological half can be faithfully reproduced.\n\nNO INVENTED CONTENT. I did not create, modify, or write any file. I found no neuron and am reporting none. Note also that the neuron requirement has no in-repo home at all — no spec, header, TODO or issue in either repo — so the first real deliverable is a written design that both trees can be built from, and it must land in transformers-fusion (namespace quant::agi) AND its install_test/include/quant duplicate, since code-fusion is the harness and holds no neural substrate.\n\nKEY PATHS: c:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/{agi.h, world_model.h, continual_engine.h, inferno_integration.h, reward.h, hpo_nas.h}; c:/Users/thaku/Workspaces/fusion/transformers-fusion/src/agi/{agi_extended.cpp, world_model.cpp, agi_flywheel.cpp}; c:/Users/thaku/Workspaces/fusion/transformers-fusion/install_test/include/quant/ (duplicate tree); c:/Users/thaku/Workspaces/fusion/code-fusion/packages/ (checked, no analogue); c:/Users/thaku/.claude/projects/c--Users-thaku-Workspaces-fusion/memory/{fusion-full-brief.md, fusion-transcript-2-neurons-j-rsi.md, fusion-pending-work-neurons-astra.md} (the only place the requirement is recorded)."
+    }
+   },
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "a3217bb4ebfbcbd95",
+    "key": "v2:440e943f94e13bf804ad595f8df2314f35bd83f569b06eaab3d44cbb27deaec6",
+    "payload": {
+     "area": "AREA A (provider adapter & thinking preservation) + AREA B (context/compaction package & world-model question) — read-only exploration of c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion",
+     "findings": [
+      {
+       "fact": "The literal phrase 'thinking-preservation' has ZERO occurrences anywhere in the workspace (case-insensitive, all extensions). The earlier scan's single 'hit' was a false positive — packages/llm/llm-pi-ai/README.md discusses *replay state* and *reasoning efforts*, never 'thinking-preservation'. Consequently the premise 'the 99.9% on ARC-AGI-3 pattern' has no referent: 'arc-agi' / 'arc agi' also has ZERO hits workspace-wide.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm-pi-ai\\README.md",
+       "line": "148-157 (nearest conceptual text); repo-wide greps: -i 'thinking-preservation|arc-agi' => 0 matches",
+       "severity": "Any plan that starts from 'extend the existing thinking-preservation code' will find nothing to extend — this is a net-new subsystem, and the 'ARC-AGI-3 / 99.9%' claim is unsupported by this codebase."
+      },
+      {
+       "fact": "packages/llm/ contains exactly 5 packages: llm (seam + `LlmRuntime` + content/stream vocabulary), llm-deepseek, llm-pi-ai, llm-retry (retry policy, not an adapter), token-meter. Only TWO production provider adapters exist: llm-deepseek and llm-pi-ai. Plus a test-only replay adapter at packages/test-support/llm-replay.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\README.md",
+       "line": "5-12 (package table)",
+       "severity": "Reporting 'llm, llm-deepseek, llm-pi-ai and others' as four+ adapters overstates the surface; the real answer is two production adapters, and any new reasoning feature must be built into exactly two wire implementations."
+      },
+      {
+       "fact": "llm-pi-ai speaks pi-ai's normalized multi-provider protocol over pi-ai ('@earendil-works/pi-ai'), covering openai-completions, openai-responses, azure-openai-responses, openai-codex-responses, anthropic-messages, bedrock-converse-stream plus hand-declared OpenAI-compatible gateways. Request mapping: packages/llm/llm-pi-ai/src/context.ts `toPiContext`/`textOnlyContext` -> pi-ai `Context {systemPrompt, messages, tools}`. Response mapping: src/stream.ts `toStreamChunks` (pi-ai `thinking_start`/`thinking_delta`/`thinking_end` -> `block-start`/`reasoning-delta`/`block-end` at lines 148,151,154).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm-pi-ai\\src\\adapter.ts",
+       "line": "stream.ts:148-156; context.ts:96-215; README.md:1-10",
+       "severity": "pi-ai is the only adapter that sees native thinking/signature events; assuming DeepSeek's flat `reasoning_content` text model generalizes would break signature-carrying providers."
+      },
+      {
+       "fact": "llm-deepseek speaks DeepSeek chat-completions directly (`fetch` + SSE via eventsource-parser) with no third-party protocol lib. Request mapping: packages/llm/llm-deepseek/src/serialize.ts (harness `Message[]` -> `WireMessage[]`). Response mapping: src/translate.ts (SSE deltas -> StreamChunks).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm-deepseek\\README.md",
+       "line": "3; serialize.ts:1-10",
+       "severity": "The two adapters have structurally different request/response serializers, so any cross-adapter reasoning feature needs two independent implementations plus a seam-level contract."
+      },
+      {
+       "fact": "Reasoning IS a first-class durable content block in the seam: `interface ReasoningBlock { type: 'reasoning'; text: string }` registered in `ContentBlockMap`, and `reasoning-delta` is a StreamChunk variant. There is NO field on ReasoningBlock for signatures, effort, confidence, or provenance — it is a bare text string.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm\\src\\types.ts",
+       "line": "60-62 (ReasoningBlock), 99-104 (ContentBlockMap), 315 (reasoning-delta)",
+       "severity": "Provider thinking-signatures cannot be stored in content — they live only in the separate opaque `replayState`; anything wanting durable reasoning metadata beyond raw text must extend this block type (the file explicitly requires 'adapter, UI, and compaction support' for a new block type)."
+      },
+      {
+       "fact": "DeepSeek reasoning passback IS implemented: `serializeAssistant` joins every `type==='reasoning'` block's text and emits it as `reasoning_content` on the wire for every reasoning-carrying turn (not only tool-call turns). Inbound, `translate.ts:132` reads `delta.reasoning_content` and opens a reasoning block. Text-only — DeepSeek has no signature concept in this code.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm-deepseek\\src\\serialize.ts",
+       "line": "198-231 (serializeAssistant), 229 (reasoning_content emission), 201-203 (join); translate.ts:132-140 (inbound); README.md:96,110,114 ('Reasoning passback rule')",
+       "severity": "For the DeepSeek route, reasoning is ALREADY carried across turns; building a 'thinking preservation' layer there would duplicate existing behaviour."
+      },
+      {
+       "fact": "pi-ai signature-preserving replay IS implemented: `toPiReplayState` projects the response into a versioned `ReplayEnvelope` carrying per-block `thinkingSignature`, `redacted`, and `thoughtSignature` (tool-call thought) plus response-level `api`/`provider`/`model`/`responseId`/`responseModel`/`stopReason`. `replayedAssistant` recombines durable harness `ReasoningBlock.text` with those signatures on a later request; `toPiAssistant` falls back to `foreignAssistant` (which maps reasoning -> `{type:'thinking', thinking: block.text}` with `api:'cf-foreign'`) on any validation failure, emitting an `INVALID_REPLAY_STATE` diagnostic via `onReplayDegrade`.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm-pi-ai\\src\\replay.ts",
+       "line": "16-18 (PiAiReplayBlock), 60-105 (toPiReplayState), 144-171 (foreignAssistant), 174-236 (replayedAssistant), 238-250 (toPiAssistant)",
+       "severity": "This is the single most advanced reasoning-carry mechanism in the repo and the closest thing to the requested 'pattern'. A plan that treats it as absent would rebuild what exists; a plan that treats it as universal would ignore its three hard limits below."
+      },
+      {
+       "fact": "Replay state is scoped to ONE adapter instance: `LlmRuntime.forAdapter()` strips `source.replayState` from any assistant message whose historical `provider` route is not currently owned by the same adapter instance receiving the request. Changing adapter instance, provider, or model therefore degrades that message to foreign provider-neutral conversion (signatures dropped, reasoning TEXT retained).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm\\src\\index.ts",
+       "line": "877-894",
+       "severity": "Provider signatures are NOT portable across model/provider switches — the most common real operation (switching models mid-session) silently drops them. Only the reasoning text survives."
+      },
+      {
+       "fact": "Replay metadata is block-count-coupled: if `envelope.blocks.length !== message.content.length`, or a per-entry type mismatches, `BlockAssembler` discards the WHOLE envelope, and `replayedAssistant` throws `INVALID_REPLAY_STATE` for the whole message. Any block-level edit (prune, truncate, user edit, UI rewrite) to an assistant message invalidates its signature replay.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm\\src\\assembler.ts",
+       "line": "136-146 (aligned pruning), 160-176 (get replayState); replay.ts:207-209, 215-217",
+       "severity": "Any future reasoning-preservation feature that mutates assistant content (e.g. compaction that edits rather than shadows) will silently destroy replay fidelity for that whole message."
+      },
+      {
+       "fact": "There is NO mechanism anywhere in code-fusion that carries reasoning across context compaction. Compaction's summarizer projects its output to text-only via `summaryText()` (`blocks.filter(b => b.type === 'text')`), and the package README states it explicitly: 'Only returned text enters the checkpoint, excluding reasoning and tool calls that would leak private reasoning or create an orphaned call.' A reasoning-only summarizer output is rejected as an error ('summarization produced no text summary content').",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\compaction\\compaction-basic\\src\\summarizer.ts",
+       "line": "168-171 (summary + emptiness check), 217-224 (summaryText text-only filter); README.md:16; tests/compaction-basic.spec.ts:1393",
+       "severity": "THIS IS THE CENTRAL GAP. Reasoning survives across turns but is destroyed the moment its region is compacted. Any 'thinking preservation' work must intercept compaction, not adapters."
+      },
+      {
+       "fact": "The compaction summarizer itself IS shown the reasoning: `buildSummarizationInput` maps each shadowed surface seq through `session.deriveEventMessage()`, which returns the full `assistant/message` including reasoning blocks. So reasoning reaches the summarizer as input context — it is only the OUTPUT that is text-restricted.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\compaction\\compaction-basic\\src\\region.ts",
+       "line": "498-515 (buildSummarizationInput); surface.ts:99-104",
+       "severity": "Reasoning can influence the checkpoint's content indirectly, but never verbatim. Building 'preserve reasoning verbatim' means changing the replacement message, not the summarization request."
+      },
+      {
+       "fact": "History is built as `session.deriveMessages()` (full current surface) on every step; `deriveEventMessage` returns `event.data.message` verbatim for `user/message`, `assistant/message`, `tool/result` — no filtering of reasoning. The agent loop stores the assembled message via `createAssistantMessage({content: assembler.blocks(), source: {provider, model, replayState?}})` appended as `assistant/message` with `surfaceOp:'append'` and `sourceEventSeqs` citing the raw `assistant/chunk` events.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\core\\agent-loop\\src\\agent.ts",
+       "line": "341 (deriveMessages), 392-407 (createAssistantMessage + append); packages/core/session/src/surface.ts:83-107",
+       "severity": "Cross-turn reasoning preservation is IMPLEMENTED end-to-end up to the durable log; do not describe it as missing."
+      },
+      {
+       "fact": "All reasoning is dropped from cross-session snapshots by design: session-reference's projection 'keeps only direct-user user/message, assistant text, and user/message checkpoints' and explicitly excludes 'Shadowed pre-compaction events, tools, reasoning'.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\context\\session-reference\\README.md",
+       "line": "23 (Snapshot semantics)",
+       "severity": "Even where reasoning is durable in the source log, one whole context subsystem strips it — reasoning never transfers between sessions."
+      },
+      {
+       "fact": "Reasoning is excluded from the full-text session index: `blockText()` returns `[]` for `case 'reasoning'`, so reasoning text is never searchable — despite being durably stored in the log.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\session-query\\session-query\\src\\extraction.ts",
+       "line": "70-73",
+       "severity": "Durable-but-unfindable: any 'retrieve prior reasoning' feature built on ctx.sessionQuery will find nothing."
+      },
+      {
+       "fact": "Reasoning effort is per-conversation durable config, not adaptive: `LlmCallConfig.reasoningEffort` is logged in `request/header`, restored for later steps only when it was NOT an adapter default (`adapterDefaults.reasoningEffort !== true`), and may be replaced each step by the `agent/request` waterfall. `LlmRuntime.resolveCallConfig` rejects unsupported explicit effort ids with `UNSUPPORTED_REASONING_EFFORT` before network I/O rather than clamping. There is NO feedback loop that adjusts effort from outcomes.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\core\\agent-loop\\src\\agent.ts",
+       "line": "58, 437-453; packages/llm/llm/src/call-config.ts:18-53; packages/llm/llm/src/index.ts:787-806; docs/subsystems/llm-streaming.md:629",
+       "severity": "Effort selection is static/user-driven; 'learn which effort works' requires a new mechanism."
+      },
+      {
+       "fact": "Reasoning IS priced (it counts toward the token budget that drives compaction): `estimateContent` case 'reasoning' charges `ceil(text.length/4) + 4`. So a reasoning-heavy turn actively triggers compaction, and its own reasoning is what gets destroyed first.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\token-meter\\src\\estimate.ts",
+       "line": "30-33",
+       "severity": "Reasoning both consumes the budget and loses its budget — a self-defeating loop on long reasoning models (the compaction README line 162 also notes 'hidden reasoning tokens can consume' the summarizer's 8192-token cap)."
+      },
+      {
+       "fact": "UI rendering of reasoning is implemented: chat shows a collapsible 'Think' disclosure row (`ReasoningRow`) driven from `AssistantMarkdown`; the Trajectory view builds `thinkingDetail` from reasoning blocks and shows `usage.reasoning` token counts.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\client\\ui-conversation\\src\\client\\chat\\AssistantMarkdown.tsx",
+       "line": "65-66; ReasoningRow.tsx:1-70; ui-trajectory/src/client/layout.ts:689-707; ui-trajectory/src/client/TrajectoryTable.tsx:750-753",
+       "severity": "Human-visible reasoning already exists; only the model-visible path loses it at compaction."
+      },
+      {
+       "fact": "Compaction strategy (IMPLEMENTED): head-anchored range selection that walks the priced surface backwards accumulating tokens until `retainTokens` (default = floor(window * 0.16)), backs off to a tool-pairing-balanced cut, and returns `{start: surfaceNodes[0], end: surfaceNodes[keepFromIdx-1]}` — i.e. compact EVERYTHING older than the retained tail. Pressure threshold default = floor(window * 0.8). Overflow recovery bypasses retention entirely and attempts 'one maximal balanced head reduction'.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\compaction\\compaction-basic\\src\\region.ts",
+       "line": "98-141 (selectCompactableRange); config.ts:14-16 (DEFAULT_THRESHOLD_RATIO 0.8 / DEFAULT_RETAIN_RATIO 0.16); README.md:11-14 (Retention / Overflow recovery)",
+       "severity": "Retained tail = verbatim (reasoning intact); everything else = replaced by one text checkpoint. Reading '0.16 retained' as '16% is preserved' understates it: the older 84% is wholesale replaced, not thinned."
+      },
+      {
+       "fact": "Nothing is permanently destroyed in the durable log: cf-session is an append-only event log ('A Session is the append-only source of truth'), surface `replace` operations only rewrite the model-visible projection and cite `sourceEventSeqs` back to the originals; the only content-rewriting path is the tool-result pruner's single-node `tool/result` rewrite. No delete/truncate/GC/rewrite API exists on Session. Human transcript deliberately uses `isAppendSurfaceEvent` (append-origin events) so replaced ranges remain visible to the user.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\core\\session\\README.md",
+       "line": "3 (append-only source of truth); packages/core/session/src/surface.ts:37-54 (isAppendSurfaceEvent/isReplacementSurfaceEvent); packages/compaction/compaction-tool-result-pruner/src/index.ts:101-117",
+       "severity": "Reasoning is recoverable from the LOG but not from the MODEL VIEW. Distinguish these sharply: durable = preserved; model-visible = lost after compaction."
+      },
+      {
+       "fact": "The loss is nevertheless effectively permanent for the model, because later compactions re-summarize from the *surface* (not the log): `prepareCompaction` builds input from `selection.shadowedSeqs` which are current-surface seqs, and a prior checkpoint has already shadowed them. There is no path that reads the pre-compaction log back into a request.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\compaction\\compaction-basic\\src\\region.ts",
+       "line": "268-290 (prepareCompaction), 498-515 (buildSummarizationInput); surface.ts:83-107",
+       "severity": "After N compactions the reasoning is unrecoverable by any model-visible route. A 'reasoning memory' store would need to be written at append time, not recovered later."
+      },
+      {
+       "fact": "Context eviction outside compaction is limited to tool output: `packages/spill/` replaces oversized tool results with a bounded preview + a locator to session-scoped local files (content kept on disk, model can re-read it). `packages/compaction/compaction-tool-result-pruner/` head/tail-slices only `type==='text'` blocks in `tool/result` nodes and passes non-text blocks (including reasoning) through untouched. Neither touches assistant reasoning.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\spill\\README.md",
+       "line": "1-7; compaction-tool-result-pruner/src/index.ts:61-118 (pruneContent), 76-79 (non-text passthrough), 101-107 (tool/result candidates only)",
+       "severity": "There is NO global truncation/eviction policy — compaction is the only assistant-history shrinker, and it is the reasoning-destructive one."
+      },
+      {
+       "fact": "packages/context/ holds NO reasoning or compaction logic — it is six unrelated context injectors: agent-instructions (AGENTS.md chain injection), file-reference + file-reference-local (@path grammar + local fuzzy index), session-reference (cross-session snapshots, reasoning-excluded), time-context (zoned timestamp), tmux-context (pane layout). None participates in compaction or reasoning retention.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\context\\README.md",
+       "line": "packages/context/*/README.md",
+       "severity": "The task's pairing of 'context package' with 'compaction package' is architecturally wrong: they are independent capability families with no shared code."
+      },
+      {
+       "fact": "World model: code-fusion has NONE. Workspace-wide search for world|worldModel|world_model|world-model|dynamics|transition|simulate finds, for real model semantics, only: transformers-fusion/include/quant/world_model.h (namespace quant::agi; `struct Transition {WorldState state; std::string action; WorldState next_state; float reward; float predicted_reward; float prediction_error;}`; `class WorldModel { WorldModel(Model*, int64_t state_dim=64, int64_t ensemble_size=5); ... float simulate_step(...); std::vector<Tensor> plan(int64_t horizon); ...}`), transformers-fusion/src/agi/world_model.cpp, transformers-fusion/CMakeLists.txt:314, transformers-fusion/include/quant/agi.h:6/362/542-545, transformers-fusion/tests/test_wave7_missing.cpp:31-66, transformers-fusion/tests/test_agi_safety.cpp:129. Every other hit is unrelated (scroll fixtures, cordis lifecycle 'transitions', Landlock 'world-proof', gen-config-catalog's type-resolution `World`, simulation stubs in tests).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\include\\quant\\world_model.h",
+       "line": "93-161 (WorldModelStats/class WorldModel); src/agi/world_model.cpp:60-185; CMakeLists.txt:314",
+       "severity": "The world model exists ONLY in the C++ engine. Treating code-fusion as if it had one — or as if a bridge existed — is wrong: there is no FFI/napi binding anywhere (native/ contains only landlock-run; python/ contains only sdk/sdk-runtime)."
+      },
+      {
+       "fact": "Learning from an environment: ABSENT in the mounted harness. The only environment feedback channel is tool results inside the in-session history (`executeToolCalls` -> `tool/result` -> surface -> next request). Nothing updates weights, prompts, policies, or routing from outcomes. Skill/instruction 'learning' is human-authored files discovered from the filesystem (skill-filesystem, agent-instructions), not learned.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\core\\agent-loop\\src\\agent.ts",
+       "line": "414-421 (executeToolCalls after tool-call blocks); packages/skill/skill-filesystem/README.md; packages/context/agent-instructions/README.md",
+       "severity": "The harness has no learning loop at all — an RL/world-model plan cannot 'extend' anything; every layer (reward signal, state/transition model, durable parameter store, applier) must be created."
+      },
+      {
+       "fact": "The ONLY outcome-driven adaptation in the repo is `@origin-ai/cf-mad` (packages/cf), and it is NOT part of the npm workspace: root `workspaces` is `packages/*/*`, which does not match the single-level `packages/cf`. `node_modules/@origin-ai/cf` is a stale symlink to `/c/Users/thaku/Workspaces/code-fusion/apps/cli`. It appears in NO bundle composition (`grep mad packages/bundle/*/*.yml` => 0) and no `packages/bundle/*/package.json` lists it; its only importers are `packages/cf/.adversarial/t1..t6.ts`.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\package.json",
+       "line": "12-20 (workspaces); packages/cf/package.json (name '@origin-ai/cf-mad'); readlink node_modules/@origin-ai/cf",
+       "severity": "Adaptive routing with outcome feedback EXISTS in source but is dead code — a plan citing it as 'we already learn' would be wrong, and a plan to 'just mount it' is blocked by workspace/config wiring plus the unmounted architecture."
+      },
+      {
+       "fact": "Within packages/cf, the learning primitive is real but partial: `ModelRouter.reportOutcome(modelId, {success, quality, actualLatency})` maintains running averages `successRate`/`qualityScore`/`avgLatency` in an in-memory `performanceCache`, and `calculateRoutingScore` uses `historicalPerf = perf ? perf.successRate * perf.qualityScore : 0.5` in its numerator. `AdaptiveRoutingConfig` declares `explorationRate` and `learningRate` — but `learningRate` has exactly ONE occurrence in the entire repo (its declaration at types.ts:1222) and is never consumed. Nothing persists `performanceCache`.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\cf\\src\\mad\\core\\god-runtime.ts",
+       "line": "2317-2354 (calculateRoutingScore), 2453-2457 (reportOutcome), 2440-2451 (updatePerformanceCache); packages/cf/src/mad/types.ts:1216-1222, 1429-1440 (FinalReport.lessonsLearned: string[])",
+       "severity": "There is no epsilon-greedy/weight-update implementation and no persistence — calling this 'reinforcement learning' would be inaccurate; it is an unmounted in-memory running average."
+      },
+      {
+       "fact": "packages/mad/ is seven separate packages (@origin-ai/cf-discussion-bus, cf-gauntlet, cf-god-runtime, cf-memory-fabric, cf-production-sweep, cf-skill-discovery, cf-verification), each a single 170-452 line `src/index.ts`. Their own headers say 'Minimal typed stubs — full behavior is behind explicit configuration and remains opt-in' (god-runtime) and 'sqlite/vector index stubs' (memory-fabric). None contains learn/reward/weight logic. None is mounted in any bundle.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\mad\\god-runtime\\src\\index.ts",
+       "line": "1-12 (stub declaration); packages/mad/memory-fabric/src/index.ts:1-9; total 1833 lines across all 7",
+       "severity": "Do not count these as an existing memory/world-model layer — they are unmounted stubs with no callers."
+      },
+      {
+       "fact": "Capability-seam pattern a world model would have to follow: `docs/capability-seams.md` tabulates every seam (Service Definition package + provider package + consumer package, ctx key). The LLM seam is `ctx.llm` (seam: packages/llm/llm; providers: llm-deepseek, llm-pi-ai, test-support/llm-replay; consumers: agent-loop, compaction-basic). Compaction is `ctx.compaction` (seam: packages/compaction/compaction; provider: compaction-basic; consumer: command-compact).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\docs\\capability-seams.md",
+       "line": "429 (ctx.llm row); packages/compaction/README.md:5-8",
+       "severity": "A world model is a new capability family, not an extension of context/compaction — following the seam pattern means 3 new packages + a ctx key + bundle mount."
+      },
+      {
+       "fact": "Durable event vocabulary is a closed allowlist: `KNOWN_SESSION_EVENT_TYPES` in packages/core/session/src/known-event-types.ts (68 lines) is exported and validated; adding a 'learned parameter' / 'world-model state' event type requires editing this file plus the SessionEventMap declaration merge (the pattern cf-compaction uses in packages/compaction/compaction/src/types.ts:9-69).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\core\\session\\src\\known-event-types.ts",
+       "line": "1-68; packages/core/session/src/index.ts:35; compaction/src/types.ts:9-69 (the declaration-merge precedent)",
+       "severity": "This is the concrete insertion point for durable learned state — anything persisting across turns must be a session event, and the log is append-only with no update verb, so learned state must be last-write-wins-by-new-event."
+      },
+      {
+       "fact": "Precise exists-vs-missing summary for reasoning preservation: IMPLEMENTED — (a) durable storage of reasoning blocks in the append-only log, (b) verbatim replay of reasoning in every request while un-compacted, (c) DeepSeek `reasoning_content` passback, (d) pi-ai per-block thinking/tool signatures in `replayState`, (e) reasoning effort negotiation + UI. PARTIAL — (f) replay state stripped across adapter instances/providers/models (index.ts:877), (g) whole-envelope discard on any content drift, (h) cross-session snapshots and search index exclude reasoning. ABSENT — (i) reasoning in compaction checkpoints, (j) reasoning indexed for retrieval, (k) any effort/summary/quality feedback loop, (l) any world model or environment learning.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\code-fusion\\packages\\llm\\llm\\src\\index.ts",
+       "line": "877-894 (gaps f); summarizer.ts:217-224 (gap i); session-reference README:23 and extraction.ts:70-73 (gaps h)",
+       "severity": "This is the single most valuable deliverable of the task; missing any row leads to building something that already exists or under-scoping what does not."
+      }
+     ],
+     "notes": "Scope was read-only (Grep/Glob/Read via shell); no files modified. Absolute paths are under c:\\Users\\thaku\\Workspaces\\fusion\\ unless stated.\n\nThree corrections to the task's premises, stated first because they change what should be built:\n1. `thinking-preservation` has zero occurrences workspace-wide — the earlier scan's \"one hit\" in packages/llm/llm-pi-ai/README.md is a false positive (that file discusses *replay state* and *reasoning efforts*).\n2. `arc-agi` / `99.9%` also have zero occurrences. The \"ARC-AGI-3 pattern\" has no referent in this codebase.\n3. packages/context/ and packages/compaction/ are unrelated capability families with no shared code; only compaction handles history shrinkage.\n\nAnswering the seven questions directly:\n\n(1) Search terms. `adapter`/`provider-adapter` resolve to exactly two production adapters plus the seam. `thinking`/`reasoning` resolve to a first-class `ReasoningBlock` in the seam, two adapter serializers, the token meter, the UI, and compaction's *exclusion* of it. `extended_thinking` has zero hits; `reasoningEffort`/`chain-of-thought` hit config/docs/skills only; `scratchpad` has zero hits.\n\n(2) packages/llm/ inventory and per-adapter protocol + reasoning carry — see findings 2-8. Short version: llm-deepseek carries reasoning as verbatim `reasoning_content` text; llm-pi-ai carries reasoning text PLUS per-block thinking/tool signatures in an opaque `replayState`; llm-retry and token-meter are consumers, not adapters; llm-replay (test-support) is test-only.\n\n(3)/(4) Conversation history and reasoning preservation across turns and compaction — see findings 10-19. Across turns: IMPLEMENTED and verbatim (surface -> deriveMessages -> adapter serialization). Across compaction: ABSENT by explicit design (text-only checkpoint). Cross-adapter and cross-session: partial/stripped.\n\n(5) Compaction strategy — see findings 20-23. Head-anchored replace of everything older than a 16%-of-window retained tail; 80%-of-window pressure threshold; summary must shrink or the whole transaction is rolled back. Nothing is deleted from the durable log; everything older than the retained tail is removed from the model-visible surface. The tool-result pruner rewrites single tool-result text in place (the one content-mutating path); spill relocates oversized tool output to files with a locator.\n\n(6) World model — see findings 24-28. Absent from code-fusion; exists only in transformers-fusion C++ (namespace quant::agi, Transition/reward/simulate_step/plan) with no bridge (native/ = landlock-run only; python/ = sdk only). The nearest JS analogue is the unmounted, non-workspace @origin-ai/cf-mad ModelRouter running average; packages/mad/* are 7 unmounted stub packages.\n\n(7) Can the harness learn from an environment? No — it observes tool results into history and nothing more; no weights, prompts, policies, or routing update from outcomes, and nothing persists across sessions except human-authored workspace files. What would have to be added: (a) a reward/success signal source and a place to score it (compaction/token-meter measure cost, ctx.telemetry only records); (b) a world-model capability family following the seam pattern (docs/capability-seams.md:429, packages/compaction/README.md:5-8) — 3 packages + ctx key + a `packages/bundle/base/cordis.patch.yml` mount; (c) durable learned state, which must be a new event type added to packages/core/session/src/known-event-types.ts plus an `SessionEventMap` declaration merge (the precedent is packages/compaction/compaction/src/types.ts:9-69) — note the log is append-only with no update verb, so state is last-write-wins-by-new-event; (d) an applier — the only candidate in-tree is the unmounted MAD ModelRouter, which itself needs workspace wiring (`workspaces` is `packages/*/*`, which does not match `packages/cf`) and persistence; (e) optionally, a native bridge if the C++ quant::agi::WorldModel is to be reused rather than reimplemented.\n\nHighest-value single build, per the task's own framing: intercept `packages/compaction/compaction-basic/src/summarizer.ts:217-224` and `region.ts:462-463` so reasoning is retained alongside the text checkpoint (with the block-count-alignment constraint at `packages/llm/llm/src/assembler.ts:136-146` respected), and/or add reasoning to `ctx.sessionQuery` (`packages/session-query/session-query/src/extraction.ts:70-73`) so durable reasoning becomes retrievable. Neither exists today."
+    }
+   },
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "a0d5fbee660cc66ac",
+    "key": "v2:05d4d1b0c72d67e7374fb0d2f9c6fcb9d98bdf367021e50a5c48d4a97849f482",
+    "payload": {
+     "area": "transformer-fusion transformer/attention/model-layer code inventory (wholesale-replacement scope)",
+     "findings": [
+      {
+       "fact": "PRIMARY ANCHOR — the canonical decoder stack. `Attention::forward` at line 295 is the single traditional self-attention entry (q/k/v/o proj -> reshape to heads -> RoPE -> autograd attention_op or flash_attention_forward or hand-rolled causal softmax -> o_proj). Same file also holds `Embedding::forward` (38), `Linear::forward` (69), `RMSNorm::forward` (119), `RotaryEmbedding::apply` (213), `FFN::forward` (542, SwiGLU gate/up/down), `TransformerBlock::forward` (605), plus DEAD `class AttentionResidual` (629-666, zero call sites tree-wide). 686 lines total. CORE.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\transformer.cpp",
+       "line": "295",
+       "severity": "This IS the code to replace; miss it and Fusion is never the training path."
+      },
+      {
+       "fact": "CORE HEADER — declares TransformerConfig (12), Embedding (45), Linear (54), RMSNorm (65), RotaryEmbedding (74), Attention (96), FFN (124), TransformerBlock (136), and `linear_forward_fp8` (118). Line 116-118 comment: 'attention-variant layer classes REMOVED ... Standard Attention + TransformerBlock remain the only sequence mixers until the Cender/ formula (Phase 19-23, owner-gated) proves parity.' This is the exact seam a Fusion replacement must bind to.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\include\\quant\\transformer.h",
+       "line": "96",
+       "severity": "Interface contract for every downstream file; replace the header and 30+ files break at once."
+      },
+      {
+       "fact": "CORE — `DenseModel` (the training path). `DenseModel::forward` (102) does tok_embeddings -> causal-mask build -> N x `layers[i]->forward` -> final norm -> lm_head. Owns `std::unique_ptr<Embedding> tok_embeddings`, `std::vector<std::unique_ptr<TransformerBlock>> layers`, `RMSNorm norm`, `Linear lm_head`, MTP heads. Also `collect_named_tensors` (137) hardcodes the on-disk schema 'layers.N.attention.q_proj.weight', 'ffn.gate_proj.weight', 'tok_embeddings.weight', 'lm_head.weight'.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\model.cpp",
+       "line": "102",
+       "severity": "The model class every trainer/checkpoint/server path binds to; replacing Attention alone does nothing without this."
+      },
+      {
+       "fact": "SECOND FULL TRANSFORMER — `MoEBlock` (15) = RMSNorm + `Attention attention` + RMSNorm + `moe::SparseMoE` FFN + optional shared ExpertFFN; `MoEModel : public Model` (47) with its own forward (180). NOT a copy of DenseModel: same Attention/RMSNorm/Embedding/Linear primitives reused, but the FFN is swapped for MoE and it carries prefetcher/loss readouts (total_load_balance_loss, total_z_loss). Also defines the 48T/1T/100B scale presets (config_48T 242, config_1T 258, config_100B 274) that are the Qwen-27B/48T targets.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\moe_model.cpp",
+       "line": "15",
+       "severity": "Second independent training topology; if not replaced, MoE training still runs traditional attention."
+      },
+      {
+       "fact": "THIRD and FOURTH FULL TRANSFORMERS, structurally distinct. `HybridBlock`/`HybridModel`: block owns real members `RMSNorm attention_norm; RMSNorm ffn_norm; FFN ffn; Attention attn;` — but the class is defined in the HEADER, not the .cpp. Schedule is all-STD (HybridAttnKind has exactly one enumerator, STD; `build_hybrid_schedule` returns all-STD). `HybridMoeBlock`/`HybridMoeModel : public Model` mirrors it with `moe::SparseMoE` + shared `ExpertFFN`; own Embedding/RMSNorm/lm_head.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\hybrid_block.cpp",
+       "line": "15",
+       "severity": "Two additional full model classes that must be replaced or they silently keep the old mixer alive."
+      },
+      {
+       "fact": "FIFTH FULL TRANSFORMER + SIXTH ATTENTION KIND. 28 MoE variant classes in the header (ExpertFFN 129, SparseMoE 144, SoftMoE 170, HierarchicalMoE 193, MoMoE 217, ExpertChoiceMoE 240, HashMoE 262, CrossLayerMoE 286, MultiModalMoE, MMoE, DeepSeekMoE, BaseLayerMoE, DenseMoE, SharedExpertMoE, ResidualMoE 439, GatingDropoutMoE 458, `AttentionMoE` 520, LowRankMoE, MambaMoE, QuantizedINT8MoE, QuantMoE, Quant1MoE, Q8MoE, Q4MoE). `AttentionMoE::forward` (1093) is a real second attention implementation: q_proj/k_proj -> Q*K -> softmax_with_topk top-k routing (attention used AS the router). 25 `::forward` defs in the .cpp — the largest single block of model-layer code in the tree (1382 lines).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\moe_variants.cpp",
+       "line": "1093",
+       "severity": "A whole family of alternative mixers/routers outside src/model/transformer.cpp; replacing only the anchor leaves all 28."
+      },
+      {
+       "fact": "SHARED MoE PRIMITIVES used by every MoE model: `ExpertFFN::forward` (78, the per-expert SwiGLU MLP), `softmax_with_topk` (98, the gating softmax), `moe_dispatch_batched` (214, routing/combine), `create_experts` (202), `create_moe_variant` (446). Also exports `prefetch_threshold` / `should_prefetch_all_experts` (11-15).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\moe_core.cpp",
+       "line": "78",
+       "severity": "Gating + expert MLP core; every MoE variant and MoEModel::forward depends on it."
+      },
+      {
+       "fact": "MoE routing/parallel support, 1414 lines, 25 unchecked `import_weights` impls (bug-census hardening note at line 15). Defines `SwitchV2Router` (declared in moe_enhance.h:53), `CapacityAwareRouter` (1399), `RedistributionPlan` (1465), `LoadBalanceMetrics` (1345), `DynamicExpertPool`. Router/gating logic that routes on the traditional MoE contract.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\moe_advanced_support.cpp",
+       "line": "1399",
+       "severity": "Router/gating swap surface; overlook it and Fusion routing coexists with 3 dead routers."
+      },
+      {
+       "fact": "Transformers and attention INSIDE the API surface: `CrossAttentionBlock::forward_self_attn` (414) and `CrossAttentionBlock::forward` (422). Full self-attention (Q/K/V in one clean function) plus cross-attention. Declares in `CrossAttentionBlock` (1382) with GatedFusionBlock (GatedFusionConfig 5).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\multimodal\\multimodal_cross_attn.cpp",
+       "line": "414",
+       "severity": "Real attention past the model dir; the self-attn variant is a laundering path for the old mixer in multimodal training."
+      },
+      {
+       "fact": "Transformers in the projective head: `QueryProjector` (93) owns `std::vector<Tensor> wq_, wk_, wv_, wo_` (one per attention layer) and `forward` (126). Config has num_heads, cross_layers; and `queries_` — this is a cross-attn/Q-Former head, not a projection MLP.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\multimodal\\dense\\projection.cpp",
+       "line": "126",
+       "severity": "Named 'projection' but holds a full lean Q/K/V/O attention head; silent replacement gap."
+      },
+      {
+       "fact": "Transformer ENCODER in vision: `PatchEmbedder::forward` (198), `softmax_rows` (55), `layernorm` (36), `VisionEncoder::forward_features` (296) / `forward` (317) with `blocks_` (ViTBlockTensors: wq/wk/wv/wo/g1/b1/...). A 12-layer ViT by default (num_layers = 12, num_heads = 12).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\multimodal\\dense\\vision.cpp",
+       "line": "317",
+       "severity": "Independent vision transformer; a Fusion text replacement leaves a traditional ViT feeding it."
+      },
+      {
+       "fact": "DEFINITELY SECOND NON-MoE INFERENCE TRANSFORMER: `VisionTransformer::forward` (160) / `PatchEmbedding::forward` (48) / `AudioTransformer::forward` (299, spectrogram side) / `Conv1DExtractor::forward` (247) / `MultimodalCrossAttention::forward` (926). First 3 are named-transformer classes with their own softmax_core (line 20).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\multimodal\\multimodal_cross_attn.cpp",
+       "line": "160",
+       "severity": "Distinct second implementation of the encoder stack; two ViT implementations now exist (this and engines/dense/vision.cpp)."
+      },
+      {
+       "fact": "THIRD non-MoE tall stack with its own softmax: `CrossModalAttention::forward` (20), `Perceiver::forward` (1061 — has learnable query tokens 'queries', i.e. a latent/attention bottleneck), `VisionMoE` (1111), `AudioMoE` (1144), `VisionTextMoE` (1178), `AudioTextMoE` (1231), `AllModalityMoE` (1282). Declares in multimodal.h alongside MultimodalFusion (278) and ModalityProjection (270ish).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\multimodal\\multimodal.cpp",
+       "line": "1061",
+       "severity": "Third softmax + fourth MoE family living outside src/model."
+      },
+      {
+       "fact": "CORE — training-loop-level muxer that must be rewired: `MoEBlock::MoMOutput ModalityExpertFFN` (289), `MoMBlock::forward` (363), `MoMMoE::forward` (456), `TopKRouter::forward` (35 — gate_weight_ x, math::softmax, Top-K; RouterOutput at mommoe_block.h:70), `CrossModalAttention::forward` (219). This is the router+gating+attention cluster that any Fusion router replacement directly collides with.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\mommoe_block.cpp",
+       "line": "35",
+       "severity": "Router/gate + attention are fused into one file; partial replacement corrupts routing semantics."
+      },
+      {
+       "fact": "DEAD CODE inside the paper trail: `class AttentionResidual` declared at 629, defined 638, `forward` 641 — a gated blend `out = cur*(1-sigmoid) + earlier*sigmoid`, concat+Linear. ZERO call sites outside its own definition (verified with tree-wide grep). Genuinely dead, exactly as promised. Retired names are documented in the comment block at 669-685 (LatentKVAttention, GatedDeltaAttention, TransFormersFusionDeltaAttention, plus a retired transformer.cpp-local MultiTokenPredictionHead). This is the one file in the tree where an ATTENTION-DERIVED mixer already existed and was removed.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\transformer.cpp",
+       "line": "629",
+       "severity": "Low, but it is the proof-of-prior-fusion precedent; the retired-name comment (669-685) names three prior attention variants and should be re-read before designing the replacement."
+      },
+      {
+       "fact": "CORE — `KVCache` (16) plus `PagedKVCacheBase` (87) with disk paging, `KVCacheQuantizer` (telemetry.h:239), and quantized variant (kv_cache_quant4.cpp, 419 lines). 1282 lines of cache in kv_cache.cpp. Every Attention::forward call takes `KVCache&`; a fused/latent mixer changes the cache contract.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\include\\quant\\kv_cache.h",
+       "line": "16",
+       "severity": "Cache is the second half of the attention contract; replacing the mixer without it breaks paged/speculative paths."
+      },
+      {
+       "fact": "CORE — `FlashAttention::forward` (227) wrapping `flash_attention_forward` (38), with online-softmax rescaling, causal masking, dropout rescale. Also `include/quant/flash_attention.h` (13 FlashAttentionConfig, 20 FlashAttention). Called directly from Attention::forward line 393 for any S_full > 64.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\kernel\\flash_attention.cpp",
+       "line": "227",
+       "severity": "The dense-attention kernel the mixer dispatches to; must be replaced or bypassed."
+      },
+      {
+       "fact": "CORE (autograd graph side) — `ScaledDotProductAttentionFunction::forward` (17) is the graph-building attention that runs during TRAINING (when AutogradEngine::enabled()). Also `RMSNormFunction` (341), `RotaryFunction` (387), `EmbeddingFunction` (489), `SiLUFunction` (303), `MatMulFunction` (227), `CrossEntropyFunction` (363), `BiasAddFunction` (454) — 13 forward impls total. Declarations at autograd_functions.h:140 (RMSNormFunction), 161 (RotaryFunction), 189 (EmbeddingFunction). Entry points `AutogradEngine::attention_op` (autograd_engine.cpp:206), `rotary_op` (89), `embedding_op` (94), `flatten_attention_op` (95/249).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\autograd_functions.cpp",
+       "line": "17",
+       "severity": "This is the TRAINING attention (Attention::forward routes here when enabled); replacing src/model/transformer.cpp without this leaves the gradient path traditional."
+      },
+      {
+       "fact": "CORE — `MemoryEfficientAttention` (class at zero_optimizer.h:274, MEAConfig 277, block_size_q=64). `forward` (179) is a full flash-attention-with-online-softmax reimplementation (block over KV, row_max/row_sum, AVX2+FMA inner loop at 160-186) living inside the zero-optimizer file. Explicitly 'FlashAttention with O(L) memory for 4M context' (zero_optimizer.h:268).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\trainer\\zero_optimizer_mem.cpp",
+       "line": "179",
+       "severity": "A 5th independent attention kernel hiding under an optimizer filename; the long-context training path uses it."
+      },
+      {
+       "fact": "CORE — `PagedAttention::forward` (68): block-table-indexed attention with its own online softmax (`row_max`, `row_sum`, `exp_diff` at 96-105), plus `alloc_block` (40) / `free_block`. Declares `class PagedAttention` with `struct Block {Tensor k, v;}` at inference_opt.h:17. ModelShard (also in inference_opt.h:162) is the layer-sliced model wrapper: `ModelShard::forward` (137 of inference_lowprec.cpp) rebuilds the causal mask and loops `dm->layers[l]->forward(...)` directly — a second copy of DenseModel::forward's loop.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\inference\\inference_paging.cpp",
+       "line": "68",
+       "severity": "Two more attention implementations plus a duplicated layer loop; both bypass any replacement made in Attention::forward."
+      },
+      {
+       "fact": "CORE — attention kernels in the GPU compute layer, one per vendor file: `GPUComputeFull::attention_fwd` (1145) and `attention_cross` (1171) in gpu_compute_full.cpp; `GPUComputeCuda::attention` (gpu_compute_cuda.cpp:967); `GpuComputeHip::launch_attention` + `cpu_attention` fallback (gpu_compute_hip.cpp:711 / 324); `VulkanBackend::flash_attention` (gpu_compute_vulkan.cpp:1578) + `cpu_flash_attention` (1398) + `vk_flash_attention` (1663); `IGPUZeroCopyTrainer::forward_attention` (igpu_zero_copy.cpp:1216) + `forward_attention` (1127) with causal option. Declarations: gpu_compute.h:130 (flash_attention), 161 (vk_flash_attention), gpu_compute_cuda.h:41, gpu_compute_hip.h:35, igpu_zero_copy.h:52. Also a HLSL `g_attn_fwd_cs` compute shader embedded at gpu_compute_full.cpp:318.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\backend\\gpu_compute_full.cpp",
+       "line": "1145",
+       "severity": "Six vendor attention kernels in 5 files; a CPU-only replacement silently falls off the GPU path."
+      },
+      {
+       "fact": "CORE — `RankAdapterEngine::block_forward` (625) is a FULL COPY of TransformerBlock's residual wiring: handles `use_parallel_residual` (GPT-NeoX path), calls `l.attention_norm.forward`, `l.attention.forward(...)`, then `ffn_forward(layer_idx, ...)`. Private `ffn_forward` declared at fine_tuning.h:219 alongside `block_forward` (216). Rebuilt inside fine-tuning rather than reused.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\trainer\\fine_tuning.cpp",
+       "line": "625",
+       "severity": "A sixth copy of the block forward; fine-tuning would keep the old mixer after a model-level swap."
+      },
+      {
+       "fact": "CORE — `FSDPBlock::forward` (622) wraps `block_->forward(x, positions, mask, cache, layer_idx)` where `block_` is a `TransformerBlock*` (per fsdp.cpp:600-620 context). `gather_and_install` (600) and `Snapshot` paths enumerate params by NAME: 'q_proj_w','k_proj_w','v_proj_w','o_proj_w','gate_proj_w','up_proj_w','down_proj_w' (lines 91-101, 171-174).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\trainer\\fsdp.cpp",
+       "line": "622",
+       "severity": "Distributed sharding is bound to TransformerBlock* AND the traditional parameter names; a rename breaks FSDP silently."
+      },
+      {
+       "fact": "CORE — `ColumnParallelLinear::forward` (349) and `RowParallelLinear::forward` (404) plus `tensor_parallel_shard` which splits `attn.q_proj.weight`, `attn.k_proj.weight`, `attn.v_proj.weight` column-wise (lines 290-298) and o_proj/down_proj row-wise, and infers `tmp.ffn_hidden_size = block.ffn.gate_proj.weight.numel() / hidden_size` (line 233).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\trainer\\tensor_parallelism.cpp",
+       "line": "349",
+       "severity": "TP sharding is hardcoded to q/k/v/o + gate/up/down; the Fusion mixer has different tensors and will not shard."
+      },
+      {
+       "fact": "CORE — the parameter-enumeration site that defines what 'a model' is for training: `params.push_back(&dm->tok_embeddings->weight)` (33), then per layer `attention.q_proj/k_proj/v_proj/o_proj .weight/.bias` (36-43) and `ffn.gate_proj` (45) etc. Every optimizer, Zero, EMA and grad-clip gets its tensor list from here. Same enumeration duplicated in moe_trainer.cpp:101-114 (tok_embeddings then l.attention.q_proj...), trainer_rl.cpp:523-549 (mm->tok_embeddings, l.attention.q_proj.../lm_head), fsdp.cpp:91-101, tensor_parallelism.cpp:290-298, ddp.cpp, pipeline.cpp, zero_optimizer_core.cpp:54, finetune.cpp (4 sites), distributed.cpp.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\trainer\\trainer_core.cpp",
+       "line": "36",
+       "severity": "Highest-fan-out coupling: 14 files re-list the traditional layer tensors by hand. The replacement must supply an equivalent named-parameter surface or every trainer silently trains a subset."
+      },
+      {
+       "fact": "SUPPORTING but schema-critical — on-disk weight names are hardcoded: 'attention.q_proj.weight', 'attention.k_proj.weight', 'attention.v_proj.weight', 'attention.o_proj.weight', 'ffn.gate_proj.weight', 'ffn.up_proj.weight', 'ffn.down_proj.weight', 'attention_norm.weight', 'ffn_norm.weight', 'norm.weight', 'tok_embeddings.weight', 'lm_head.weight', 'mtp_heads.N.weight'. 13 files reference this layout (model.cpp, moe_model.cpp, native_quant_moe.cpp, hybrid_block.cpp, ddp.cpp, distributed.cpp, fsdp.cpp, moe_trainer.cpp, pipeline.cpp, tensor_parallelism.cpp, trainer_core.cpp, trainer_rl.cpp, zero_optimizer_core.cpp).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\model.cpp",
+       "line": "137",
+       "severity": "Checkpoint compat: rename the layout and every existing .quant file becomes unloadable — needs an explicit migration decision."
+      },
+      {
+       "fact": "SUPPORTING (must stay as-is) — the stable primitives a Fusion replacement must keep building on: `include/quant/tensor.h` (Tensor/Shape/DType), `quant/types.h`, `quant/math.h` (gemm/softmax/rope primitives), `quant/autograd.h` (AutogradEngine op surface), `quant/kernel.h`, `quant/simd_math.h`, `quant/quant_format.h` / `block_codec.h` (quantization), `quant/streamer`/`dataset`/`tokenizer.h`/`bpe_tokenizer.h`/`qwen35_tokenizer.h`, all `src/core/*` (tensor, memory, random, dataset, metrics, telemetry, log_writer, parquet_streamer, data_gen, tensor_view), `src/math/*` (6 files), `src/codec/*` (15), `src/kernel/*` quant GEMMs (kernel_gemm, kernel_q3/q6/q12/q24/quant4/quant8, int8_quant, kernel_tl, kernel_production), `src/tokenizer/*`, `src/server/*`, `src/agi/*`, `src/backend/backend.cpp` + gpu_compute.cpp dispatch (but NOT the per-vendor attention kernels listed above).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\include\\quant\\tensor.h",
+       "line": "1",
+       "severity": "Replacing these would rebuild the world; the task is to swap the layer stack, not the math/kernel/IO substrate."
+      },
+      {
+       "fact": "DEAD / TEST-ONLY — `src/model/moe_quantized_test_core.cpp` (629 lines) and `src/model/moe_quantized_test_extra.cpp` (469 lines) sit INSIDE src/model but contain only test functions (`test_moe_variant_routing`, `test_moe_variant_serialization`) with ZERO call sites anywhere in the tree (verified by grep). They are compiled into CMake target `quant_moe_variants` and duplicate the variant routing/serialization logic that moe_variants.cpp already exercises.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\moe_quantized_test_core.cpp",
+       "line": "1",
+       "severity": "Dead weight in the replacement blast radius; must not be mistaken for live model code when rewriting src/model."
+      },
+      {
+       "fact": "DEAD / VESTIGIAL — rehearsal/placement scaffolding with no live mixer: `HybridSchedule`/`HybridAttnKind` has exactly ONE enumerator (STD; hybrid_scheduler.h:9) and `build_hybrid_schedule` unconditionally emits all-STD; `hybrid_expert.cpp` (33 lines) is pure expert->node round-robin assignment (assign_layer/assign_schedule), no forward. `HybridBlock` never dispatches to anything but `attn`.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\include\\quant\\hybrid_scheduler.h",
+       "line": "9",
+       "severity": "Easy to mistake for a dispatch seam; it is not one. Do not build Fusion dispatch on it."
+      },
+      {
+       "fact": "UNTRACKED — the git status is a critical build fact: 80 files under engines/trainer are UNTRACKED (70 dense+multimodal, plus tests). Tracked in engines/trainer are only 30: dense{continual,dataloader,eval,finetune,loss,losses,opt_factory,optim,parallel,precision,qat,schedulers,unified}(.h/.cpp), moe{dispatch,moe}(.h/.cpp), multimodal/{dense,moe}/modalities.{h,cpp}. The dense/ tree the task calls 'untracked 80+' is real, compiles (all 35 dense .cpp are listed in CMakeLists.txt target quant_dense, verified: zero unlisted), and links into quant_dense.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\CMakeLists.txt",
+       "line": "188",
+       "severity": "A wholesale replacement touching engines/ has 80 uncommitted files at risk — commit or stash first."
+      },
+      {
+       "fact": "VERDICT on engines/trainer/dense (70 files, transformers/moe/moe.cpp:16-30): TRAINER-ONLY, ~four exceptions. It contains NO transformer/attention implementation. `DenseTrainer` (trainer.h:53) takes a `Model*` and drives `Trainer`/`UnifiedTrainer` — data loops, LR schedules, eval, checkpoints, EMA, QAT, LoRA, pruning, SWA, profiling, callbacks, curriculum, augmentation, distill, RL align, grad utils, hooks, flops. Keyword density confirms it: of 70 files, 52 have ZERO attention/transformer hits; the max is 11 (init.cpp, and those are 'linear'/'nonlinearity' gain names).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\dense\\trainer.h",
+       "line": "53",
+       "severity": "Scope control: do not 'replace' 70 files. Only the 4 exceptions below."
+      },
+      {
+       "fact": "EXCEPTION 1 in dense — `MTPHead` (class mtp.h:18, `std::vector<std::unique_ptr<Linear>> heads_`) and `MTPHead::forward` (mtp.cpp:16) — a real transformer-shaped head stack over `TransformerConfig`; the multi-token-prediction training objective. EXCEPTION 2 — `LoRALinear`/`lora_forward` (lora.h:17 / lora.cpp:67) is a Linear-shaped layer usable as a drop-in on any projection. EXCEPTION 3 — `init.cpp` (calculate_gain / kaiming_uniform_ / kaiming_normal_ / xavier) is weight-init math for the layer stack. EXCEPTION 4 — `DistillationLoss` (distill.h:15) and `MixedPrecision` (precision.h:21, also qat.h:46) operate on model activations and will need to see Fusion tensors.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\dense\\mtp.h",
+       "line": "18",
+       "severity": "These four are the only dense/ files that must change with a model swap; the other 66 are indifferent."
+      },
+      {
+       "fact": "engines/trainer/moe (16 files) role: trainer + ENGINE-LEVEL LAYER IMPLEMENTATIONS. `MoETrainerEngine` (moe.h:26) wraps `MoETrainer` over `MoEModel*`; `MoEPipeline` (moe.h:93) is the epoch loop. But `moe/layers.h` is NOT just a wrapper: it declares and DEFINES its own layer stack — `class ExpertLayer` (17, three `Tensor w1_, w2_, w3_` with `ExpertLayer::forward` at layers.cpp:40) and `class MoELayer` (44) with its OWN router `Tensor router_` and `MoELayer::forward` (layers.cpp:109). These are a SECOND expert/gating implementation that does not use `moe::ExpertFFN`/`SparseMoE` from src/model.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\moe\\layers.h",
+       "line": "44",
+       "severity": "Duplicate layer+router implementation; a replacement that only edits src/model leaves this one intact."
+      },
+      {
+       "fact": "engines/trainer/moe remaining files: `routers.{h,cpp}` (RouterKind 10, RouteConfig 19, RouteOutput 30, `router_probs` 46 — third router implementation with its own `softmax_row` at routers.cpp:11); `aux_losses.{h,cpp}` (`load_balance_loss` at aux_losses.cpp:10, z-loss); `dispatch.{h,cpp}` (`plan_dispatch` at dispatch.cpp:9, `ExpertInputs` 30); `expert_parallel.{h,cpp}` (137 lines, `EPLayout::shard_of_expert` 9, `build_ep_layout` 19 — FOURTH expert-shard implementation, distinct from src/model/expert_parallel.cpp's 1520 lines); `moe_eval.{h,cpp}`; `moe_pipeline.{h,cpp}`. `engines/trainer/moe/moe.h:17` also carries `MoEStats`.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\moe\\routers.cpp",
+       "line": "11",
+       "severity": "Fourth router/gating family; replacement must account for it or gating semantics diverge between engines and src."
+      },
+      {
+       "fact": "engines/trainer/multimodal/dense (16 files) role: mixes BOTH. Trainer wrappers: modalities.{h,cpp} (JointTrainer over JointMultimodalModel, Modality enum 27 kinds), codecs, cross_modal. Real model layers: `Projection` = `QueryProjector` with wq_/wk_/wv_/wo_ + cross_layers (projection.h:48 ff.), `VisionEncoder`/`PatchEmbedder`/`ViTBlockTensors` (vision.h:31-55, softmax_rows 55, layernorm 36), `VideoEncoder::forward` (video.cpp:189), `AudioFrameEncoder::forward` (audio.cpp:160), `GatedFusionBlock::forward` (fusion_layers.cpp:48), `CrossAttentionBlock::forward` (fusion_layers.cpp:85, named in fusion_layers.h:33 CrossAttentionBlock).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\multimodal\\dense\\fusion_layers.h",
+       "line": "33",
+       "severity": "Seven real layer implementations; only the 3 trainer-wrapper files are safe to leave alone."
+      },
+      {
+       "fact": "engines/trainer/multimodal/moe (8 files, all 8 match the keyword sweep) role: FULL MoE + routing + fusion stack. `mm_router.{h,cpp}` — `route_multimodal` (mm_router.h:41), `MMExpertSlot` (31), `MMRouteOutput` (35), `global_expert_index` (43), with its own `router_temperature` and load-balance/z-loss coefs; `mm_experts.{h,cpp}` — `ModalityExpert` (mm_experts.h:21), `ModalityExpert::forward` (mm_experts.cpp:111), `ExpertHandoff::forward` (158, `ForwardOut` 45); `mm_fusion.{h,cpp}` — `ModalityFusion` (mm_fusion.h:19), `ModalityFusion::forward` (mm_fusion.cpp:64); plus `modalities.{h,cpp}` (`MoEModalityStats` 13).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\trainer\\multimodal\\moe\\mm_router.h",
+       "line": "41",
+       "severity": "Second multimodal router + second expert pool; no test covers it (only aux_losses.h is included by tests)."
+      },
+      {
+       "fact": "engines/inference (3 files) and engines/quant (4 files): engines/inference is a thin DRIVER — `InferenceEngine` (inference.h:29) takes `Model*` and calls `generator_->generate(...)`, and inference.cpp:90 constructs `std::make_unique<DenseModel>(model_cfg)` after reading config fields (line 53 memcpy of num_layers). engines/quant is quantize/codec only: ZERO transformer hits. Both are SUPPORTING except inference.cpp:90 which hardcodes DenseModel.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\engines\\inference\\inference.cpp",
+       "line": "90",
+       "severity": "One hardcoded DenseModel construction in the engine; must be repointed for a Fusion model class."
+      },
+      {
+       "fact": "MULTIPLE-IMPLEMENTATIONS VERDICT: there are SIX+ distinct transformer/attention implementations, not one. (1) src/model/transformer.cpp standard stack; (2) MoEModel/MoEBlock with Attention + SparseMoE FFN; (3) HybridModel/HybridBlock (own members, header-defined); (4) HybridMoeModel/HybridMoeBlock; (5) src/multimodal/multimodal_cross_attn.cpp VisionTransformer/AudioTransformer/CrossAttentionBlock (own softmax); (6) engines/trainer/multimodal/dense/vision.cpp VisionEncoder ViT (own softmax + layernorm); (7) src/multimodal/multimodal.cpp CrossModalAttention/Perceiver (own softmax); (8) engines/trainer/moe/layers.cpp ExpertLayer/MoELayer (own router). They are NOT copies: each has a different parameter set, different config types and different routing. The only byte-level duplication is the transformers.js comparison between finetune.cpp and fine_tuning.cpp (two different FineTuner and RankAdapterEngine, 194 vs 1215 lines, distinct APIs).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\model\\transformer.cpp",
+       "line": "295",
+       "severity": "Replacement scope is 6-8 coordinate codebases; 'one anchor, one fix' is a false mental model and would leave 5-7 traditional stacks training."
+      },
+      {
+       "fact": "FOUR independent attention KERNEL implementations beyond the layer: (a) src/kernel/flash_attention.cpp:227 FlashAttention (block online-softmax); (b) src/trainer/zero_optimizer_mem.cpp:179 MemoryEfficientAttention (5th, AVX2); (c) src/inference/inference_paging.cpp:68 PagedAttention (block-table); (d) six GPU vendor kernels in src/backend/{gpu_compute_full,gpu_compute_cuda,gpu_compute_hip,gpu_compute_vulkan,igpu_zero_copy}.cpp. Plus the autograd-graph one at autograd_functions.cpp:17. All seven must be considered when swapping the mixer.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\kernel\\flash_attention.cpp",
+       "line": "227",
+       "severity": "Dispatching attention from 3 places in Attention::forward (autograd / flash / hand-rolled) means a partial replacement leaves the old kernel reachable from the same call site."
+      },
+      {
+       "fact": "COUNTS BY DIRECTORY — match/decl files (keywords) out of total .cpp/.h: src/model 21/22; src/inference 8/9; src/multimodal 3/3; src/trainer 18/27; src/kernel 1/11; src/codec 4/15; src/backend 18/20; src/math 5/6; src/server 2/6; src/agi 2/9; src/adapters 7/32; src/core 2/13; src/tokenizer 1/4; include/quant 64/129; engines/trainer/dense 10/70; engines/trainer/moe 16/16; engines/trainer/multimodal/dense 8/16; engines/trainer/multimodal/moe 8/8; engines/inference 2/3; engines/quant 0/4. Tree totals: src/ 179 cpp/h files, include/quant 129 headers (132 with detail/), engines/ 117+ files, 428 total in src+include+engines.",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src",
+       "line": "1",
+       "severity": "Sizing: ~221 files mention the keywords, but only ~45 hold real model-layer definitions — the rest are consumers."
+      },
+      {
+       "fact": "COUNTS BY CATEGORY (definition-bearing files). CORE (~45): src/model/{transformer,model,moe_model,moe_variants,moe_core,moe_advanced_support,moe_enhance,mommoe_block,native_quant_moe,hybrid_block,hybrid_moe_model,kv_cache,kv_cache_quant4,expert_parallel,expert_prefetch,autograd_functions,autograd_engine}.cpp(17) + include/quant/{transformer,model,kv_cache,kv_cache_quant4,flash_attention,moe_model,moe_variants,moe_enhance,mommoe_block,native_quant_moe,hybrid_block,hybrid_moe_model,autograd_functions,embeddings,zero_optimizer,inference_opt,tensor_parallelism,fsdp}.h(18) + src/kernel/flash_attention.cpp + src/inference/{inference_paging,inference_lowprec,inference_kv,inference_opt}.cpp + src/multimodal/{multimodal_cross_attn,multimodal,multimodal_fusion}.cpp + src/trainer/{zero_optimizer_mem,fsdp,fine_tuning,tensor_parallelism,trainer_core,trainer_rl,moe_trainer,pipeline,distributed,ddp,zero_optimizer_core}.cpp + engines multiplication. SUPPORTING (~120): core/math/kernel/codec/tokenizer/server/agi + trainer scaffolding + engines/dense modules. DEAD (~5): transformer.cpp:629 AttentionResidual, src/model/moe_quantized_test_{core,extra}.cpp, hybrid_scheduler/hybrid_expert vestiges, engines/trainer/moe/layers+dispatch (only reachable from tests).",
+       "path": "c:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\include\\quant\\transformer.h",
+       "line": "1",
+       "severity": "The 45 CORE files are the true replacement target; treating the 120 SUPPORTING files as in-scope would triple the work and break quant/IO."
+      }
+     ],
+     "notes": "Method: Glob/Grep/Bash only, no Read on large files; keyword sweeps on attention|transformerblock|transformerconfig|rmsnorm|softmax|kv_?cache|flashattn|lm_head|ffn|moe|router|expert|gating|projector|layernorm|linear|embedding|positional|rope|rotary|qkv|causal|unembed|cross.?attn plus explicit class/struct-declaration greps and ::forward/::apply/::route definition greps. All call-site claims verified by tree-wide grep (e.g. AttentionResidual has exactly 6 hits, all its own declaration/definition/comment; moe_quantized_test_*.cpp have zero external callers).\n\nKey structural facts the parent needs before planning the replacement:\n1. There is no single transformer to replace. There are 6-8 coordinate implementations across src/model, src/multimodal, src/inference and engines/, no two of which are copies. The anchor src/model/transformer.cpp:295 Attention::forward is the most important one but covers only the DenseModel training path.\n2. The two highest-fan-out couplings are NOT in transformer.cpp: (a) 14 files re-enumerate the traditional layer tensors by hand for optimizers/FSDP/TP/Zero (trainer_core.cpp:36, moe_trainer.cpp:104, trainer_rl.cpp:526, fsdp.cpp:91, tensor_parallelism.cpp:290, ddp.cpp, pipeline.cpp, distributed.cpp, etc.); (b) 13 files hardcode the on-disk weight-name schema (layers.N.attention.q_proj.weight etc). Both need a deliberate interface decision before any code moves, or the replacement trains a silent subset and cannot load checkpoints.\n3. Training vs inference take different attention code: Attention::forward branches on AutogradEngine::enabled() into autograd_functions.cpp:17 ScaledDotProductAttentionFunction (training, graph) versus flash_attention_forward / a hand-rolled causal softmax (inference). Replacing one branch only is a classic trap.\n4. engines/trainer/dense is trainer-only (52 of 70 files have zero transformer hits; max is 11 and those hits are 'linear'/'nonlinearity' gain strings in init.cpp). Only 4 dense files are in scope: mtp.{h,cpp}, lora.{h,cpp}, init.cpp, and precision/distill consumers. The other 66 are indifferent to the model swap.\n5. engines/trainer/moe and engines/trainer/multimodal/moe ARE in scope at the layer level (layers.h MoELayer has its own router; mm_router.h is a second multimodal router; mm_experts.h a second expert pool), not merely trainer wrappers.\n6. Build reality: all 35 engines/trainer/dense .cpp and all engines/trainer/{moe,multimodal} .cpp ARE listed in CMakeLists.txt (verified zero unlisted), so the untracked tree is genuinely built, not dormant. But 80 files under engines/trainer are untracked in git and 10 files are modified — commit before a wholesale rewrite.\n7. Prior art to read before designing: the retired-name block at src/model/transformer.cpp:669-685 names three previously-removed attention variants (LatentKVAttention, GatedDeltaAttention, TransFormersFusionDeltaAttention) plus a retired transformer.cpp-local MultiTokenPredictionHead, and transformer.h:116-118 explicitly says the Cender/ formula (Phase 19-23, owner-gated) is the intended replacement and standard Attention remains the sole mixer until it proves parity. That comment is the project's own statement of the replacement contract."
+    }
+   }
+  ],
+  "failures": [],
+  "agents": [],
+  "agentCount": 0,
+  "withPayload": 0
+ },
+ "transformer-files": {
+  "label": "transformer-files",
+  "phases": [
+   "Explore"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a0d5fbee660cc66ac",
+    "phase": "Explore",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "I have a complete inventory. Reporting now."
+   },
+   {
+    "agentId": "ae9bea288dc406143",
+    "phase": "Explore",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "Now let me use Grep for the transformer/attention patterns across the whole codebase."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "neurons": {
+  "label": "neurons",
+  "phases": [
+   "Explore"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a8e9c1137bb5a40a0",
+    "phase": "Explore",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "Only 1 hit workspace-wide seems suspicious. Let me verify with a control search and per-directory searches."
+   },
+   {
+    "agentId": "adb4554d5751639e0",
+    "phase": "Explore",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "Let me retry with properly escaped paths."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "adapter-context": {
+  "label": "adapter-context",
+  "phases": [
+   "Explore"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a3217bb4ebfbcbd95",
+    "phase": "Explore",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": false,
+    "payload": null
+   },
+   {
+    "agentId": "aa44839bc1be6c756",
+    "phase": "Explore",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "Plan mode noted — my task is read-only exploration. Let me dig into both areas."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 1
+ }
+}

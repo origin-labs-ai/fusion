@@ -1,0 +1,1282 @@
+{
+ "note": "reconstructed from journal: votes + finder results; runtime totals were confirmed=62 refuted=24 incomplete=28",
+ "confirmed": [
+  {
+   "sev": "critical",
+   "title": "addToHot() hard-hangs the process once the HOT layer reaches capacity",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/utils/advanced-memory.ts",
+   "line": 427,
+   "category": "correctness",
+   "detail": "addToHot() evicts in a synchronous while-loop, but evictFromHot() only removes the id from the LRU order (hotAccessOrder.shift()) — it does NOT remove it from this.hotContext. Removal from hotContext happens only inside demoteToWarm(), and that is gated behind `await this.storeInWarm(...)`, so it always resolves on a later microtask. The while-loop never yields to the microtask queue, so hotContext.size never decreases during the loop. After hotAccessOrder is drained, evictFromHot() returns false and does nothing, leaving `this.hotContext.size >= this.config.maxHotSize` permanently true. Result: an infinite synchronous spin — the event loop is starved and the process hangs with 100% CPU. Reproducible with exactly maxHotSize (default 100) distinct keys. Bonus corruption: demoteToWarm() calls getFromHot(hotId), which calls updateLRU(id) and re-pushes the just-evicted id to the tail of the LRU order before finally removing it, so even a non-hanging path would reorder LRU incorrectly.",
+   "found_by": "cf-orchestration",
+   "upheld": 5
+  },
+  {
+   "sev": "critical",
+   "title": "VerificationEngine decides pass/fail with Math.random() — the whole verification gate is a coin flip",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 3679,
+   "category": "correctness",
+   "detail": "Every registered check (micro-syntax, gen-security, adv-counterexample, …) has an executor that does nothing but return status:'pending'. The actual verdict comes from simulateCheckExecution(), which is `const random = Math.random(); const passed = random < basePassRate[checkDef.level]`. The artifact is never inspected (`_artifact` is unused). Consequences: (1) the same artifact flips COMPLETED/FAILED between runs — no reproducibility, no provenance; (2) the failure severity is itself random for micro/general, so even the failed/warnings split is arbitrary; (3) adversarial failures are hard-coded to severity 'warning' (never 'error'), so the adversarial tier can never fail the gate via `allFailures.some(f => f.severity === 'error')`. Full verification cascade and FinalReport.verification both inherit this.",
+   "found_by": "cf-orchestration",
+   "upheld": 4
+  },
+  {
+   "sev": "high",
+   "title": "Production readiness gate returns READY on three fabricated, hard-coded criteria",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 5264,
+   "category": "correctness",
+   "detail": "computeGateResult() builds criteriaMet with `testsPass: true`, `performanceOk: true`, `documented: true` — all literal, with the authors' own comments admitting the real checks are missing. The gate can therefore only be blocked by the ad-hoc lint heuristic; a project with failing tests and no docs still reports READY. Compounding this, runStressTestAgent() unconditionally pushes a finding titled 'Stress Test Completed' with 'No critical issues found', and checkBestPractices()/checkDocumentation() return []. This is the surface consumers rely on to decide whether to ship.",
+   "found_by": "cf-orchestration",
+   "upheld": 2
+  },
+  {
+   "sev": "high",
+   "title": "BYOK: cost is priced off the wrong map key, the budget is never enforced, and unknown-provider fallback recurses forever",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/byok.ts",
+   "line": 417,
+   "category": "security",
+   "detail": "Three defects in the credential/budget manager. (1) estimateCost does `baseRates[provider?.name.toLowerCase() ?? 'openai']` — but baseRates is keyed by provider *id* ('openai','anthropic',…) while ProviderConfig.name is the display name ('OpenAI','Google AI','Muse'). 'openai'→'openai' happens to match, but every other provider (anthropic, google, deepseek, opencode, muse, and all custom providers) falls through to the `|| 0.00003` default, so dailySpent/monthlySpent and every per-key totalCost are wrong — Anthropic is billed at the OpenAI rate. (2) Nothing anywhere calls getBudgetStatus() or blocks on it: dailySpent/monthlySpent are tracked and alerted on, but no request path refuses to run past the ceiling, so the budget is advisory only. (3) tryFallback() iterates fallbackChain and calls getKey(fallbackProvider); getKey() on a provider with zero keys calls tryFallback(fallbackProvider) again. With the default fallbackChain ['openai','anthropic','google'] and no keys registered, each entry re-enters the chain with a different failedProvider — exponential re-entry over a 3-element array (and unbounded if a custom chain contains a cycle), producing an exponential blow-up of console traffic and stack depth. Additionally, when no healthy key matches the requested model, getKey silently falls back to *unhealthy* keys carrying a different model, so a caller can be handed a key that cannot serve the requested model.",
+   "found_by": "cf-orchestration",
+   "upheld": 3
+  },
+  {
+   "sev": "high",
+   "title": "EventBus.request leaks a permanent listener on every timeout and cross-delivers responses between concurrent callers",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 928,
+   "category": "correctness",
+   "detail": "Two independent bugs in the request/response correlation. (a) The timeout branch only sets settled and rejects — it never calls unsubscribe(), so every timed-out request leaves a permanent handler registered on `${eventType}.response` forever; the handler closure (and its captured data) is never collected and keeps firing no-op checks on every subsequent response. (b) requestId is minted AFTER the subscription is installed, and the handler accepts a response whenever `!event.metadata?.requestId || event.metadata.requestId === requestId`. So a response emitted without a requestId — which is exactly what a non-cooperating responder produces — satisfies whichever pending request's handler runs first. Two concurrent request() calls for the same eventType can therefore resolve with each other's payloads, and the loser hangs until its own timeout (which then leaks per (a)).",
+   "found_by": "cf-orchestration",
+   "upheld": 3
+  },
+  {
+   "sev": "medium",
+   "title": "IntelligentCache.set() double-subtracts an entry's size when eviction selects the key being replaced",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 2018,
+   "category": "correctness",
+   "detail": "set() unconditionally subtracts the old entry's estimated size up front (`this.currentSize -= estimateSize(existingEntry.value)`) but leaves the stale entry in the Map. The eviction loop then runs `while (this.currentSize + size > this.maxBytes && this.cache.size > 0) evictLRU()`, and evictLRU's LRU score (`timestamp + accesses*1000`) can legitimately select that same still-present key. delete() then subtracts the old size a second time. Net effect after the write: currentSize = original − 2×old + new. Once the cache is under memory pressure this drifts monotonically negative, so the cache believes it has unbounded headroom and stops evicting — a slow unbounded-memory leak on exactly the path the maxMemoryMB cap exists to protect. maxEntries (default 10000) is declared in CacheConfig and never enforced anywhere, so entry count is also unbounded.",
+   "found_by": "cf-orchestration",
+   "upheld": 2
+  },
+  {
+   "sev": "medium",
+   "title": "WebSocket downlinks register no heartbeat, so a silently dropped client leaves its event-stream subscription open indefinitely",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/websocket-downlink.ts",
+   "line": 105,
+   "category": "correctness",
+   "detail": "`upgrade()` wires exactly three one-shot listeners — `close`, `error`, and a `message` guard that rejects client traffic with 1008. There is no ping/pong interval and no idle deadline anywhere on the class, and `this.server.clients` is only drained by an explicit `terminate()` inside `close()`, which runs at plugin disposal. A client whose TCP path breaks without a FIN (laptop sleep, Wi-Fi roam, a suspended VM) leaves the socket in `this.server.clients` and, more importantly, leaves the `api.events.mux()` / `api.events.host()` async iterator that `pump` is iterating subscribed on the host. On a long-lived local daemon that is an unbounded accumulation of live stream subscriptions and their buffers. `ws` exposes `ping()`/`pong` on the server side; a 30s interval that terminates a socket with no pong in the window is the standard fix and needs no protocol change.",
+   "found_by": "cf-web",
+   "upheld": 1
+  },
+  {
+   "sev": "high",
+   "title": "tools/list pagination loop is unbounded — a buggy MCP server can hang plugin activation and unload forever",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/mcp/mcp-client/src/tools.ts",
+   "line": 174,
+   "category": "correctness",
+   "detail": "`syncTools` drains pages with a bare `do { ... cursor = response.nextCursor } while (cursor)`. There is no page cap, no seen-cursor set, and no total-tools cap, and the cursor is trusted verbatim from an external third-party process reached over stdio or HTTP.\n\nConsequences when a server returns a non-empty `nextCursor` that never repeats a terminal page:\n1. `connectGeneration` awaits `enqueueSync`, and `apply()` awaits `connection.ready` (`connection.ts:177`) — the plugin's activation never settles, so `failOnStartupError` never fires and the whole Cordis fiber never activates.\n2. `enqueueSync` chains onto `syncChain`, so the never-settling sync permanently wedges the supervisor's serialized sync queue.\n3. `dispose()` awaits `syncChain` (`connection.ts:346`), so HMR unload / host shutdown also hangs forever — teardown is blocked behind an untrusted peer.\n\nThe reconnect supervisor cannot help: the attempt never fails, it just never completes, so `maxAttempts` is never consulted. A page cap (or cursor-history check) would contain this at the trust boundary.",
+   "found_by": "cf-llm",
+   "upheld": 2
+  },
+  {
+   "sev": "medium",
+   "title": "JSON-RPC output writes are fire-and-forget with no callback and no 'error' listener — a broken stdio pipe becomes an uncaught EPIPE crash",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sdk/protocol/src/transport.ts",
+   "line": 261,
+   "category": "missing-error-handling",
+   "detail": "`write()` calls `this.output.write(json)\\n` with neither a completion callback nor any error containment, while the adjacent `flush()` (line 166-173) *does* take a callback and reject on error — so the module already knows the stream can fail, it just does not handle it on the real data path.\n\nIn production the output is `process.stdout` (`sdk/server/src/index.ts:55`). When that is a pipe (SDK-managed transports, `HarnessClient` spawns the runtime with `stdio: ['pipe','pipe','pipe']`), a reader that goes away produces EPIPE; Node emits `'error'` on the stream, and with no listener the process dies with an uncaught exception rather than a clean exit. `start()` only attaches `input.on('error')` — the output stream is never guarded.\n\nThis is not only a shutdown race. `HarnessSdkJsonRpcServer`'s constructor registers `ctx.on('session/event', ...)` / `agent/status` / `session/created` / `subagent/end`, all of which call `this.transport.notify(...)` synchronously. Any of those firing while the parent's read end is gone (parent crashed, pipe torn down mid-teardown) writes to a broken stdout. No `process.stdout.on('error', ...)` is installed anywhere in the repo.",
+   "found_by": "cf-llm",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "First-pass image offload budgets against master attachment bytes, so the second pass drops roughly 4x more images than the bound needs",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/llm/llm-pi-ai/src/context.ts",
+   "line": 233,
+   "category": "correctness",
+   "detail": "`toPiContextWithImages` runs `offloadRequestImagesWithPolicy` twice. The first pass (line 229-234) supplies `byteLength: ref => Math.min(ref.bytes, requestImagePolicy.maxBytes)`, and `offloadRequestImagesWithPolicy` is called with `representation: 'base64'` (line 230) — so `collectImageLengths` applies `base64Length(bytes) = ceil(bytes/3)*4` to the *master* attachment size (`llm/llm/src/content.ts:72-75`).\n\n`ref.bytes` is the durable master attachment; the request version the provider actually sees has already been pixel/byte-capped by `readImageRequest`. So the first pass measures an over-estimate and over-removes: with the default 20 MiB bound and ~1 MiB request images, a conversation with 15 request images (≈20 MiB base64) but 2 MiB masters budgets 40 MiB and trims the oldest ones anyway. Only after the trimmed set is materialized does the exact second pass (line 236-241) run — on messages that have already had images irreversibly replaced with placeholders.\n\nThe DeepSeek adapter got this right: it passes `representation: 'raw'` for the estimate and a `byteLength` against the exact request version (`llm-deepseek/src/adapter.ts:537-544`). pi-ai inlines every image into every request body, so the over-trim shows up as lost conversation images for long image-heavy sessions.",
+   "found_by": "cf-llm",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Stale-file retry fires on any HTTP status whose body merely mentions a file id — a non-retriable INVALID_REQUEST becomes a duplicate upload plus an immediate re-send",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/llm/llm-deepseek/src/adapter.ts",
+   "line": 636,
+   "category": "correctness",
+   "detail": "`staleFile` is computed as `usedFiles.length > 0 && providerRejectedFileId(detail)` with no status gate. `providerRejectedFileId` only pattern-matches the joined `code`/`type`/`message` text (`/\\bfile.../` + `/expired|not found|deleted|.../`) — so a 429 or 500 whose message happens to contain \"file\" and \"not found\" (a proxy/gateway error mentioning files, a rate-limit detail quoting the request path, etc.) is classified as a stale file id.\n\nThe recovery then (a) invalidates the *correct* cached mapping and (b) `continue`s the request loop with `body` unchanged. Nothing between the offload at line 537 and `JSON.stringify(body)` at line 601 re-runs when `representation` is still `'file'`, and the cached id has just been deleted from the local index — so `ensureUploaded` re-uploads the identical image. The POST is then re-issued with the same payload. If it fails again, `fileAttempt === 1` drops out of the branch and throws.\n\nNet effect on one misclassified transient error: one wasted full image upload plus one duplicated POST — a double cost for a failure that was never retryable. `providerRejectedNormalizedImage` (line 646) correctly gates on `response.status === 400`; the stale-file path should carry an equivalent status gate.",
+   "found_by": "cf-llm",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "bridge() does not contain a rejection from apiHandler.fetch — the shared /api carrier surfaces carrier faults as HTTP 400",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/http-bridge.ts",
+   "line": 75,
+   "category": "missing-error-handling",
+   "detail": "`bridge` awaits `apiHandler.fetch(request)` with no try/catch, so a rejection escapes to the webserver's per-request catch, which logs and answers `res.writeHead(400)` when headers are not yet sent (and `res.destroy()` when they are). `apiHandler` is the shared fetch handler composed by `createSharedFetchHandler`, whose non-intercepted path is the whole apiProxy (`rpc-host.ts:79` -> `toFetchHandler(apiProxy)`). Any carrier-level throw — a session that no longer resolves, a bad payload shape the two-level parse rejects by throwing, an abort — is therefore reported to the browser as **400 Bad Request**, i.e. the client's own fault, instead of a 500 or a protocol error envelope.\n\nThe downstream symptom is already visible on the browser side: `createWebConnectionRpc.call` throws `transport failure for ${channel}/${endpoint}: HTTP 400` (`client/rpc.ts:44-46`), losing the rpcId-correlated envelope entirely. Mid-stream (SSE downlinks share this bridge) the webserver instead destroys the socket with no error frame.\n\nThe bridge already owns an `AbortController` and is the module that documents \"carrier vs business\" separation; a try/catch around the fetch that emits a 500/envelope before the SSE body starts would keep host faults off the client's tab.",
+   "found_by": "cf-llm",
+   "upheld": 1
+  },
+  {
+   "sev": "critical",
+   "title": "DDP all-reduce is a silent no-op: Bucket::numel is never initialized",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/ddp.cpp",
+   "line": 154,
+   "category": "correctness",
+   "detail": "build_buckets() (lines 60-83) only ever writes current.size; Bucket::numel (include/quant/ddp.h:21) stays at its default 0 forever — there is no assignment to it anywhere in the tree. allreduce_bucket() exclusively reads bucket.numel, so the standard path calls ctx_.all_reduce(buf, 0), which adds/copies 0 elements. Every rank therefore keeps only its own local gradient and the ranks never converge. Worse, the TOP_K_SPARSE branch is gated on `bucket.numel > 0` so it never runs, and the FP8 branch (no numel gate) allocates an empty vector, does nothing, then skips the data all-reduce entirely — it just divides the local, unsynchronized gradient by world_size, corrupting the gradient scale on top of the missing reduction. DDP silently degrades to N independent single-rank trainings that drift apart.",
+   "found_by": "tf-misc",
+   "upheld": 3
+  },
+  {
+   "sev": "high",
+   "title": "ASYNC DDP self-deadlocks: async_sync_loop locks async_mutex_ then calls sync_gradients which locks it again",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/ddp.cpp",
+   "line": 354,
+   "category": "correctness",
+   "detail": "async_sync_loop() takes async_mutex_ (line 353) and then calls sync_gradients() (line 354). sync_gradients() re-acquires the same mutex at line 105 in ASYNC mode. async_mutex_ is a plain std::mutex (include/quant/ddp.h:89), not a recursive_mutex, so this is a self-deadlock (and formally UB). The very first iteration of the background thread hangs forever, and because ~DistributedDataParallel() joins that thread, DDPMode::ASYNC cannot be destructed either.",
+   "found_by": "tf-misc",
+   "upheld": 2
+  },
+  {
+   "sev": "high",
+   "title": "AVX2 is enabled project-wide (and __AVX2__ force-defined on MSVC), defeating every runtime CPU-dispatch check",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/cmake/compiler.cmake",
+   "line": 60,
+   "category": "architecture",
+   "detail": "add_compile_options(/arch:AVX2) and add_definitions(-D__AVX2__) are global, so every translation unit in the project — tools, bench, server, all of src — is compiled with AVX2 as the baseline. On GCC/Clang the same applies via global -mavx2 -mfma (lines 45-47). Two consequences: (1) the compiler may emit VEX-encoded instructions anywhere, so detect_cpu_features() guards in simd_math.cpp / kernel are dead weight and the binary SIGILLs on any pre-Haswell CPU (Sandy/Ivy Bridge, all Atom); (2) on MSVC the forced -D__AVX2__ makes every `#ifdef __AVX2__` header guard — including include/quant/detail/exp_avx2.h and include/quant/simd_math.h — unconditionally active regardless of the flag. The whole runtime-dispatch architecture in this codebase is illusory. AVX2 flags must be applied per-target on the kernels that actually dispatch at runtime (quant_kernel, quant_math), not globally.",
+   "found_by": "tf-misc",
+   "upheld": 2
+  },
+  {
+   "sev": "high",
+   "title": "rope_avx2 strides 8-wide loads/stores by 4, double-rotating most lanes and writing 16 bytes past the row",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/math/simd_math.cpp",
+   "line": 266,
+   "category": "memory-safety",
+   "detail": "The loop condition is `i + 4 <= half_dim; i += 4` but every _mm256_loadu/_mm256_storeu touches 8 floats. Two independent defects: (1) iteration i writes pairs [i, i+7] and iteration i+4 writes [i+4, i+11], so every pair from index 4 upward is rotated twice instead of once — the returned Q/K is wrong for nearly the whole head; (2) the second store targets `q + pos*head_dim + i + half_dim` with 8 floats, and with i up to half_dim-4 that reaches index head_dim+3 inside the row, i.e. 4 floats past the end of the row. For the last position this is a 16-byte heap write past the end of the q/k buffer, and the corresponding cos_cache/sin_cache loads overrun the cache as well. The correct stride is 8 (the comment '4 complex pairs = 8 floats' is itself confused — 8 floats of q0123 are 8 real parts, i.e. 8 pairs). The shipped unit test uses head_dim=2, for which `i+4 <= 1` never holds, so it exercises only the scalar tail and cannot catch this. The function is exported from the public header quant/simd_math.h.",
+   "found_by": "tf-misc",
+   "upheld": 2
+  },
+  {
+   "sev": "medium",
+   "title": "gemv_avx2 horizontal reduction drops the upper 128-bit lane, returning ~half the dot product",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/math/simd_math.cpp",
+   "line": 429,
+   "category": "numerical-correctness",
+   "detail": "The reduction is hadd(hadd(lo128, hi128), lo128) then cvtss. hadd(lo,hi) yields [lo0+lo1, lo2+lo3, hi0+hi1, hi2+hi3]; the outer hadd's element 0 is therefore (lo0+lo1)+(lo2+lo3) — only accumulators 0..3. Accumulators 4..7 (the upper half of the K loop) are discarded, so y = alpha * (first-half dot product) + beta*y. The correct pattern, used everywhere else in this file and in math_avx2.cpp:156-162, is to first _mm_add_ps(hi, lo) element-wise and then hadd twice. No in-tree caller currently reaches simd::gemv (only tests/), but it is a public symbol of the installed math library and silently returns wrong answers on any AVX2 machine.",
+   "found_by": "tf-misc",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "VisionTransformer::forward drops every batch but the last, then OOB-reads when extracting CLS tokens",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/multimodal/multimodal_cross_attn.cpp",
+   "line": 167,
+   "category": "memory-safety",
+   "detail": "normed_x is allocated as {S, D} — a single batch slice — outside the batch loop, and line 223-224 copies each batch's result into it, so batches 0..B-2 are overwritten and only the last survives. Then `x = normed_x` replaces the {B,S,D} tensor with {S,D}, so at line 233 `x.dim(1)` is now D rather than S and the CLS extraction reads `xd + b * D * D` from a buffer that only holds S*D floats. For a typical ViT (D=768, S=197, B=2) b=1 starts at offset 589,824 floats into a 151,296-float buffer — a multi-megabyte heap over-read. The allocation should be {B, S, D} and written per-batch, and the stride at line 233 must use S, not x.dim(1).",
+   "found_by": "tf-misc",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "ZeROOffloadManager::shard_gradient silently drops the tail remainder, and reset_stats() rewinds the state allocator",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/zero_offload.cpp",
+   "line": 135,
+   "category": "correctness",
+   "detail": "shard_size = total / world_size truncates, so start = rank*shard_size and end = min(start+shard_size, total) never covers [shard_size*world_size, total). Every gradient element past the last full shard is excluded from every rank's shard and therefore never reduced — the optimizer applies a wrong (stale/zero) update to those parameters, silently, and only when numel is not a multiple of world_size. Separately, line 162 reset_stats() zeroes cpu_buffer_used_, which is the bump-allocator cursor holding live Adam m/v state rather than a statistic; the next offload_optimizer_state() then reuses the start of the buffer and overwrites previously saved optimizer state. Finally the whole class appears to be dead API — AdamWOptimizer in the same file never calls offload/reload, and its `zero_(ZeROConfig{cfg_.learning_rate > 0})` ties ZeRO enablement to the learning rate being positive, which it always is, so offload is attempted while nothing wires it up.",
+   "found_by": "tf-misc",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "linear_forward_fp8 re-transposes and re-quantizes the entire weight matrix on every forward",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/model/transformer.cpp",
+   "line": 510,
+   "category": "performance",
+   "detail": "The FP8 slow path (used whenever use_fp8 && !AutogradEngine::enabled(), i.e. the default inference configuration for an FP8 model — Attention::forward line 302 routes q/k/v/o through it) allocates a fresh std::vector<float> of in_dim*out_dim and transpose-copies the whole weight, then math::fp8_gemm re-quantizes A and B to FP8 and immediately de-quantizes them back to FP32 before a scalar triple loop. For a 7B model that is an O(numel) FP32 transpose plus an O(numel) FP8 round-trip per layer per token, and the inner GEMM is not vectorized at all. The comment at line 509 acknowledges the transpose but not the repeated quantization; the weight should be quantized once at load time and cached. Same shape of waste exists in math.cpp:663 fp8_gemm's scalar fallback.",
+   "found_by": "tf-misc",
+   "upheld": 1
+  },
+  {
+   "sev": "critical",
+   "title": "Cross-platform determinism gate is vacuous — always reports PASS on an empty scan",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/scripts/cross_platform_check.sh",
+   "line": 95,
+   "category": "correctness",
+   "detail": "Two independent defects make this script incapable of failing. (1) `find_artifacts()` declares `local out=\"$2\"` (line 68) but is invoked with only ONE argument at lines 95 and 98 (`find_artifacts \"$WIN_DIR\" > ...`). Under `set -u` the unbound `$2` aborts the function body before the `while` loop emits anything, and both the `2>/dev/null` and `|| true` swallow the error. Verified empirically: a minimal reproduction produces an empty artifacts file and no diagnostic. Both artifact lists are therefore ALWAYS empty → WIN_COUNT=LIN_COUNT=0 → MATCH_COUNT=DIFF_COUNT=0 and MISMATCH=0 → the script prints \"PASS: All binary artifacts are bitwise identical across platforms\" and exits 0 on every invocation, regardless of the inputs. (2) Independently, lines 181-184 print \"PARTIAL PASS\" and `exit 0` when the file sets diverge, so even with (1) fixed a build that silently dropped a binary still gates green. The stated purpose of the script — proving bitwise-identical output across MSVC/GCC/Clang — is never actually tested.",
+   "found_by": "tf-build",
+   "upheld": 2
+  },
+  {
+   "sev": "critical",
+   "title": "Every shipped Linux binary is compiled -march=native and will SIGILL on any CPU older than the build host",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/cmake/compiler.cmake",
+   "line": 40,
+   "category": "correctness",
+   "detail": "The GCC Release branch adds `-march=native` unconditionally. Every Release path this project distributes inherits it: the Dockerfile builder stage (`-DCMAKE_BUILD_TYPE=Release` with g++-13, compiler.cmake line 40), `.github/workflows/release.yml` line 20 (`-DCMAKE_BUILD_TYPE=Release` on ubuntu-latest), `scripts/make_dist.sh` line 29, `build_linux.sh` line 18, and `ci_full.yml` lines 28/35 (`-DCMAKE_CXX_FLAGS=\"-march=native\"`). `-march=native` bakes in the build host's exact ISA (GitHub runners and Docker build hosts are AVX-512 capable), so a consumer running the released `linux-x86_64` artifact or the published image on an older/pre-AVX-512 machine dies with SIGILL at startup. There is no CI leg or packaging step that builds a baseline/x86-64-v2 artifact. `-march=native` is correct only for a local benchmark build, never for a distributable.",
+   "found_by": "tf-build",
+   "upheld": 3
+  },
+  {
+   "sev": "high",
+   "title": "quant_config.h is generated and linked but never #included, so QUANT_AVX2/AVX512/NEON/DEBUG macros are never defined",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/CMakeLists.txt",
+   "line": 40,
+   "category": "correctness",
+   "detail": "`configure_file(quant_config.h.in)` writes `#cmakedefine QUANT_AVX2 / QUANT_AVX512 / QUANT_NEON / QUANT_DEBUG` into the build dir, and an INTERFACE target `quant_config` exposes that dir (lines 40-41, linked into quant_core). But `grep -rni quant_config src include tools tests bench engines inferno` returns ZERO hits — no translation unit ever includes it. `QUANT_AVX2`/`QUANT_AVX512` are CMake cache variables set by arch.cmake and are never forwarded as `-D` defines (verified: no `DQUANT_AVX2` anywhere). Consequence in backend.cpp: `#if defined(QUANT_AVX2)` (line 142) is always false on every platform, so the ~90-line real `CPUAVX2Backend` calling `kernel::avx2_gemm` is never compiled and the `throw_unavailable(\"CPU_AVX2\", ..., \"built without QUANT_AVX2\")` stub (lines 229-263) is always used. `is_avx2_available()` line 2455 has `#elif !defined(QUANT_AVX2) return false;` so it always returns false, `hw.has_avx2` (line 2835) is always false, and `auto_select_backend` line 2945 `if (hw.has_avx2)` is never taken. Requesting `BackendType::CPU_AVX2` (factory line 2396) yields a backend that throws on every op — even with `-DQUANT_AVX2=ON`, which arch.cmake force-enables on all MSVC x64 builds.",
+   "found_by": "tf-build",
+   "upheld": 2
+  },
+  {
+   "sev": "high",
+   "title": "Executable verification loop silently skips missing binaries — a missing binary passes",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/build_linux.sh",
+   "line": 35,
+   "category": "testing",
+   "detail": "The `for` loop over the four expected executables only prints OK/FAIL inside `if [ -f \"$exe\" ]`. When `$exe` does not exist there is no `else` branch: nothing is printed, nothing fails, and the script continues to \"Linux Build SUCCESS\". A build that failed to produce `quant_train`, `quant_infer`, `quant_info` or `quant_bench` — for example because `QUANT_BUILD_TOOLS=OFF` was passed, or the tools block errored in a way ctest did not catch — still reports success. The check must fail loudly on absence, not just on zero size. (Compounding: on a Ninja generator the test binaries land in `build-linux/tests/`, and `local_ci.ps1` coverage step hard-codes `$BuildDir\\test_all.exe`, which does not exist at that path either.)",
+   "found_by": "tf-build",
+   "upheld": 2
+  },
+  {
+   "sev": "high",
+   "title": "ctest exclude-regex `paged_kv_4m_test` never matches the registered test name `test_paged_kv_4m`",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/build_linux.sh",
+   "line": 36,
+   "category": "testing",
+   "detail": "`tests/CMakeLists.txt:193` registers the test as `add_quant_test_full(test_paged_kv_4m paged_kv_4m_test.cpp ...)` — i.e. the ctest NAME is `test_paged_kv_4m` and `paged_kv_4m_test` is only the source filename. `build_linux.sh` (line 36) and `scripts/local_ci.ps1` (line 43) both exclude `paged_kv_4m_test`, which is not a substring of `test_paged_kv_4m`, so the regex matches nothing and the 256 MiB paged-KV test runs on every build despite both scripts documenting it as too heavy for the fast path. Every other consumer (`ci_full.yml` lines 171/188/211/322, `release.yml` line 69, the Dockerfile) correctly uses `test_paged_kv_4m`. Two different spellings of the same exclusion across the repo is exactly the drift that lets a slow/heavy test slip back into the PR-speed gate.",
+   "found_by": "tf-build",
+   "upheld": 2
+  },
+  {
+   "sev": "medium",
+   "title": "Image EXPOSEs 8080 and a HEALTHCHECK reports healthy, but ships no HTTP server binary",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/Dockerfile",
+   "line": 61,
+   "category": "correctness",
+   "detail": "The runtime stage copies only `quant_infer`, `quant_convert`, `quant_bench`, `bench_kernels`, `bench_inference`, `bench_quality` (lines 49-56). The HTTP front door is `quant_serve` (`tools/serve.cpp`, default port 8080, links `quant_production` → `http_server.cpp`) and `quant_server` (`tools/quant_server.cpp`, `bind()`/`listen()` on port 8080) — neither is copied, yet `EXPOSE 8080` (line 61) advertises the port. `ENTRYPOINT [\"./quant_infer\"]` (line 70) starts the CLI, which with no args prints `Usage:` to stderr and `exit 1` (tools/infer.cpp:16-17). The HEALTHCHECK (lines 67-68) greps for `Usage`, which that exit-1 path emits, so the container reports **healthy** while being unable to serve anything on the port it advertises. Anyone deploying this image gets a green health status and a non-functional service. `quant_serve` is in the CMake `install(TARGETS ...)` list (CMakeLists.txt:594-598) but omitted here.",
+   "found_by": "tf-build",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "QUANT_SANITIZE option is dead code — no CI job, script, or doc ever sets it",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/CMakeLists.txt",
+   "line": 19,
+   "category": "architecture",
+   "detail": "`option(QUANT_SANITIZE \"Enable address sanitizer\" OFF)` is consumed only by cmake/compiler.cmake lines 10 and 34. Nothing in the repo passes `-DQUANT_SANITIZE=ON`: not `ci_full.yml` (all three sanitizer legs hand-roll `-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined ...` directly, lines 178, 201, 310), not `scripts/build_asan.bat` (which also passes raw `/fsanitize=` flags plus its own `-DCMAKE_C_FLAGS=`), not `build_linux.sh`, not `local_ci.ps1`. So the project's single sanitizer configuration point is never exercised, and the actual sanitizer flags live in four divergent hand-written copies. Two of those copies are already wrong relative to the option: `build_asan.bat` uses `CMAKE_BUILD_TYPE=Debug` (which the MSVC branch of compiler.cmake fills with `/Od /Zi /DQUANT_DEBUG`) while CI uses Release, and neither sets `-DQUANT_DEBUG`. The `QUANT_DEBUG` macro from quant_config.h.in is also unreachable (see the quant_config.h finding). Delete the option or make CI use it.",
+   "found_by": "tf-build",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "lcov --zerocounters runs AFTER ctest and before --capture, wiping the coverage data the tests just produced",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/scripts/coverage.sh",
+   "line": 51,
+   "category": "testing",
+   "detail": "Step [3/4] runs the full ctest suite (lines 32-33), then step [4/4] executes `lcov --directory \"${BUILD_DIR}\" --zerocounters` (line 51) and only afterwards `lcov --capture` (lines 54-56). Zeroing the .gcda counters after the tests have written them and before capturing means the generated HTML report is always ~0%, regardless of actual coverage — the script's entire output is meaningless. The in-repo `coverage` CMake target has the correct order (CMakeLists.txt: zerocounters at 454, ctest at 456, capture at 557), which proves the script inverted it. Also note step [4/4] does not re-zero before the run it reports on; `--zerocounters` belongs immediately before the test run.",
+   "found_by": "tf-build",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Source tarball lists a nonexistent README.md; with set -e the script aborts before producing it",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/scripts/make_dist.sh",
+   "line": 53,
+   "category": "correctness",
+   "detail": "Line 53 tars `README.md`, but no README exists in the repo (`ls README*` → No such file or directory; only LICENSE, CMakeLists.txt, quant_config.h.in, SHA256_TEST_LOG.md at the root). Verified: GNU tar prints `tar: README.md: Cannot stat: No such file or directory` / `Exiting with failure status due to previous errors` and exits 2. Under `set -euo pipefail` that aborts the script, so the source tarball and its `.sha256` are never written, while the binaries have already been copied into `dist/` — leaving a half-populated, checksum-less distribution that still looks partly successful. Separately, line 29 hardcodes `-G Ninja` with no availability check (`build_linux.sh` correctly probes for ninja first), so a machine without Ninja fails at configure.",
+   "found_by": "tf-build",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "macOS isAlive() re-runs a full `ps -axo` for every identity on every poll",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/process-inspector.ts",
+   "line": 354,
+   "category": "performance",
+   "detail": "`MacProcessInspector.isAlive` shells out to `/bin/ps -axo pid=,ppid=,lstart=` and reparses the whole process table *per call*. `LocalTerminalHandle.survivors(members)` calls `isAlive` once per tracked member, and `waitForMembers` re-evaluates survivors every 25 ms for up to `graceMs`. With k descendants alive this is k `ps` process spawns every 25 ms (≈400/s for k=10) throughout every teardown wait, plus one `ps` per `descendants()`/`processTree()` call during readiness polling. On macOS this is by far the most expensive operation in the terminal readiness/teardown path and it is pure repeated work: the table does not change between two `survivors()` calls 25 ms apart in the common case. Linux (`/proc` stat read) and Windows (handle wait) both avoid this; only macOS pays it.",
+   "found_by": "cf-exec",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "The default `stdio: 'pipe'` confined spawn path never places the child in a kill-on-close job",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sandbox/sandbox-windows-acl/src/spawn.ts",
+   "line": 100,
+   "category": "correctness / orphan processes",
+   "detail": "`spawnSandboxedInherited` (used by the runner) creates a `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` job, starts the child suspended, assigns it, then resumes — an orphan backstop. `spawnSandboxed` — which is what `AclSandbox.spawn` uses for its **documented default** `stdio: 'pipe'` (index.ts line 372) — creates no job at all. If the host process dies while a piped confined child is running, the child survives unconfined-by-parent-lifetime and is never terminated by the OS. Additionally, the `PROCESS_INFORMATION.hProcess` is closed only inside `waitForExit`, which is reached only when the caller awaits `wait()`; a caller that spawns and abandons the child (or takes the `stdio:'pipe'` handle and never awaits) leaks the process handle and both pipe read ends. The runner path is unaffected (it always passes `stdio: 'inherit'`), so this is a latent defect in the package's public API rather than the shipped command path — but it is the same class whose docs promise \"child dies with the caller\".",
+   "found_by": "cf-exec",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Truncated-command spill files are never deleted after the command settles",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/spawn.ts",
+   "line": 243,
+   "category": "data hygiene / disk fill",
+   "detail": "When a collected stream exceeds its in-memory cap (`maxOutputBytes`, default 64 KB), `OutputCollector.spillAll` creates `cf-subprocess-<pid>-<n>-<rand>-<label>.log` under a per-process `mkdtempSync(join(tmpdir(), 'cf-subprocess-'))` directory and appends the complete stream (up to `maxSpillBytes`, default 64 MB per stream). `seal()`/`finalize()` only close the fd — they never unlink — and `unlinkSync` appears solely inside `discardSpill`, which runs only when the stream *exceeds* `maxSpillBytes` or when it fits back in memory. Nothing else in the repo deletes a spill file: grep for `spillPath` shows only producers and renderers (`[output truncated; full output: <path>]`). So every bash/pwsh command whose stdout or stderr passes 64 KB leaves a permanent file holding the full command output on the user's machine, unbounded over a session (hundreds of MB of build logs are routine). These files contain whatever the model's command printed, including tokens echoed by failing CLIs, and sit in a shared OS temp directory indefinitely. There is no retention policy, no TTL, and no cleanup at service dispose.",
+   "found_by": "cf-exec",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "mux/host SSE fan-out has no backpressure: FrameQueue buffers every session event for a stalled client without bound",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/api-proxy.ts",
+   "line": 360,
+   "category": "performance",
+   "detail": "`FrameQueue.push()` unconditionally appends to an unbounded array and `iterate()` is the only drain point. `sseResponse` (packages/host/apiproxy/src/fetch/handler.ts:203-213) does `controller.enqueue(...)` for every frame with no `desiredSize` check, and `new ReadableStream({start})` uses the default highWaterMark 0, whose queue is still unbounded. A slow, paused or stalled SSE consumer therefore causes the host to retain every `session/event` frame of every session (full tool results and assistant messages included) in memory for that client. Notably the ZIP export path in the same package implements exactly this control (`ResponseCapacityGate` + `highWaterMark: RESPONSE_HIGH_WATER_MARK_BYTES`, session-export.ts:291/454) — the live event stream, which carries far more data, has none. This is the cluster's \"unbounded growth\" risk on the main data plane.",
+   "found_by": "cf-session",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Baseline instruction load reads every candidate file in full before the render budget is applied — no aggregate read cap",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/context/agent-instructions/src/files.ts",
+   "line": 386,
+   "category": "resource-leak",
+   "detail": "`loadBaselineInstructionSet` discovers the user-global file plus every candidate in every directory of the root→cwd chain, then `await readBounded(file, config.maxSourceBytes, ...)` for each. `readBounded` enforces only a *per-file* cap (and only bounds streaming when a `size` is available), and the configured `maxBytes` render budget is applied afterwards in `renderWorkspaceInstructionSet` — so a directory chain containing N near-cap `AGENTS.md` files reads and materializes N × `maxSourceBytes` UTF-8 bytes into JS strings only to then discard most of them. The code itself flags this at line 333 (`TODO(total-instruction-read-bound): enforce an aggregate source budget across a complete baseline or reconciliation batch`). A repo with large AGENTS.md files at several directory levels makes every session start/resume and every instruction reconciliation pay the full cost.",
+   "found_by": "cf-session",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "findProjectRoot treats an fs provider failure as \"no marker\" and keeps walking up, silently adopting an ancestor project's instructions",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/context/agent-instructions/src/files.ts",
+   "line": 152,
+   "category": "correctness",
+   "detail": "`existsAsMarker` collapses *every* provider exception into `false`, so a transient `ctx.fs` failure on the real root marker makes `findProjectRoot` continue upward past the intended project boundary and return a higher ancestor (or the filesystem root). `discoverInstructionFiles` / `reconcileInstructionContext` then load that ancestor's `AGENTS.md` into the session's context as if it belonged to this project. The adjacent `statFile`/`probeScopeInstruction` code deliberately distinguishes `present`/`absent`/`unavailable` (a tri-state probe) — `existsAsMarker` is the one place that throws that distinction away. The in-code TODO (line 152-153) states the same hazard: \"continuing upward can cross into an ancestor project.\"",
+   "found_by": "cf-session",
+   "upheld": 1
+  },
+  {
+   "sev": "critical",
+   "title": "AGI Flywheel compiles and executes LLM-generated C++ with no isolation, out of a fixed world-writable /tmp path",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/agi/agi_flywheel.cpp",
+   "line": 756,
+   "category": "security",
+   "detail": "Flywheel::get_sandbox_path() returns a hard-coded, predictable directory (/tmp/TransFormers-Fusion_sandbox, or %TEMP%\\... on Windows) shared across all users and all processes. sandbox_compile_and_test() writes the model's generated `code` verbatim into that directory as sandbox_test.cpp, compiles it with `std::system(\"g++ ...\")`, and then executes the resulting binary via run_with_timeout() (which itself shells out through `std::system`). There is no container, landlock, bwrap, seccomp, chroot, or any other containment — the generated program runs with the full privileges of the invoking user. Two concrete exploit paths: (a) on a shared host any other local user can pre-create /tmp/TransFormers-Fusion_sandbox (create_directories succeeds on an existing directory and never validates ownership or mode), so an attacker-owned directory lets them swap the freshly-written source or plant a replacement sandbox_test.exe that the Flywheel then executes — the compile-failure path still checks fs::exists(exe_path) and runs whatever is there; (b) a planted symlink at sandbox_test.cpp causes the ofstream to follow it and overwrite an arbitrary victim-owned file. This is especially stark given the project ships an honest `quant::agi::Sandbox` class whose compile_and_test()/run_with_timeout() deliberately return \"not implemented\" rather than pretend to isolate — the Flywheel bypasses that class entirely and does the dangerous thing for real. Compare code-fusion's correct pattern at packages/subprocess/subprocess-local/src/spawn.ts:89-92 and 161-170 (mkdtempSync 0700, openSync 'wx', randomBytes suffix, 0o600).",
+   "found_by": "xsec",
+   "upheld": 3
+  },
+  {
+   "sev": "high",
+   "title": "Shipped `serve` binary binds INADDR_ANY with authentication permanently disabled and no CLI flag to enable it",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/serve.cpp",
+   "line": 118,
+   "category": "security",
+   "detail": "HTTPServer::check_auth() returns true unconditionally when auth_token_ is empty, and auth_token_ is default-constructed empty in the header. The header even documents this as intentional ('All three default to permissive (empty/64KB/0=unlimited) so existing callers and tests keep working; quant_serve sets strict values'). But the shipped tools/serve.cpp constructs ModelHTTPServer and calls only set_thread_pool_size() — there is no --auth-token/--api-key argument in its argument parser at all (only --port, --model-dir, --batch-size, --max-tokens). Meanwhile HTTPServer::server_loop() binds addr.sin_addr.s_addr = INADDR_ANY, so the inference API listens on every interface with no authentication and every response carries `Access-Control-Allow-Origin: *`. Net effect: anyone who can reach the host can drive the model and read responses. The 'quant_serve sets strict values' claim does not hold for this binary.",
+   "found_by": "xsec",
+   "upheld": 2
+  },
+  {
+   "sev": "high",
+   "title": "quant_server binds INADDR_ANY and has no authentication mechanism of any kind",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp",
+   "line": 150,
+   "category": "security",
+   "detail": "QuantHTTPServer::start() sets addr.sin_addr.s_addr = INADDR_ANY and serves /api/generate, /api/tokenize and /api/detokenize. Unlike HTTPServer, this class has no auth_token_, no check_auth(), and no Authorization-header parsing anywhere in the file — grep for 'auth'/'Bearer'/'Authorization' over the whole translation unit returns only the bind line. Every response also carries `Access-Control-Allow-Origin: *`. Anyone with network reachability gets free GPU/CPU inference and can read the responses. Note also that each request allocates a fresh KVCache sized off model config and runs up to 4096 decode steps, so unauthenticated remote access is also a trivial DoS.",
+   "found_by": "xsec",
+   "upheld": 2
+  },
+  {
+   "sev": "medium",
+   "title": "HuggingFace HTTP client puts the bearer token on a popen command line and interpolates URLs into a shell with only double-quote wrapping",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/hf_streamer.cpp",
+   "line": 205,
+   "category": "security",
+   "detail": "HTTPClient builds a curl command line as a single string and runs it through popen()/ _popen(), which means a shell. The Authorization bearer token is concatenated into that string (`-H \"Authorization: Bearer \" + auth_token_ + \"\"`), so for the duration of the download the API key is visible in the process table to every local user via ps/tasklist, and it lands in any shell history or command auditing. Separately, the URL is embedded as `\" + url + \"` — wrapped in double quotes only, with no escaping of embedded `\"`, `$`, backticks, `&`, `|` or newlines. HTTPClient::get() even accepts a caller-supplied absolute URL (it checks `host.find(\":\" + \"/\" + \"/\")`) and passes it through verbatim, so a crafted URL containing a double quote breaks out of the quoting and injects arbitrary shell commands. On Windows _popen routes through cmd.exe, where a `\"` must be doubled to be literal — it is not, so the Windows path is injectable by the same mechanism. Recommend switching to a real HTTP client (the file already links winhttp.lib and uses it elsewhere) or, at minimum, passing the token via a header file or env and rejecting URLs that are not on an allow-listed host.",
+   "found_by": "xsec",
+   "upheld": 1
+  },
+  {
+   "sev": "high",
+   "title": "npm-not-found detection is unreachable on win32 — wrong message and wrong exit code",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+   "line": 136,
+   "category": "correctness",
+   "detail": "`result.error.code === 'ENOENT'` is how spawn reports a missing executable, but that only happens when no shell is used. On win32 the code deliberately sets `shell: true`, so the spawned program is always `cmd.exe` (which exists); a missing `npm` instead surfaces as cmd.exe's normal nonzero status with `result.error === undefined`. Verified with the exact call shape and `PATH` stripped to `C:\\Windows\\System32`: `error: undefined | status: 1`, stderr `\"'npm' is not recognized as an internal or external command\"`. Consequence on Windows: the guidance at line 137 (`npm not found on PATH — install npm to manage profile plugins`) never prints, the code never returns the documented 127, and instead the generic line 149 (`npm failed in profile directory <dir>`) is printed — which actively misattributes the failure to the profile's allowScripts policy, the very thing reference/README.md promises as the diagnostic for this path. The branch is only reachable on POSIX, i.e. only where it is least needed.",
+   "found_by": "cf-cli",
+   "upheld": 2
+  },
+  {
+   "sev": "medium",
+   "title": "cf plugin creates $CF_HOME before the one-way legacy ~/.dsh migration can ever run",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+   "line": 123,
+   "category": "correctness",
+   "detail": "`runPlugin` resolves the profile directory and calls `initProfile`, whose `mkdirSync(dir, { recursive: true })` creates `$CF_HOME` (`~/.cf/profiles/<name>`). The legacy `~/.dsh` -> `~/.cf` migration is invoked from exactly one place in the whole repo — `profile-boot.ts:103` inside `prepareProfile` — which `cf plugin` never reaches (plugin mode uses `resolveProfileDir` + `initProfile` + `readProfileManifest` directly). `migrateLegacyCfHome` is guarded by `if (exists(home)) return 'fresh'` (packages/util/home-paths/src/index.ts:102), so once `~/.cf` exists the migration is permanently skipped. A legacy user whose first command is `cf plugin --profile web add <pkg>` (the documented way to add plugins / create any non-shipped profile) therefore strands all of their `~/.dsh` data — sessions, settings, credentials — forever: every later `cf --profile ...` sees `~/.cf` and returns `'fresh'` without ever consulting the legacy directory. Fix: call `migrateLegacyCfHome()` in `runPlugin` (or in `resolveProfileDir`'s caller path) before `initProfile`.",
+   "found_by": "cf-cli",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "cf plugin has no help surface at all: `cf plugin --help` exits 1 with a wrong message",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/args.ts",
+   "line": 171,
+   "category": "error-ux",
+   "detail": "The root disables its help option at line 126 (`.helpOption(false)`), and commander propagates `_helpOption` to every subcommand through `copyInheritedSettings`, so `plugin` inherits `null` too. `web` re-states `.helpOption(false)` at line 158 (it wants the booted app's help), but `plugin` never re-enables its own — so the plugin mode has no help anywhere. Verified against the real `parseCfArgs`: `['plugin','--help']` and `['plugin','-h']` both return exit 1 printing `error: required option '--profile <name>' not specified`, and `['plugin','--profile','tui','--help']` forwards `--help` to npm rather than showing `cf plugin`'s usage. This contradicts the root behaviour at line 139 (a bare `cf -h`/`cf --help` does print launcher help) and leaves the only command shape advertised in the root help examples (`cf plugin --profile tui add <package>`) with no discoverable flag list. No test in `tests/` covers `cf plugin --help`. Fix: call `.helpOption(true)` (or an explicit help handler) on the `plugin` subcommand, mirroring the root's hand-written help branch.",
+   "found_by": "cf-cli",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "rejectParentOptions('plugin') is dead code for --profile; confusing message instead",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/args.ts",
+   "line": 176,
+   "category": "error-ux",
+   "detail": "Commander runs `_checkForMissingMandatoryOptions()` before the action handler, and `plugin` declares `requiredOption('--profile <name>')`. So for the exact case `rejectParentOptions` was written to catch — a parent-level `--profile` — commander's mandatory-option check fires first and the guard never runs. Verified: `parseCfArgs(['--profile','x','plugin','add','y'])` prints `error: required option '--profile <name>' not specified`, even though the user did type `--profile x`, while the sibling `cf --profile x web` correctly prints the intended diagnostic `error: web takes none of parent --profile, --patch, --dump-config, or --dump-default-config`. The same happens for `['--profile','web','plugin']`. Users get a message telling them to supply an option they already supplied, and the carefully worded guard at lines 148-154 is unreachable for the first option it names. Fix: make `plugin`'s `--profile` non-mandatory and validate it inside the action (after `rejectParentOptions`), or check parent options in a `preAction` hook.",
+   "found_by": "cf-cli",
+   "upheld": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Launcher's agent-presets overlay overwrites `roots`, discarding every roots value from other patch layers",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/profile-boot.ts",
+   "line": 169,
+   "category": "correctness",
+   "detail": "`composeProfile` builds `rows` from `[bundlePatches, profile.patches, homePatches, overlays]`, then pushes a final overlay that spreads that composed config and assigns `roots:` afterwards — so the spread is pointless for `roots` and the key is unconditionally replaced with a single-element array. Per reference/README.md a patch \"replaces the targeted row's complete `config` value rather than deep-merging keys\", and `roots` is a real config field (`packages/preset/agent-presets/src/index.ts:88`, `z.array(...)`), so it is settable from a bundle, a profile `cordis.patch.yml`, the home `$CF_HOME/cordis.patch.yml`, or a `--patch` overlay — all of which are composed *below* this launcher overlay. Any such `roots` entry (an extra shared preset directory, or a `{ trust: 'user' }` root a deployment needs for authoring — the shape `tests/web-agent-presets.e2e.ts:493-498` itself uses) is silently dropped on every boot, with no warning, so those presets stop being discovered. The shipped base/web patches currently set only `default: standard`, which is why no test catches it. Fix: append the shipped root to the composed `roots` (deduped) instead of replacing the array.",
+   "found_by": "cf-cli",
+   "upheld": 1
+  }
+ ],
+ "refuted": [
+  {
+   "sev": "high",
+   "title": "LLMProviderManager.stream() converts a failed stream into a successful empty completion",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "why": "The mechanism is real and is in current code: `C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts` lines 388-411 wrap the provider switch in try/catch and on any throw yield `{ id, delta: '', isFinal: true, token_count, timestamp, metadata: { error } }` and swallow the exception, so the generator ends without throwing and `stream()` has no retry loop (contrast `co"
+  },
+  {
+   "sev": "medium",
+   "title": "PolicyAgentTreeManager.terminateAgent never removes nodes from the tree, permanently exhausting maxTotalAgents",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "why": "The mechanical facts are right but the claimed impact is wrong and unreachable. (1) There is no idle sweeper: the only timers in god-runtime.ts are line 1237 (rate limiter `setInterval(() => this.cleanup(), ...)`) and unrelated setTimeouts; `cleanupIdleAgents()` (line 3875) has exactly ONE call site in the entire repo — `GodRuntime.shutdown()` at line 6054. Nothing calls it periodically, so the re"
+  },
+  {
+   "sev": "medium",
+   "title": "Published Scheduler never tracks cost, so costUsd budgets are entirely unenforced",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/mad/god-runtime/src/index.ts",
+   "why": "The line-level evidence is accurate but the impact claim is wrong for the codebase. Every quoted line exists in packages/mad/god-runtime/src/index.ts (costUsed at 296 never written; reserveResources 307-313 only checks concurrency/tokens; constructor 301 accepts costUsd-only; isExhausted 326 and checkProgress 437 can never trip on cost; releaseResources ignores _agentId). However: (1) Nothing cons"
+  },
+  {
+   "sev": "medium",
+   "title": "No security headers on any static response, and no CSP in the web app document",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/frontend-static/src/index.ts",
+   "why": "Evidence is factually correct but the impact claim is wrong; the finding is hardening outside the project's documented threat model, not an actionable issue. Confirmed the bare facts: frontend-static/src/index.ts:95 sets only content-type (403/404/405 arms set nothing, no setHeader anywhere under packages/host), apps/web/index.html has no CSP meta, and code-fusion contains zero security-header ref"
+  },
+  {
+   "sev": "medium",
+   "title": "The `script`/`style`/`html` injection-row kinds splice caller text verbatim while their type contract only documents the invariant",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/webserver/src/injections.ts",
+   "why": "The evidence text is real (packages/host/webserver/src/injections.ts:47-63 does escape `<` only for `global` and splices `row.text`/`row.html` verbatim for `script`/`style`/`html`), but the framing \"the one injection boundary… contract is unenforced\" is wrong and the behavior is intended, documented API design rather than a defect.\n\n1) The asymmetry is contract-driven, not an oversight. `global`'s"
+  },
+  {
+   "sev": "medium",
+   "title": "`clientBuildEnvironment` inlines every `CF_CLIENT_*` env var into the browser bundle with no allowlist",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/scripts/client-build-environment.ts",
+   "why": "The evidence snippet is verbatim-accurate (C:/Users/thaku/Workspaces/fusion/code-fusion/scripts/client-build-environment.ts lines 99-103 do filter on prefix alone, and apps/web/vite.config.ts line 167 spreads clientBuildEnvironmentDefines(process.env)), but the security impact as claimed is wrong on three counts. (1) The claim's central premise — \"the exact-key-set assertion exists but is only exe"
+  },
+  {
+   "sev": "medium",
+   "title": "The browser-trust fence has no end-to-end coverage over a live HTTP server",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/web/tests/smoke-real.e2e.ts",
+   "why": "The finding's central factual claim is false: there IS a live-HTTP test of the trust fence, in the very file the evidence points at.\n\n1. \"node-half.host.spec.ts:22-29 stubs register/registerUpgrade ... so the wiring is never observed over real HTTP\" — the stub is real (fakeHttpServer at lines 17-36), but that conclusion does not follow. The same file has `describe('connection node half over a real"
+  },
+  {
+   "sev": "medium",
+   "title": "Responses carrying a string JSON-RPC id are silently dropped, permanently poisoning the pooled LSP instance",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/lsp/lsp-stdio/src/connection.ts",
+   "why": "The evidence lines are accurate but the defect is not real. (1) This class is the JSON-RPC *client*: ids are allocated only as numbers (`connection.ts:71` `nextId = 1`; `:166` `const id = this.nextId++`; `pending` is `Map<number, Pending>`). No path in the package ever sends a string id, so every response the host ever awaits is keyed by a number. JSON-RPC 2.0 requires the server to echo the reque"
+  },
+  {
+   "sev": "medium",
+   "title": "Turns cancelled by a hook/owner settle as `end_turn`; ACP has no out-of-band `cancelled` and only `interrupted` maps to it",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/acp/acp/src/index.ts",
+   "why": "The code evidence is real but the defect claim rests on a misquote of the ACP spec, and the behavior is deliberate, tested, and spec-aligned.\n\n1) The quoted ACP definition is wrong. The claim says ACP defines `cancelled` as \"the agent cancelled the prompt (via session/cancel) or the agent-side session was aborted.\" That wording is the OpenAI Agents SDK's StopReason docstring, not ACP. The authorit"
+  },
+  {
+   "sev": "medium",
+   "title": "SDK `session/prompt` commits caller-supplied `contentBlocks` verbatim as a durable user message with no content validation",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sdk/server/src/server.ts",
+   "why": "The mechanical description is accurate but the security conclusion is not. Verified in `code-fusion/packages/sdk/server/src/server.ts`:195 and :140, `handleRequest` does cast `params as unknown as SessionPromptParams` and `prompt()` does `createUserMessage({ content: params.contentBlocks, source: { kind: 'user' } })`; `createUserMessage`/`createMessage` (`packages/llm/llm/src/message.ts`:178-199) "
+  },
+  {
+   "sev": "medium",
+   "title": "Loopback classifier accepts non-canonical IPv6 spellings and IPv4-mapped IPv6, widening the Host fence in a loopback-only deployment",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/loopback-hostname.ts",
+   "why": "The evidence snippet matches loopback-hostname.ts:12-18 verbatim, but the claimed impact does not survive reading the callers. (1) The IPv4 padded spellings are a non-issue: api-request-trust.ts:106-108 passes hostUrl.hostname from parseAuthority (new URL(`http://${host}`), lines 31-38), and WHATWG's IPv4 parser canonicalizes every one of '127.000.000.001', '127.0.0.001', '127.0.00.1', '127.00.0.1"
+  },
+  {
+   "sev": "high",
+   "title": "ASYNC DDP lock_guard scope ends before the work it was meant to protect",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/ddp.cpp",
+   "why": "Confirmed in C:\\Users\\thaku\\Workspaces\\fusion\\transformers-fusion\\src\\trainer\\ddp.cpp:101-110. The lock_guard is scoped to the empty if-block (lines 104-106) and destroyed before the allreduce loop (lines 108-110) begins. async_sync_loop() (ddp.cpp:349-356) acquires async_mutex_ at line 353 and then calls sync_gradients() at line 354, so any external caller thread running sync_gradients() walks an"
+  },
+  {
+   "sev": "high",
+   "title": "AVX2 gelu uses a 9th-order Taylor erf series that diverges past |x|~2",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/math/math_avx2.cpp",
+   "why": "Confirmed in the actual code, not refuted. math_avx2.cpp:283-299 computes gelu as 0.5*v*(1+erf(v/sqrt(2))) where erf is the raw 5-term Maclaurin series x - x^3/3 + x^5/10 - x^7/42 + x^9/216 with no range reduction, clamp or fallback, while the scalar tail at line 299 uses std::erf. The evidence block matches the file verbatim. The identical series is duplicated in math_avx2_vec.cpp:297-318 (vec_ge"
+  },
+  {
+   "sev": "medium",
+   "title": "Single cpu_malloc_fallback_ flag makes the next free() of a VirtualAlloc'd region call free() on it",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/zero_optimizer_core.cpp",
+   "why": "Evidence text is real (zero_optimizer_core.cpp:401-415 matches the quote), but the claimed failure scenario is unreachable in current code. Repo-wide search over the whole workspace finds only two call sites of these private methods: `cpu_pool_ = allocate_cpu(cpu_buffer_size_)` in the constructor (line 368) and `deallocate_cpu(cpu_pool_)` in the destructor (line 377). They are declared private wit"
+  },
+  {
+   "sev": "medium",
+   "title": "ASAN/UBSAN CI is configured with CMAKE_BUILD_TYPE=Release, so sanitizer builds get -O3 -DNDEBUG -march=native",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/.github/workflows/ci_full.yml",
+   "why": "The flag propagation is real, but the finding's central, severity-justifying consequence — (a) \"-DNDEBUG strips every assert() for the entire sanitizer suite, so the only invariant checks the codebase has are invisible to ASAN CI\" — is contradicted by the actual code.\n\nCONFIRMED facts: C:/Users/thaku/Workspaces/fusion/transformers-fusion/.github/workflows/ci_full.yml:178 and :310 both pass -DCMAKE"
+  },
+  {
+   "sev": "medium",
+   "title": "No PIE and no RELRO anywhere; shipped quant_serve HTTP server and plugin dlopen loader run non-PIE with lazy binding",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/cmake/compiler.cmake",
+   "why": "The flags-absence evidence is accurate but the finding's impact claims are wrong on the actual build paths. CONFIRMED: cmake/compiler.cmake has only -fstack-protector-strong (lines 4, 32) and -D_FORTIFY_SOURCE=2 (lines 16, 40, Release-only); full-repo grep finds no -fPIE/-pie, no -Wl,-z,relro/-z,now, no -D_GLIBCXX_ASSERTIONS, no POSITION_INDEPENDENT_CODE, and the only add_link_options in the build"
+  },
+  {
+   "sev": "medium",
+   "title": "Sandbox provider caches 'unavailable' permanently, so probes never re-run after the backend becomes usable",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sandbox/sandbox-local/src/index.ts",
+   "why": "The mechanism the reviewer describes is real, but the behavior is intended, documented, and pinned by a test — so it is not an actionable defect. (1) Code confirmed: packages/sandbox/sandbox-local/src/index.ts L492-496 does `this.selectedRunner ??= this.chainVerdict()` and L499-510 returns the literal `'unavailable'` when no rung passes, so the memo is never re-evaluated. (2) Intended and document"
+  },
+  {
+   "sev": "medium",
+   "title": "processSession() returns an empty list on macOS and Windows, so session/daemon descendants escape teardown",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/process-inspector.ts",
+   "why": "The evidence lines are real and current, but the finding's impact claim and its \"unmitigated defect\" framing do not survive reading the code and the repo's own design record.\n\nCONFIRMED facts: process-inspector.ts:350-352 (MacProcessInspector.processSession) and windows-inspector.ts:104-106 (WindowsProcessInspector.processSession) both hard-return []; Linux (process-inspector.ts:308-313) really do"
+  },
+  {
+   "sev": "medium",
+   "title": "bwrap grants an ephemeral --tmpfs /tmp while writableRoots() promises the real host /tmp and os.tmpdir()",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sandbox/sandbox-local/src/profiles.ts",
+   "why": "The bwrap `--tmpfs /tmp` behavior is explicitly intended, documented, and tested — not an unintended semantic gap.\n\n**Evidence from the actual code:**\n\n1. **Pinned by test**: `bwrap.e2e.ts:133-145` asserts the ephemeral /tmp is the desired behavior:\n   > `'workspace-write mounts an EPHEMERAL /tmp: the write succeeds inside, the host /tmp stays untouched'`\n   The test comment calls it \"the document"
+  },
+  {
+   "sev": "high",
+   "title": "session.list re-walks the whole project/session directory tree once per cold blank session",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/api-proxy.ts",
+   "why": "Confirmed against current code. (1) api-proxy.ts:534 calls persistence.readFrom(meta.id, 0, signal) after probeColdSessionMetadata already computed and stat'd the exact path via persistence.locate(meta) (lines 522-532). (2) summarizeCold (lines 553-555) probes whenever metadata?.blank !== false, so cached blank:true AND cache-miss both re-probe on EVERY session.list with no memoization — blank ses"
+  },
+  {
+   "sev": "medium",
+   "title": "Spill artifacts are never deleted anywhere in the spill stack — unbounded disk growth in the OS temp dir",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/spill/spill-local/src/store.ts",
+   "why": "The factual observation (no delete/purge/TTL in spill stack) is accurate, but this is explicitly documented intended deferred behavior, not an oversight. packages/spill/spill-local/README.md:31 lists under \"Known Limitations and Deferred Work\": \"Local spill files persist until external cleanup — the backend has no session-lifecycle deletion or age-based retention policy, because persisted, resumed"
+  },
+  {
+   "sev": "medium",
+   "title": "Automatic pressure compaction awaits ctx.llm.resolveModelInfo (an adapter round-trip) on every single agent step",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/compaction/compaction-basic/src/index.ts",
+   "why": "The mechanics are real (compaction-basic/src/index.ts:147-165 always awaits compactIfNeeded; :293 awaits resolveModelInfo before the :304 threshold check; llm/src/index.ts:646-661 forwards to adapter.resolveModel uncached) — but the finding's characterization, impact, and remedy are all wrong. (1) There is no \"adapter round-trip\": every concrete adapter resolves locally with zero I/O — llm-pi-ai/s"
+  },
+  {
+   "sev": "medium",
+   "title": "Un-normalized npm status passed straight to process.exit(), which wraps it and can drop trailing stderr",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/bin.ts",
+   "why": "The code citations are accurate — `plugin.ts:142` is `const exitCode = result.status ?? 1` with no range check, and `bin.ts:42` does `process.exit(runPlugin(...))`. Both mechanisms behind the claim fail verification, and the proposed fix changes nothing about the symptom.\n\n1) The \"out-of-range / GetExitCodeProcess-from-ENOENT\" origin is wrong. `result.error` is `undefined` in the observed case, so"
+  }
+ ],
+ "incomplete": [
+  {
+   "sev": "critical",
+   "title": "Fixed 256-float stack buffer `sc_f` overflows on any QG8 group with n > 8192",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/codec/block_codec.cpp",
+   "line": 401,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 3
+  },
+  {
+   "sev": "high",
+   "title": "Three tokenizer loaders read unvalidated vs/len from file: negative int -> size_t wrap -> unbounded resize + &s[0] UB",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/tokenizer/bpe_tokenizer_bpe.cpp",
+   "line": 511,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "GQA K/V expansion has no num_heads % num_kv_heads check: kh can exceed num_kv_heads-1 -> heap OOB read",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/model/transformer.cpp",
+   "line": 363,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "InferenceMemoryPool: size_t multiply wraps into an undersized pool, then alloc() indexes past it using the unwrapped capacity",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/inference/inference_paging.cpp",
+   "line": 263,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "PagedKVCacheBase public mutators call the *_locked helpers without holding async_mtx_, racing the async evict/load worker on the same std::map",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/model/kv_cache.cpp",
+   "line": 876,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "StreamingGenerator::generate(vector<int>) lacks the empty-input guard that generate_tokens got: (seq_len-1)*V pointer underflow",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/inference/generator.cpp",
+   "line": 242,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "KVCache::get_all evaluates caches_[layer] before get_range's bounds check, and get_range never clamps start <= end",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/model/kv_cache.cpp",
+   "line": 276,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Linear::forward divides by in_dim with no zero guard; Linear's ctor does not reject in_features <= 0",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/model/transformer.cpp",
+   "line": 73,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "flash_decoding indexes K and V using Q's batch/head/seq dimensions, ignoring their own",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/inference/inference_kv.cpp",
+   "line": 153,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "CompressedKVCache packs 2 bits/element into an n-byte buffer, trims to (n+3)/4, then get_k/get_v re-derive n = size*4 — over-reads the packed buffer",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/inference/inference_kv.cpp",
+   "line": 30,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "SpeculativeDecoder strides target logits by the DRAFT model's vocab size and indexes both models' distributions with draft token ids",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/inference/inference_speculative.cpp",
+   "line": 100,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "ContinuousBatching::step calls tokens.back() on a request that may have no tokens, and build_attention_mask indexes seq_lens with no size check",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/inference/inference_paging.cpp",
+   "line": 189,
+   "found_by": "tf-infer",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "high",
+   "title": "Settings write silently deletes a concurrent external edit to the same namespace (revision check runs before the on-disk reconcile)",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/settings/settings/src/index.ts",
+   "line": 621,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "writeFileAtomic never fsyncs the temp file or the parent directory — credentials and settings documents are not crash-durable",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/util/atomic-write/src/index.ts",
+   "line": 56,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "withFileLock records the holder's pid but never consults it — an orphaned lock permanently wedges every writer of the credentials/settings document",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/util/atomic-write/src/index.ts",
+   "line": 138,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "redactSecrets fails OPEN: a secret reachable only through a union/intersection/transform schema node is returned verbatim on the wire",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/settings/settings/src/redact.ts",
+   "line": 86,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "The JSON settings path leaks document content into logs and boot errors, contradicting the secret-safety rule the YAML branch implements",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/settings/settings-file/src/index.ts",
+   "line": 289,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "writeFileAtomic relies on a POSIX `mode` that Windows ignores, so .credentials.yaml inherits the user-profile DACL (which typically includes the local Users group)",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/util/atomic-write/src/index.ts",
+   "line": 58,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "cloneJsonShaped assigns into an object literal, so a `__proto__` key in a settings payload is silently swallowed by the prototype setter",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/settings/settings/src/index.ts",
+   "line": 277,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "patchNode uses `key in next`, so removing a YAML settings key named toString/valueOf/constructor never reaches disk",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/settings/settings-file/src/index.ts",
+   "line": 84,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "loadEnv applies .env with process.loadEnvFile and no bootstrap-name denylist, unlike its sibling loadLayeredEnv",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/boot/app-boot/src/index.ts",
+   "line": 78,
+   "found_by": "cf-infra",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "critical",
+   "title": "Default 'context-clear' stop policy can never fire — executeTask's discussion loop is unbounded",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 3015,
+   "found_by": "cf-orchestration",
+   "votesGot": 0,
+   "need": 3
+  },
+  {
+   "sev": "high",
+   "title": "Gauntlet quality gate is simulated: critic verdict is Math.random(), so the gate passes by looping",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 5878,
+   "found_by": "cf-orchestration",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "StateManager rejects legal MAD pipeline configs; AdvancedMADEngine's finally block masks the original error",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+   "line": 2146,
+   "found_by": "cf-orchestration",
+   "votesGot": 1,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "`--host 0.0.0.0` is rejected only as a CLI string literal; the webserver still accepts an all-interfaces bind and then auto-trusts every LAN IPv4",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/bundle/web-app/src/startup.ts",
+   "line": 74,
+   "found_by": "cf-web",
+   "votesGot": 1,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "Sourcemaps with full `sourcesContent` are emitted into the dist that the host serves",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/web/vite.config.ts",
+   "line": 113,
+   "found_by": "cf-web",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "high",
+   "title": "Blocking Stop hook force-continues the turn forever with no cap and a hardcoded stop_hook_active of false",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/hooks/hooks-claude-code/src/index.ts",
+   "line": 270,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "undefine and stop do not cancel or await an in-flight host-half activation, orphaning a live fiber with registered tools",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/extensions/cordis-host-runner/src/index.ts",
+   "line": 210,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "Runs left in starting-host or client-pending are never reconciled, permanently wedging the plugin in transition-in-flight",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/extensions/cordis-client-runner/src/client/orchestrator.ts",
+   "line": 182,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "The sandbox ctx and tool facade is escapable through any host-realm function, so the guard stated invariants are unenforceable",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/extensions/cordis-host-runner/src/guard.ts",
+   "line": 685,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "lastTurn copies and scans the entire session event log on every tool call, before any hook is known to match",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/hooks/hooks-claude-code/src/index.ts",
+   "line": 239,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "evaluateHostCode misclassifies any runtime-thrown sandbox SyntaxError as a parse failure and returns misleading bracket-balance advice",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/extensions/cordis-host-runner/src/sandbox.ts",
+   "line": 254,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "TeamJournal.state re-validates and re-folds the entire Lead session log on every read",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/experimental/agent-team/src/journal.ts",
+   "line": 30,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "orchestrate publishes inFlight only after its first await, so a re-entrant open starts a second unguarded activation",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/extensions/cordis-client-runner/src/client/orchestrator.ts",
+   "line": 312,
+   "found_by": "cf-misc",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "high",
+   "title": "AdamW applies the v bias-correction twice, scaling every update by sqrt(1-beta2^t)",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/trainer/optimizer.cpp",
+   "line": 115,
+   "found_by": "tf-misc",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "Release \"Step 5: Verify signatures\" verifies nothing, and missing signing tools report success",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/scripts/sign_release.sh",
+   "line": 177,
+   "found_by": "tf-build",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "Windows process inspector leaks native koffi memory on every liveness probe",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/windows-inspector.ts",
+   "line": 259,
+   "found_by": "cf-exec",
+   "votesGot": 1,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "drainPipe leaks 3-4 native koffi slots per iteration and busy-polls the event loop at 1 kHz",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sandbox/sandbox-windows-acl/src/spawn.ts",
+   "line": 175,
+   "found_by": "cf-exec",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "Linux PTY readiness polling enumerates all of /proc (plus per-thread syscall and /proc/<pid>/mem reads) every 50 ms",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/process-inspector.ts",
+   "line": 287,
+   "found_by": "cf-exec",
+   "votesGot": 1,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "terminal close() kills descendants before the shell, letting a survivor respawn an unkillable tree",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/terminal/terminal-bash/src/session.ts",
+   "line": 547,
+   "found_by": "cf-exec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "E2B adapter issues 50+ control-plane requests per second per running command",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/e2b/subprocess-e2b/src/index.ts",
+   "line": 56,
+   "found_by": "cf-exec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "JSONL append rollback and torn-tail repair truncate to a size captured with no inter-process lock, while the format documents a shared root as a legal deployment",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/session/session-persistence-jsonl/src/index.ts",
+   "line": 660,
+   "found_by": "cf-session",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "critical",
+   "title": "Lint gate disables oxlint's entire correctness category, so it passes real bugs",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.oxlintrc.json",
+   "line": 5,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 3
+  },
+  {
+   "sev": "critical",
+   "title": "vitest.e2e.config.ts is deleted from the working tree; breaks test:e2e and a required PR CI gate",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/vitest.e2e.config.ts",
+   "line": 1,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 3
+  },
+  {
+   "sev": "high",
+   "title": "packages/cf (23 TS files) is outside every workspace, typecheck, lint and coverage glob",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/package.json",
+   "line": 11,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "high",
+   "title": "Coverage exemption list removes most of the client UI layer from the 100% per-file gate",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/vitest.config.ts",
+   "line": 180,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "Repo-root config files are neither linted nor typechecked by any gate",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.oxlintrc.json",
+   "line": 29,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Pre-commit lint silently drops every type-aware rule via typeAware: false",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.oxlintrc.staged.json",
+   "line": 5,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Web lane loads root .env unconditionally and swallows every load error",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/vitest.web.config.ts",
+   "line": 9,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "tsdown.config.ts imports from build output, coupling the bundler config to a prior tsc emit",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/tsdown.config.ts",
+   "line": 2,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Real-API e2e runs on every trusted PR but is excluded from the all-checks-passed verdict",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.github/workflows/e2e.yml",
+   "line": 30,
+   "found_by": "xconfig",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "high",
+   "title": "Model-facing web_fetch has no SSRF/private-network guard and can reach the product's own unauthenticated loopback API",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/web/web-fetch-http/src/provider.ts",
+   "line": 6,
+   "found_by": "xsec",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "API gateway has no authentication; the only cross-site defense is a content-type check that does not cover the GET routes",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/fetch/handler.ts",
+   "line": 273,
+   "found_by": "xsec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "BYOK exportConfig redaction flag is inverted — the non-redacting path emits the literal string '***REDACTED***' instead of the key",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/byok.ts",
+   "line": 686,
+   "found_by": "xsec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "node-pty patch makes the spawn-helper path attacker-influenceable via an ambient CF_* env var and an unchecked sibling-executable fallback",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/patches/node-pty@1.2.0-beta.15.patch",
+   "line": 1,
+   "found_by": "xsec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "Credentials provider silently trusts <invocation cwd>/.env as an LLM API-key source",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/credentials/credentials-local/src/index.ts",
+   "line": 568,
+   "found_by": "xsec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "medium",
+   "title": "WDAC policy generator writes a cert thumbprint into CertPublisher (wrong field), trusts a passwordless self-signed user-store cert, and deploys raw XML that WDAC will not load",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/sign.ps1",
+   "line": 1,
+   "found_by": "xsec",
+   "votesGot": 0,
+   "need": 1
+  },
+  {
+   "sev": "high",
+   "title": "win32 shell:true forwards unescaped argv to cmd.exe, so npm arguments corrupt, expand and redirect",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+   "line": 129,
+   "found_by": "cf-cli",
+   "votesGot": 0,
+   "need": 2
+  },
+  {
+   "sev": "medium",
+   "title": "No error boundary around the dispatch; installFailLoud cannot catch a rejected top-level await",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/bin.ts",
+   "line": 29,
+   "found_by": "cf-cli",
+   "votesGot": 0,
+   "need": 1
+  }
+ ],
+ "unverified_low": [
+  {
+   "sev": "low",
+   "title": "deleteComposition's containment guard is a raw prefix test without a path separator",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/preset/agent-presets/src/authoring.ts",
+   "line": 192,
+   "found_by": "cf-infra"
+  },
+  {
+   "sev": "low",
+   "title": "`clientDocumentTitle` silently no-ops if the title placeholder ever drifts",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/web/vite.config.ts",
+   "line": 24,
+   "found_by": "cf-web"
+  },
+  {
+   "sev": "low",
+   "title": "The HTTP bridge collapses multi-valued response headers when re-emitting them onto the node response",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/http-bridge.ts",
+   "line": 76,
+   "found_by": "cf-web"
+  },
+  {
+   "sev": "low",
+   "title": "A deadline that fires after the tool has already resolved converts a successful result into a spurious TOOL_TIMEOUT",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/guard/timeout-policy/src/index.ts",
+   "line": 68,
+   "found_by": "cf-misc"
+  },
+  {
+   "sev": "low",
+   "title": "subagentChildren retains strong Agent references released only by a subagent/end edge that may never arrive",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/hooks/hooks-claude-code/src/index.ts",
+   "line": 125,
+   "found_by": "cf-misc"
+  },
+  {
+   "sev": "low",
+   "title": "The /permission command and the public set API write the approval-policy knob through different writers with different model-visible effects",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/interaction/permission-presets/src/index.ts",
+   "line": 289,
+   "found_by": "cf-misc"
+  },
+  {
+   "sev": "low",
+   "title": "closeBlock synthesizes `CallId('')` instead of a per-block identity when a tool call arrives with no id",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/llm/llm-deepseek/src/translate.ts",
+   "line": 71,
+   "found_by": "cf-llm"
+  },
+  {
+   "sev": "low",
+   "title": "Handler throw on a shared RPC channel answers a bare-text HTTP 500 instead of a server-response envelope",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/rpc-host.ts",
+   "line": 184,
+   "found_by": "cf-llm"
+  },
+  {
+   "sev": "low",
+   "title": "One unadmittable image in an MCP result collapses every image block to the same generic diagnostic",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/mcp/mcp-client/src/tools.ts",
+   "line": 478,
+   "found_by": "cf-llm"
+  },
+  {
+   "sev": "low",
+   "title": "Sandbox denial is inferred from a raw stderr substring, so ordinary permission errors are reported as policy denials",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/shell/bash-sandbox/src/helpers.ts",
+   "line": 112,
+   "found_by": "cf-exec"
+  },
+  {
+   "sev": "low",
+   "title": "Every search request re-materializes every attached session's full document set + sha256 fingerprint, and the index rebuilds persisted_docs rows for each persisted session once per process — all on the request path",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/session-query/session-query-sqlite/src/index.ts",
+   "line": 491,
+   "found_by": "cf-session"
+  },
+  {
+   "sev": "low",
+   "title": "Session-log ZIP entry paths are built from an unvalidated ImageAttachmentRef parsed out of the stored log",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/session-export.ts",
+   "line": 107,
+   "found_by": "cf-session"
+  },
+  {
+   "sev": "low",
+   "title": "Duplicate-code and dead-code detection are both switched off where they matter most",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/knip.json",
+   "line": 3,
+   "found_by": "xconfig"
+  },
+  {
+   "sev": "low",
+   "title": "serial-macos job is permanently disabled with if: false and left in the workflow",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.github/workflows/ci-master.yml",
+   "line": 119,
+   "found_by": "xconfig"
+  },
+  {
+   "sev": "low",
+   "title": "Duplicate entries in the web exclude / host include lists signal a fragile hand-maintained split",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/web/tsconfig.json",
+   "line": 37,
+   "found_by": "xconfig"
+  },
+  {
+   "sev": "low",
+   "title": "Repo tool disables Windows SmartScreen / CI reputation policy machine-wide with no confirmation or scope guard",
+   "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/disable_smartscreen.ps1",
+   "line": 1,
+   "found_by": "xsec"
+  },
+  {
+   "sev": "low",
+   "title": "Credential-scrub regex matches on name substrings, missing common secret-bearing env names",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess/src/index.ts",
+   "line": 44,
+   "found_by": "xsec"
+  },
+  {
+   "sev": "low",
+   "title": "A misspelled launcher flag is reported as \"--profile <name> is required\"",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/args.ts",
+   "line": 138,
+   "found_by": "cf-cli"
+  },
+  {
+   "sev": "low",
+   "title": "allowScripts hint misses npm's other git-host shorthands (gitlab:, bitbucket:, git://)",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+   "line": 150,
+   "found_by": "cf-cli"
+  },
+  {
+   "sev": "low",
+   "title": "A bundle resolution failure is treated as \"not a bundle\", silently removing it from cf.profile.bundles",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+   "line": 41,
+   "found_by": "cf-cli"
+  },
+  {
+   "sev": "low",
+   "title": "No coverage for cf plugin --help, npm-missing, or specs containing spaces",
+   "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/tests/args.spec.ts",
+   "line": 48,
+   "found_by": "cf-cli"
+  }
+ ],
+ "cluster_summaries": {
+  "find:tf-infer": "The inference/model/tokenizer/codec cluster is heavily \"bug-census\" annotated — many classic defects (empty-prompt pointer underflow, sampler div-by-zero, rope window OOB, QUANTReader header over-reads, tokenizer BPE/ByteLevel load bounds) have already been found and fixed, and the QUANT checkpoint reader in quant_format.cpp is genuinely well-hardened against malformed files. However the hardening is uneven, and three high-severity holes remain.\n\nThe worst is a stack buffer overflow in block_codec.cpp: dequant_grp8_compound declares a fixed `float sc_f[256]` but indexes it over `n/32` groups with no cap, so any QG8-family block larger than 8192 elements smashes the stack — and the project's own standard block size is 32768. The file already fixed this exact bug twice elsewhere (comments at lines 2146 and 2247), making this a missed third copy on the production checkpoint-load path.\n\nNext, the same tokenizer file contains both the fixed loader (BPETokenizer::load, with kMaxVocab/kMaxTokLen bounds and stream checks) and three unfixed clones (Unigram, WordPiece, MultiLingual) that pass raw file-controlled ints straight into resize(), so the identical exploit is safe through one class and open through three. The GQA K/V expansion in transformer.cpp divides num_heads by num_kv_heads without a divisibility check, reading heap past the cache tensor for any non-divisible config. InferenceMemoryPool's size_t multiply wraps into an undersized pool while alloc() still indexes by the unwrapped capacity. PagedKVCacheBase's public flush/load/clear/unload call the *_locked helpers without holding the mutex, racing the async disk worker on a shared std::map. And the empty-prompt guard that generate_tokens carries as an explicit BUGFIX was never applied to StreamingGenerator::generate's vector overload.\n\nThe remaining findings (KVCache::get_all/get_range layer and negative-length handling, Linear::forward dividing by a possibly-zero in_dim, flash_decoding indexing K/V by Q's shape, CompressedKVCache's 4x-oversized pack then trim, speculative decoding striding target logits by the draft vocab, and ContinuousBatching's unguarded tokens.back()) are real but narrower — mostly config- or caller-driven rather than on the default happy path. No evidence of integer overflow in the tensor size math reaching production callers was found, since Tensor::deserialize (the only unbounded-dim entry point) has zero call sites tree-wide.",
+  "find:cf-infra": "Overall the cluster is well-engineered and unusually self-aware: credentials-local is meticulous about never quoting secret values into diagnostics, refuses world-readable documents on POSIX, validates the whole YAML document before accepting it, and does its read-modify-write under a cross-process lock with the reconcile correctly placed before the render; storage-json/storage-sqlite validate every identifier against UNIT_NAME_RE before interpolation, use Map / Object.create(null) so `__proto__` record keys stay data, and fs-local's atomic writer handles Windows DACLs, no-clobber publication and staging-dir cleanup properly. The weaknesses cluster in two places rather than being scattered.\n\nThe sharpest issue is in the settings write path, not the credential one: SettingsProvider.write() takes its snapshot and evaluates expectedRevision before FileSettingsProvider.persistSection() reconciles from disk, so an external edit to the same namespace — including a `role('secret')` field — is reconciled, published to watchers, and then deleted from the file by renderYaml's key-deletion pass. The credentials provider does the same shape correctly, which makes it a clear oversight rather than a design choice. The second cluster is crash/kill recovery in util/atomic-write, which every durable user-data document depends on: writeFileAtomic never fsyncs the file or the parent directory (the sibling storage-json writer does, with an explicit fsyncDirectory), and withFileLock writes the holder's pid but never reads it back, so a SIGKILL during the 30s network-round-trip credential mutation permanently wedges all credential writes until an operator deletes the lock file by hand. The third cluster is secret redaction, where redactSecrets fails open on any schema node it does not recognise and the JSON settings path hands V8's excerpt-bearing SyntaxError message to the logger and boot diagnostic — both of which quietly undercut the deliberate secrecy discipline the YAML and credential paths implement.\n\nRemaining findings are real but narrower: a POSIX `mode` that Windows ignores leaves credentials inherited-ACL-protected, `__proto__` keys are dropped by object-literal assignment in the settings clone/merge/redact paths, `key in next` blocks deletion of prototype-named YAML keys, app-boot's legacy loadEnv bypasses the bootstrap-variable denylist its sibling enforces, and deleteComposition's containment check is a separator-less prefix test. No path traversal, symlink-following escape, or SQL/identifier injection survived verification — those surfaces are genuinely tight. There is a meaningful test gap around the lost-update scenario (settings-file's concurrency specs cover cross-namespace preservation, which is exactly the case that works, and never a same-namespace concurrent external edit), and around orphan-lock recovery.",
+  "find:cf-orchestration": "Scope note: the declared review paths (packages/core, packages/mad, packages/workflow, packages/subagent) contain mostly thin published stubs; the real MAD orchestration heart named in the hotspot list lives in packages/cf/src/{mad,iwin,byok}.ts. I reviewed both, prioritizing the hotspots. Overall health of this cluster is poor at the orchestration layer and good at the session/subagent layer.\n\nThe MAD core (god-runtime.ts, 6475 lines, 26 inlined classes) is a simulation wearing the clothes of a production system. The three gates that consumers are meant to trust — verification, gauntlet, and production-readiness — are respectively a coin flip, a round-counter, and three hard-coded `true` literals; the docs, class names and FinalReport fields all claim otherwise. On top of that, the default discussion stop policy mathematically cannot terminate, and the HOT memory layer hard-hangs the process at capacity. Together these mean a default MAD run either never finishes or finishes with fabricated quality signal.\n\nConcurrency-wise the picture is mixed. The EventBus request/response correlation leaks a listener per timeout and cross-delivers between concurrent callers; the byok fallback chain recurses; the GodRuntime state machine throws on configurations that the config surface openly advertises; and the published Scheduler never enforces its cost budget at all. Cancellation is largely decorative — GauntletLoop.stop() is a no-op because shouldContinueGauntlet never reads isRunning, and I-WIN's pause()/enabled flag are likewise ignored by shouldContinue().\n\nBy contrast, packages/core/session, packages/core/agent, packages/subagent/subagent (continuation.ts) are carefully written: explicit cycle guards (liveLineage's `seen` set), documented send-versus-dispose cutoffs, and non-reentrant drain logic. I found nothing reportable there.\n\nAlso worth flagging but below the cut: packages/cf/src/mad/utils/examples.ts has a missing paren at line 243 producing 67 syntax errors — the package's own `npm run typecheck` exits 2, so the typecheck CI gate is already red. mad/utils/advanced-verification.ts uses stateful /g regexes with `.test()` in loops (debugRegex:515, anyPattern:977) and misses roughly every other matching line — todoRegex at 497 is accidentally saved by the `.match()` on the following line resetting lastIndex. Scheduler.topologicalSort() has no cycle detection, so a cyclic task graph is silently accepted and the tasks stall in 'pending' forever. MemoryFabricManager.addToHot (god-runtime:4055) calls the async demoteToWarm() without await from a sync method, so warm writes are unordered and rejections are unhandled. AdvancedMADEngine.execute discards the caught error entirely — the returned FAILED result carries no error message, so callers cannot distinguish a bad task from a crashed runtime.",
+  "find:cf-web": "Scope note first: the assigned path `C:/Users/thaku/Workspaces/fusion/code-fusion/apps/web` is a thin Vite shell — 2 source files (`main.ts`, `node-module-stub.ts`), a 176-line `vite.config.ts`, a 14-line `index.html`, and an 89-file e2e lane. None of the hotspot files named in the task live inside it, and the XSS/CSRF/API-authz/streaming surfaces named in the cluster focus are implemented in the workspace packages that shell mounts and the host server that serves its `dist/`. I therefore reviewed `apps/web` in full and then followed the boundary it actually owns: `packages/host/frontend-static` (the SPA dist server), `packages/host/webserver` (index injection), `packages/client/connection` (the `/api` fence, WebSocket downlinks, HTTP bridge), `packages/client/ui-primitives/markdown` and `packages/client/web` (the render and boot surface), and `packages/bundle/web-app` (the bind/host policy). Overall health is good on the parts most reviewers would worry about: the markdown renderer is genuinely well-defended (protocol allowlist via `sanitizeUrl`, raw HTML kept as literal text so no HTML parser enters the pipeline, shiki output escaped before `dangerouslySetInnerHTML`, KaTeX parsed through `DOMParser` rather than string splicing, and `LANG_ALIASES` is a `Map` precisely so fence info strings like `constructor` cannot hit an inherited property); `serveStatic`'s traversal check is correct and has real e2e coverage including `/..%2f..%2fetc%2fpasswd`; `session-export` sanitizes session ids to a single safe path segment and guards surrogate-pair splits; and `isTrustedApiRequest` is a well-reasoned DNS-rebinding plus cross-site fence (Host bound on every request, no Origin-missing shortcut, `sec-fetch-site: cross-site` refused) backed by a 108-line unit suite. The findings below are therefore mostly defense-in-depth and operational-hardening issues rather than live exploitable holes — with one exception at the top: the `--host 0.0.0.0` safety rail is enforced in exactly one place (a string literal in the CLI's commander action) while the webserver still accepts the all-interfaces bind and, on receiving it, silently adds every non-internal LAN IPv4 to the trust fence as a port-less authority. That is the one finding I would fix before anything else. The most valuable structural observation is not in any single finding: the web app's security boundary is split across three packages that no single owner reviews together — `webserver` (which splices inline scripts into the document and trusts plugin-supplied injection rows), `frontend-static` (which serves the dist and sets no headers), and `connection` (which fences `/api`). A CSP belongs at the boundary between the first two, and no test currently pins that boundary end-to-end.",
+  "find:cf-misc": "These secondary packages are, on the whole, unusually well-engineered: fail-loud config validation, cross-realm clone guards at the VM boundary, turn-enclosed audit pairs for approvals and hooks, compare-and-set goal/task revisions, and content-addressed attachment storage with real durability barriers. The weaknesses cluster in the lifecycle edges rather than the happy paths. The most serious theme is missing cancellation/settlement coordination around asynchronous activations and hook-driven control flow: a blocking Stop hook can drive the agent loop forever (both bridges hardcode stop_hook_active to false and have no continuation cap), and cordis_undefine/cordis_stop will happily delete a plugin out from under an in-flight host-half activation, permanently orphaning a live fiber with registered tools and handlers that nothing can ever dispose. The second theme is hot-path cost: both hook bridges copy and scan the entire session event log on every single tool call even when no hook matched, and the experimental agent-team journal re-runs a zod-validated full-log fold on every mailbox/task/roster read. The third is that the Cordis dynamic-package sandbox is honestly labelled non-containment, but the specific invariants the guard facade claims to enforce (no Context escape, nothing invocable) are bypassable by construction through any host-realm function, leaving the once-per-plugin human approval of the client half as the only real gate, and that grant covers all future package versions. I found no path-traversal, zip-slip, or base64/serialization bugs in the attachment, workspace, or skill-filesystem surfaces, and no permission-decision inversion in the hook merge logic.",
+  "find:cf-llm": "Overall the cluster is unusually well-hardened: the LLM seam, DeepSeek adapter, pi-ai adapter, LSP framing/translation, gateway reflection boundary, and the client Host trust fence all show deliberate threat modelling (closed-union switches, structural guards on every wire payload, credential snapshots bound to endpoints, exact rpcId echo discipline, JSON-safety asserts on every typert argument and result). I found no exploitable secret leak, no sandbox escape, and no data-loss path.\n\nThe gaps that survived verification cluster around one theme: defensive code that is *structurally* thorough but *numerically* or *terminologically* under-constrained at the boundary with an untrusted peer. The highest-impact one is MCP `tools/list` pagination, where trusting an external server's cursor unbounds a loop that plugin activation and host unload both await — a third-party process can wedge the harness indefinitely. The LSP connection drops string-id JSON-RPC responses (JSON-RPC-legal) and, because the resulting hang is an abort rather than a transport failure, the poisoned instance is never evicted from the workspace pool. Two adapter issues are cost bugs rather than correctness bugs: pi-ai's first offload pass budgets against master attachment bytes instead of request bytes, over-trimming images by roughly 4x, and DeepSeek's stale-file recovery fires on any status whose body merely mentions a file, duplicating an upload and a POST for a failure that was never retriable.\n\nOn the trust boundary, the SDK JSON-RPC server is the weakest link: it casts wire params with `as unknown as` and commits caller-supplied `contentBlocks` straight into the durable session log, so a caller can inject a forged `tool-result` block — the exact prompt-injection surface the brief targets — while the sibling ACP bridge validates the same shape properly. The stdio transport it sits on writes frames fire-and-forget with no 'error' listener, so a broken parent pipe becomes an uncaught EPIPE crash rather than a clean exit. Finally, `isLoopbackHostname` accepts non-canonical IPv6 and zero-padded IPv4 spellings of 127.0.0.1, which is the sole Host fence for the loopback-pinned privileged method set on plain HTTP; the adjacent `assertTrustedAuthority` already refuses exactly this class of spelling elsewhere in the same package.\n\nThe remaining findings (http-bridge's uncontained handler rejection, the bare-text 500 on shared RPC channels, the empty synthesized tool-call id, and the collapsed per-image MCP diagnostic) are narrower but share the same shape: a failure path that reaches the wrong layer or loses the one piece of information the next consumer needed. None of them block shipping; the MCP pagination bound, the LSP string-id case, and the SDK content validation are the three worth fixing first.",
+  "find:tf-misc": "Reviewed ~39k lines across src/math, src/trainer, src/multimodal, src/agi, tools and bench. The cluster is in better shape than the file sizes suggest — the earlier \"bug census\" passes fixed a lot (softmax max-subtraction, subnormal FP8 encoding, lock-order inversions, empty-input pointer underflow), and src/agi is unusually honest about being non-functional rather than pretending. The real damage is concentrated in the distributed-training and SIMD layers. The single worst defect is that DDP never synchronizes gradients at all: build_buckets() fills Bucket::size but leaves Bucket::numel at 0, and allreduce_bucket() sizes every collective off numel, so ctx_.all_reduce is called with a count of 0 and every rank silently trains on its own local gradients. The ASYNC mode is independently broken twice over (a lock_guard whose scope ends before the work, and a self-deadlock on a non-recursive mutex). On the numerics side, the default AVX2 GELU kernel uses a 9th-order Taylor erf series that diverges past |x|~2 and is reachable from the transformer and MoE forward paths, and the primary AdamW optimizer applies bias correction twice, so every step is scaled by sqrt(1-beta2^t) — about 1% of the correct magnitude at t=1 under LLM-typical beta2. Memory-safety issues are narrower but real: an 8-wide AVX2 RoPE kernel that strides by 4, double-rotating most lanes and writing 16 bytes past the buffer; a ViT forward that collapses the batch dim and then over-reads; and a single shared fallback flag that turns a VirtualAlloc pointer into a free() call. Build-wide AVX2 plus a force-defined __AVX2__ macro on MSVC quietly voids every runtime CPU-dispatch check in the tree. tools/ and bench/ came out clean — the earlier hardening on those held up.",
+  "find:tf-build": "Build/Docker/scripts cluster health is poor: the failures cluster around gates that report success without testing anything, and around release artifacts that are not portable. Two findings are proven outright — the cross-platform determinism script can never fail (its scan function is called with a missing argument under `set -u`, so both artifact lists are always empty and it prints PASS), and every shipped Linux binary is built with `-march=native` (Dockerfile, release.yml, make_dist.sh, build_linux.sh all inherit it from cmake/compiler.cmake's GCC Release branch), so released artifacts SIGILL on any CPU older than the build host. The third structural problem is that CMake's generated quant_config.h is linked into the library but included by zero translation units, which permanently disables the real CPUAVX2 backend on every platform (including MSVC x64, where arch.cmake force-enables it) and leaves is_avx2_available() unconditionally false — the `#cmakedefine` wiring is dead. Beyond those: the release-signing script's \"Verify signatures\" step runs no `signtool verify` and no `gpg --verify` while still printing \"Release Signing Complete\" (and logs a success message when gpg is absent); build_linux.sh's executable check silently skips missing binaries; the `paged_kv_4m_test` exclude-regex does not match the registered ctest name `test_paged_kv_4m`, so the 256 MiB test runs on every \"fast\" build; coverage.sh zeroes its lcov counters after running ctest and before capturing, so its HTML report is always ~0%; make_dist.sh tars a nonexistent README.md and under `set -e` aborts before producing the source tarball; and all ASAN CI is configured as `-DCMAKE_BUILD_TYPE=Release`, compounding `-O3 -DNDEBUG -march=native` on top of the sanitizers while the project's own QUANT_SANITIZE option — the single intended configuration point — is never set by anything. Hardening is thin overall: stack protector and FORTIFY_SOURCE=2 are present but there is no PIE, no RELRO and no _GLIBCXX_ASSERTIONS, which is notable for the two binaries that are actually network- and plugin-facing. Positives worth keeping: the scripts that do run are consistently `set -euo pipefail`, the Dockerfile correctly drops to a non-root `appuser` and cleans apt lists, sign_release.sh already refuses a hardcoded signing password, and the compiler module does apply -Wall -Wextra -Wpedantic with -fstack-protector-strong. The overall pattern is that several safety nets were written and then wired incorrectly, so they pass unconditionally rather than fail — which is worse than having no net at all, because it manufactures false confidence in the release path.",
+  "find:cf-exec": "The command-execution and sandboxing cluster is unusually well-engineered for a security-critical surface: the Windows ACL restricted-token runner fails closed on every Win32 call (the original POC's fail-open behaviour is explicitly eliminated), argv quoting follows CommandLineToArgvW rules correctly, remote E2B shell text is single-quote-escaped with validated numeric interpolation, spill files use O_EXCL + random names, and job/schedule teardown paths are careful about idempotency and first-wins settlement. I found no exploitable sandbox escape, command injection, or data-corruption bug in the reviewed paths, and no critical-severity finding.\n\nThe real problems are concentrated in (a) native/peripheral resource management and (b) hot-path polling cost. Two confirmed, measured native memory leaks exist because `koffi.alloc()` is called constantly in poll loops with zero `koffi.free()` anywhere in the repo — the Windows process inspector (every PTY readiness poll and teardown tick, primary Windows platform) and the windows-acl pipe drain (which additionally busy-polls at 1 kHz for the whole child lifetime). Linux and macOS terminal readiness/teardown are similarly expensive by construction: a full /proc sweep plus per-thread syscall and /proc/mem reads every 50 ms, and a fresh `ps -axo` per identity on macOS. Spill files holding full command output are never cleaned up, so disk usage grows monotonically for the life of the machine.\n\nCorrectness-wise the notable issues are narrower: the sandbox provider memoizes the literal `'unavailable'` verdict so a single transient probe failure permanently bricks confinement until restart; terminal `close()` sweeps descendants before killing the shell, which lets a survivor respawn a tree that can make the session unkillable; `processSession()` is a hard `[]` stub on macOS and Windows so daemonized descendants escape teardown; and bwrap's `--tmpfs /tmp` contradicts the shared `writableRoots()` contract that the fs fence enforces, producing a bash-vs-write-tool asymmetry on Linux. The E2B adapter's 20 ms status polling translates to 50+ cloud API calls per second per running command.\n\nOverall: high design quality, low structural risk, but the resource-accounting and platform-parity gaps should be fixed before this runs long-lived or on many concurrent sessions.",
+  "find:cf-session": "This cluster is unusually well-hardened on the paths that matter most for data integrity: I deep-read the JSONL and SQLite persistence backends, the PersistenceCoordinator (per-id serialization, torn-tail repair, crash-repair closers, adoption, retirement/quiescence), the write-behind controller, the zstd frame scanner and private decoder, the chunk-row packing codec, the session surface fold + provenance validation, and the compaction transaction (tool-pairing balance, stability re-checks, shadow-price protocol). I found no committed-prefix corruption bug, no seq/contiguity hole, no crash-repair data-loss path, no zip-slip or path-traversal in the exporters, and no SQL/FTS5 injection (every caller value is bound). The defensive posture is high — many findings I chased (surrogate splitting in zip pushes, FTS5 quote escaping, link-vs-rename publish, torn-zstd-frame recovery, tool/result rewrite rules) all checked out correct. The real risk in this cluster is lifecycle and scaling rather than correctness: the host's primary listing RPC re-walks the entire project/session directory tree once per blank cold session; the SSE fan-out buffers every session event for a stalled client with no backpressure (while the zip path in the same package does implement it); spilled tool output and instruction-file reads have no retention or aggregate budget; the automatic compaction hook does an adapter round-trip on every agent step; and the JSONL backend's append rollback / torn-tail repair truncate without any inter-process lock despite the format documenting a shared root as a legal deployment. None of these corrupt existing data, but three of them (listing fan-out, spill GC, instruction read budget) grow without bound on the paths a long-lived host actually exercises.",
+  "find:xconfig": "The code-fusion tooling layer is unusually sophisticated (a real dependency-graph gate runner, partitioned 100%-per-file coverage, a host/client TypeScript program split) but two config defects quietly invalidate much of it. First, .oxlintrc.json turns off oxlint's entire `correctness` category, so the lint gate — run in PR CI, in check:ci:consumers, and again on every pre-commit — reports zero findings for classic bug classes (no-debugger, no-self-assign, no-sparse-arrays, valid-typeof, no-undef, no-unreachable); I verified this empirically against oxlint 1.76.0, and confirmed the empty `plugins: []` is not the cause. The config compensates with a large hand-listed typescript/* set, but those are a different plugin and do not replace the disabled builtins. Second, vitest.e2e.config.ts is an uncommitted working-tree deletion (still tracked at HEAD, no replacement, and unrelated to the deepseek->codefusion rename that explains the tree's other deletions), which breaks npm run test:e2e, the built-bin-smoke gate that ci-primary/ci-artifacts/ci-consumers/ci-windows-observational all depend on, and three dispatched workflows. Beyond those: packages/cf (23 TS files) sits outside every workspace, tsconfig, lint and coverage glob and is effectively orphaned; the coverage exemption list removes 42 of 43 client-runtime files and all extension packages from the \"100% or it doesn't merge\" bar under stale TODO(gui) markers; and the root configs that define the whole CI matrix (vitest.config.ts, tsdown.config.ts, vitest.shared.ts) are neither linted nor typechecked by anything. PR-level gate wiring itself is sound — all-checks-passed correctly uses if: always(), needs covers every blocking job, and typecheck does reach PRs indirectly through the build gate's tsc -b in the consumers lane. Recommend fixing the two criticals first (restore vitest.e2e.config.ts; re-enable the correctness category and re-triage whatever that surfaces), then deciding explicitly whether packages/cf is owned or should be deleted.",
+  "find:xsec": "code-fusion's core execution layers (subprocess-local, fs-sandbox, sandbox-windows-acl, credentials-local, mcp-client, frontend-static) are unusually well-hardened — private mkdtemp spill dirs with O_EXCL+0600, fail-closed sandbox escalation ordering, ACL path-boundary disjointness checks, and a content-type CSRF write fence on the RPC carrier. The real gaps there are at the edges, not the core: the model-facing `web_fetch` tool deliberately declines private-network/SSRF blocking and can therefore reach the product's own unauthenticated loopback API (including `GET /api/session.export`, which returns a session-log ZIP with no auth), plus two inverted/under-specified defaults (BYOK export redaction is backwards; the `<cwd>/.env` credential layer trusts any repo the CLI is launched in). transformers-fusion is materially weaker: its \"sandbox\" module honestly refuses to execute anything while the Flywheel path really compiles and runs LLM-generated C++ with zero isolation out of a fixed world-writable /tmp directory; both HTTP servers bind INADDR_ANY with auth disabled by default (quant_server has no auth mechanism at all); and shell/JSON handling is hand-rolled (bearer tokens on a `popen` argv, substring-based JSON parsing). The shipped WDAC/SmartScreen tooling is either malformed or inert.",
+  "find:cf-cli": "apps/cli is a thin, well-documented launcher (6 source files, ~995 lines) whose arg grammar in args.ts is careful and largely correct — pass-through boundary, dump validations, and the mutual-exclusion checks all behave as documented, verified by driving the real `parseCfArgs`. The problems concentrate in `cf plugin`, the weakest-tested surface: its win32 `shell: true` npm forwarder concatenates unescaped user argv into a cmd.exe command line (space-splitting breaks the documented `anchorPathSpec` anchoring, `%VAR%` expands, and `>` silently writes a file into the profile directory — all reproduced), and the same shell choice makes the `ENOENT` \"npm not found\" branch provably unreachable on the only platform that sets `shell`, yielding a wrong message and a wrong exit code. `cf plugin` also never runs the one-way legacy `~/.dsh` migration while being the command that first creates `~/.cf`, permanently stranding legacy data; and it has no help surface at all because the root's `.helpOption(false)` is inherited. The next tier is error/UX correctness: bin.ts has no error boundary and profile-boot's `installFailLoud` listens only for `unhandledRejection`, which a rejected top-level await never emits, so ordinary config failures print raw V8 stacks; `rejectParentOptions('plugin')` is shadowed by commander's mandatory-option check and never fires; the launcher's own `agent-presets` overlay clobbers `roots` rather than appending to it; and an out-of-range `result.status` is passed straight to `process.exit`. No security-critical or data-corrupting defects beyond the legacy-migration skip; exit codes are correct in every case tested. The test suite covers the web/headless/dump/boot paths well but has no coverage for plugin help, npm-missing, or space-bearing path specs — precisely the three paths that are broken."
+ }
+}

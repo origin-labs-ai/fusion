@@ -1,0 +1,366 @@
+ninja: Entering directory `build-eng2'
+[1/240] Linking CXX static library quant_moe.lib
+[2/240] Linking CXX static library quant_inference_opt.lib
+[3/240] Linking CXX static library quant_distributed.lib
+[4/240] Linking CXX static library quant_multimodal.lib
+[5/240] Linking CXX static library quant_engine.lib
+[6/240] Linking CXX static library quant_moe_variants.lib
+[7/240] Linking CXX static library quant_dense.lib
+[8/240] Linking CXX static library quant_agi.lib
+[9/240] Building CXX object CMakeFiles/quant_moe_enhance.dir/src/model/moe_enhance.cpp.obj
+In file included from C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/model/moe_enhance.cpp:1:
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/include\quant/moe_enhance.h:22:13: warning: private field 'hidden_' is not used [-Wunused-private-field]
+   22 |     int64_t hidden_, n_experts_;
+      |             ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/include\quant/moe_enhance.h:68:13: warning: private field 'n_experts_' is not used [-Wunused-private-field]
+   68 |     int64_t n_experts_, top_k_;
+      |             ^
+2 warnings generated.
+[10/240] Building CXX object CMakeFiles/quant_format_list.dir/tools/format_list.cpp.obj
+[11/240] Building CXX object CMakeFiles/quant_infer.dir/src/server/json_parser.cpp.obj
+[12/240] Building CXX object CMakeFiles/quant_infer.dir/src/tokenizer/qwen35_tokenizer.cpp.obj
+[13/240] Building CXX object CMakeFiles/quant_convert.dir/tools/convert.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/convert.cpp:39:77: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   39 |             args.target_bpw = quant::cli_parse::parse_float(argv[i-1], argv[++i]);
+      |                                                                  ~          ^
+1 warning generated.
+[14/240] Building CXX object CMakeFiles/quant_bench.dir/tools/bench.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/bench.cpp:33:69: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   33 |             args.size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                          ~          ^
+1 warning generated.
+[15/240] Building CXX object CMakeFiles/quant_info.dir/tools/info.cpp.obj
+[16/240] Building CXX object CMakeFiles/quant_finetune.dir/tools/finetune.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/finetune.cpp:34:80: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   34 |             args.learning_rate = quant::cli_parse::parse_float(argv[i-1], argv[++i]);
+      |                                                                     ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/finetune.cpp:36:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   36 |             args.num_epochs = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/finetune.cpp:38:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   38 |             args.batch_size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/finetune.cpp:40:91: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   40 |             args.seq_length = static_cast<int>(quant::cli_parse::parse_ll(argv[i-1], argv[++i]));
+      |                                                                                ~          ^
+4 warnings generated.
+[17/240] Building CXX object CMakeFiles/quant_train.dir/tools/train.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:46:74: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   46 |             args.batch_size = quant::cli_parse::parse_ll(argv[i-1], argv[++i]);
+      |                                                               ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:48:74: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   48 |             args.seq_length = quant::cli_parse::parse_ll(argv[i-1], argv[++i]);
+      |                                                               ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:50:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   50 |             args.num_epochs = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:52:80: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   52 |             args.learning_rate = quant::cli_parse::parse_float(argv[i-1], argv[++i]);
+      |                                                                     ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:54:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   54 |             args.vocab_size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:56:76: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   56 |             args.hidden_size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                 ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:58:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   58 |             args.num_layers = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:60:74: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   60 |             args.num_heads = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                               ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:62:77: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   62 |             args.log_interval = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                  ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train.cpp:64:78: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   64 |             args.save_interval = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                   ~          ^
+10 warnings generated.
+[18/240] Building CXX object CMakeFiles/quant_infer.dir/tools/infer.cpp.obj
+[19/240] Building CXX object CMakeFiles/train_64m.dir/tools/train_64m.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/train_64m.cpp:78:10: warning: variable 'quick_test' set but not used [-Wunused-but-set-variable]
+   78 |     bool quick_test = false;
+      |          ^
+1 warning generated.
+[20/240] Building CXX object CMakeFiles/quant_speculative.dir/src/inference/speculative_decoder.cpp.obj
+[21/240] Building CXX object CMakeFiles/quant_server.dir/src/server/json_parser.cpp.obj
+[22/240] Building CXX object CMakeFiles/quant_evaluate.dir/src/server/json_parser.cpp.obj
+[23/240] Building CXX object CMakeFiles/generate_comparison_visuals.dir/tools/generate_comparison_visuals.cpp.obj
+[24/240] Building CXX object CMakeFiles/quant_production.dir/src/server/production_api.cpp.obj
+[25/240] Building CXX object CMakeFiles/quant_evaluate.dir/src/tokenizer/qwen35_tokenizer.cpp.obj
+[26/240] Building CXX object CMakeFiles/probe_mi_extraction.dir/tools/probe_mi_extraction.cpp.obj
+[27/240] Building CXX object CMakeFiles/quant_server.dir/src/tokenizer/qwen35_tokenizer.cpp.obj
+[28/240] Building CXX object CMakeFiles/quant_evaluate.dir/tools/evaluate.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/evaluate.cpp:38:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   38 |             args.batch_size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/evaluate.cpp:40:77: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   40 |             args.context_size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                  ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/evaluate.cpp:42:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   42 |             args.max_tokens = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+3 warnings generated.
+[29/240] Building CXX object CMakeFiles/quant_quantize.dir/tools/quantize.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quantize.cpp:80:73: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   80 |             args.num_bits = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                              ~          ^
+1 warning generated.
+[30/240] Building CXX object CMakeFiles/bench_inference.dir/bench/bench_inference.cpp.obj
+[31/240] Building CXX object CMakeFiles/bench_gemm_tiled.dir/bench/bench_gemm_tiled.cpp.obj
+[32/240] Building CXX object CMakeFiles/quant_serve.dir/tools/serve.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/serve.cpp:32:69: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   32 |             args.port = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                          ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/serve.cpp:34:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   34 |             args.batch_size = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/serve.cpp:36:76: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   36 |             args.num_workers = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                 ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/serve.cpp:38:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   38 |             args.max_tokens = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+4 warnings generated.
+[33/240] Building CXX object CMakeFiles/bench_kernels.dir/bench/bench_kernels.cpp.obj
+[34/240] Building CXX object CMakeFiles/bench_throughput.dir/bench/bench_throughput.cpp.obj
+[35/240] Building CXX object CMakeFiles/bench_hotswap_lat.dir/bench/bench_hotswap_lat.cpp.obj
+[36/240] Building CXX object CMakeFiles/bench_hardware.dir/tests/test_bench.cpp.obj
+[37/240] Building CXX object CMakeFiles/quant_production.dir/src/server/http_server.cpp.obj
+[38/240] Linking CXX static library quant_gle.lib
+[39/240] Building CXX object CMakeFiles/bench_all.dir/bench/bench_all.cpp.obj
+[40/240] Building CXX object CMakeFiles/quant_thread_safety.dir/src/core/thread_safety.cpp.obj
+[41/240] Linking CXX static library quant_production.lib
+[42/240] Building CXX object CMakeFiles/quant_server.dir/tools/quant_server.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp:55:69: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   55 |             args.port = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                          ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp:57:76: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   57 |             args.num_workers = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                 ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp:59:75: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   59 |             args.max_tokens = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                                ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp:61:78: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   61 |             args.temperature = quant::cli_parse::parse_float(argv[i-1], argv[++i]);
+      |                                                                   ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp:63:70: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   63 |             args.top_k = quant::cli_parse::parse_int(argv[i-1], argv[++i]);
+      |                                                           ~          ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp:65:72: warning: unsequenced modification and access to 'i' [-Wunsequenced]
+   65 |             args.top_p = quant::cli_parse::parse_float(argv[i-1], argv[++i]);
+      |                                                             ~          ^
+6 warnings generated.
+[43/240] Linking CXX static library quant_speculative.lib
+[44/240] Building CXX object CMakeFiles/inferno_info.dir/inferno/inferno_format_info.cpp.obj
+[45/240] Building CXX object CMakeFiles/gle_report.dir/tools/gle_report.cpp.obj
+[46/240] Building CXX object CMakeFiles/bench_quant_quant.dir/bench/bench_quant_quant.cpp.obj
+[47/240] Building CXX object CMakeFiles/bench_speed.dir/tools/bench_speed.cpp.obj
+[48/240] Building CXX object CMakeFiles/bench_training.dir/bench/bench_training.cpp.obj
+[49/240] Building CXX object CMakeFiles/bench_multimodal.dir/bench/bench_multimodal.cpp.obj
+[50/240] Building CXX object CMakeFiles/bench_quality.dir/bench/bench_quality.cpp.obj
+[51/240] Building CXX object tests/CMakeFiles/test_math.dir/test_math.cpp.obj
+[52/240] Building CXX object tests/CMakeFiles/test_format.dir/test_format.cpp.obj
+[53/240] Building CXX object tests/CMakeFiles/test_kernel.dir/test_kernel.cpp.obj
+[54/240] Building CXX object tests/CMakeFiles/test_tensor.dir/test_tensor.cpp.obj
+[55/240] Building CXX object tests/CMakeFiles/test_hybrid_scheduler.dir/test_hybrid_scheduler.cpp.obj
+[56/240] Building CXX object tests/CMakeFiles/test_model.dir/test_model.cpp.obj
+[57/240] Building CXX object CMakeFiles/bench_gpt2_inference.dir/bench/bench_gpt2_inference.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/bench/bench_gpt2_inference.cpp:590:9: warning: variable 'fp32_top1' set but not used [-Wunused-but-set-variable]
+  590 |     int fp32_top1 = -1;
+      |         ^
+1 warning generated.
+[58/240] Building CXX object CMakeFiles/inferno_train_sim.dir/inferno/inferno_training_sim.cpp.obj
+[59/240] Building CXX object CMakeFiles/bench_poc.dir/bench/bench_poc_benchmark.cpp.obj
+[60/240] Building CXX object CMakeFiles/bench_inferno.dir/inferno/inferno_bench.cpp.obj
+[61/240] Building CXX object tests/CMakeFiles/test_hybrid_expert.dir/test_hybrid_expert.cpp.obj
+[62/240] Building CXX object tests/CMakeFiles/test_hybrid_model.dir/test_hybrid_model.cpp.obj
+[63/240] Building CXX object tests/CMakeFiles/test_tokenizer.dir/test_tokenizer.cpp.obj
+[64/240] Building CXX object tests/CMakeFiles/test_mix_components.dir/test_mix_components.cpp.obj
+[65/240] Building CXX object tests/CMakeFiles/test_gle_telemetry.dir/test_gle_telemetry.cpp.obj
+[66/240] Building CXX object tests/CMakeFiles/test_hybrid_moe.dir/test_hybrid_moe.cpp.obj
+[67/240] Building CXX object CMakeFiles/bench_format_comparison.dir/bench/bench_format_comparison.cpp.obj
+[68/240] Building CXX object tests/CMakeFiles/test_gradient_check.dir/test_gradient_check.cpp.obj
+[69/240] Building CXX object tests/CMakeFiles/test_expert_parallel.dir/test_expert_parallel.cpp.obj
+[70/240] Building CXX object tests/CMakeFiles/test_debug.dir/test_debug.cpp.obj
+[71/240] Building CXX object tests/CMakeFiles/test_mixed_precision_proof.dir/test_mixed_precision_proof.cpp.obj
+[72/240] Building CXX object tests/CMakeFiles/test_quant_engines.dir/test_quant_engines.cpp.obj
+[73/240] Building CXX object tests/CMakeFiles/test_all.dir/test_all.cpp.obj
+[74/240] Building CXX object tests/CMakeFiles/test_trainer.dir/test_trainer.cpp.obj
+[75/240] Building CXX object tests/CMakeFiles/test_native_quant_moe.dir/test_native_quant_moe.cpp.obj
+[76/240] Building CXX object tests/CMakeFiles/test_training.dir/test_training.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tests/test_training.cpp:241:15: warning: variable 'prev_loss' set but not used [-Wunused-but-set-variable]
+  241 |         float prev_loss = 1e30f;
+      |               ^
+1 warning generated.
+[77/240] Building CXX object tests/CMakeFiles/test_native_weight.dir/test_native_weight.cpp.obj
+[78/240] Building CXX object tests/CMakeFiles/test_native_quant.dir/test_native_quant.cpp.obj
+[79/240] Building CXX object tests/CMakeFiles/test_quant_convergence.dir/test_quant_convergence.cpp.obj
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tests/test_quant_convergence.cpp:73:13: warning: variable 'total_tokens' set but not used [-Wunused-but-set-variable]
+   73 |     int64_t total_tokens = 0;
+      |             ^
+C:/Users/thaku/Workspaces/fusion/transformers-fusion/tests/test_quant_convergence.cpp:138:13: warning: variable 'total_tokens' set but not used [-Wunused-but-set-variable]
+  138 |     int64_t total_tokens = 0;
+      |             ^
+2 warnings generated.
+[80/240] Building CXX object tests/CMakeFiles/test_grpo.dir/test_grpo.cpp.obj
+[81/240] Building CXX object tests/CMakeFiles/test_rll_e2e.dir/test_rll_e2e.cpp.obj
+[82/240] Building CXX object tests/CMakeFiles/test_gpu.dir/test_gpu.cpp.obj
+[83/240] Building CXX object tests/CMakeFiles/test_ops.dir/test_ops.cpp.obj
+[84/240] Building CXX object tests/CMakeFiles/test_rollout_worker.dir/test_rollout_worker.cpp.obj
+[85/240] Building CXX object tests/CMakeFiles/test_moe_training.dir/test_moe_training.cpp.obj
+[86/240] Building CXX object tests/CMakeFiles/test_moe_crash_repro.dir/test_moe_crash_repro.cpp.obj
+[87/240] Building CXX object tests/CMakeFiles/test_inference_batch.dir/test_inference_batch.cpp.obj
+[88/240] Building CXX object tests/CMakeFiles/test_fine_tuning.dir/test_fine_tuning.cpp.obj
+[89/240] Building CXX object tests/CMakeFiles/test_training_features.dir/test_training_features.cpp.obj
+[90/240] Building CXX object tests/CMakeFiles/test_format_registry_complete.dir/test_format_registry_complete.cpp.obj
+[91/240] Building CXX object tests/CMakeFiles/test_inference_opt.dir/test_inference_opt.cpp.obj
+[92/240] Building CXX object tests/CMakeFiles/test_fp32_gather_quality.dir/test_fp32_gather_quality.cpp.obj
+[93/240] Building CXX object tests/CMakeFiles/test_block_codec.dir/test_block_codec.cpp.obj
+[94/240] Building CXX object tests/CMakeFiles/test_agi_flywheel.dir/test_agi_flywheel.cpp.obj
+[95/240] Building CXX object tests/CMakeFiles/test_multimodal.dir/test_multimodal.cpp.obj
+[96/240] Building CXX object tests/CMakeFiles/test_cuda_backend.dir/test_cuda_backend.cpp.obj
+[97/240] Building CXX object tests/CMakeFiles/test_production.dir/test_production.cpp.obj
+[98/240] Building CXX object tests/CMakeFiles/test_sha256_corrupt.dir/test_sha256_corrupt.cpp.obj
+[99/240] Building CXX object tests/CMakeFiles/test_agi.dir/test_agi.cpp.obj
+[100/240] Building CXX object tests/CMakeFiles/test_gpu_capability.dir/test_gpu_capability.cpp.obj
+[101/240] Building CXX object tests/CMakeFiles/test_backends_realonly.dir/test_backends_realonly.cpp.obj
+[102/240] Building CXX object tests/CMakeFiles/test_multimodal_encoders.dir/test_multimodal_encoders.cpp.obj
+[103/240] Building CXX object tests/CMakeFiles/test_format_audit.dir/test_format_audit.cpp.obj
+[104/240] Building CXX object tests/CMakeFiles/grp_proof_test.dir/test_grp_quality_proof.cpp.obj
+[105/240] Building CXX object tests/CMakeFiles/test_protected.dir/test_protected.cpp.obj
+[106/240] Building CXX object tests/CMakeFiles/test_ste_codebook.dir/test_ste_codebook.cpp.obj
+[107/240] Building CXX object tests/CMakeFiles/test_sampler.dir/test_sampler.cpp.obj
+[108/240] Building CXX object tests/CMakeFiles/test_expert_prefetch.dir/test_expert_prefetch.cpp.obj
+[109/240] Building CXX object tests/CMakeFiles/test_fuzz_codec.dir/test_fuzz_codec.cpp.obj
+[110/240] Building CXX object tests/CMakeFiles/test_continual_anticollapse.dir/test_continual_anticollapse.cpp.obj
+[111/240] Building CXX object tests/CMakeFiles/test_kv_cache_quant4.dir/test_kv_cache_quant4.cpp.obj
+[112/240] Building CXX object tests/CMakeFiles/test_transformer.dir/test_transformer.cpp.obj
+[113/240] Building CXX object tests/CMakeFiles/test_autograd.dir/test_autograd.cpp.obj
+[114/240] Building CXX object tests/CMakeFiles/test_optimizer.dir/test_optimizer.cpp.obj
+[115/240] Building CXX object tests/CMakeFiles/test_quant_mix.dir/test_quant_mix.cpp.obj
+[116/240] Building CXX object tests/CMakeFiles/test_simd_math.dir/test_simd_math.cpp.obj
+[117/240] Building CXX object tests/CMakeFiles/test_code_gen.dir/test_code_gen.cpp.obj
+[118/240] Building CXX object tests/CMakeFiles/test_paged_kv_4m.dir/paged_kv_4m_test.cpp.obj
+[119/240] Building CXX object tests/CMakeFiles/test_data_trust.dir/test_data_trust.cpp.obj
+[120/240] Linking CXX static library quant_moe_enhance.lib
+[121/240] Linking CXX executable quant_infer.exe
+[122/240] Linking CXX executable quant_train.exe
+[123/240] Building CXX object tests/CMakeFiles/test_server_contract.dir/test_server_contract.cpp.obj
+[124/240] Linking CXX executable quant_finetune.exe
+[125/240] Linking CXX executable quant_convert.exe
+[126/240] Building CXX object tests/CMakeFiles/test_platform_packs.dir/test_platform_packs.cpp.obj
+[127/240] Linking CXX executable train_64m.exe
+[128/240] Building CXX object tests/CMakeFiles/test_unified_trainer.dir/test_unified_trainer.cpp.obj
+[129/240] Building CXX object tests/CMakeFiles/test_wave7_missing.dir/test_wave7_missing.cpp.obj
+[130/240] Building CXX object tests/CMakeFiles/test_trainer_moe_multimodal.dir/test_trainer_moe_multimodal.cpp.obj
+[131/240] Linking CXX executable quant_info.exe
+[132/240] Linking CXX executable quant_format_list.exe
+[133/240] Linking CXX executable quant_bench.exe
+[134/240] Linking CXX executable quant_serve.exe
+[135/240] Linking CXX executable quant_quantize.exe
+[136/240] Building CXX object tests/CMakeFiles/test_hotswap_compact.dir/test_hotswap_compact.cpp.obj
+[137/240] Linking CXX executable generate_comparison_visuals.exe
+[138/240] Linking CXX executable quant_evaluate.exe
+[139/240] Linking CXX executable quant_server.exe
+[140/240] Linking CXX executable bench_inference.exe
+[141/240] Linking CXX executable bench_gemm_tiled.exe
+[142/240] Linking CXX executable bench_kernels.exe
+[143/240] Linking CXX executable bench_hotswap_lat.exe
+[144/240] Building CXX object tests/CMakeFiles/test_agi_safety.dir/test_agi_safety.cpp.obj
+[145/240] Building CXX object tests/CMakeFiles/test_guard_probes.dir/test_guard_probes.cpp.obj
+[146/240] Building CXX object tests/CMakeFiles/test_wave6_model_feats.dir/test_wave6_model_feats.cpp.obj
+[147/240] Linking CXX executable bench_throughput.exe
+[148/240] Linking CXX executable bench_all.exe
+[149/240] Linking CXX executable probe_mi_extraction.exe
+[150/240] Linking CXX executable bench_quality.exe
+[151/240] Linking CXX executable bench_hardware.exe
+[152/240] Linking CXX executable bench_gpt2_inference.exe
+[153/240] Linking CXX executable bench_quant_quant.exe
+[154/240] Linking CXX executable bench_training.exe
+[155/240] Linking CXX executable bench_speed.exe
+[156/240] Linking CXX executable bench_poc.exe
+[157/240] Linking CXX static library quant_thread_safety.lib
+[158/240] Linking CXX executable bench_multimodal.exe
+[159/240] Linking CXX executable bench_format_comparison.exe
+[160/240] Linking CXX executable gle_report.exe
+[161/240] Linking CXX executable inferno_info.exe
+[162/240] Linking CXX executable bench_inferno.exe
+[163/240] Building CXX object tests/CMakeFiles/test_trainer_engine.dir/test_trainer_engine.cpp.obj
+[164/240] Linking CXX executable inferno_train_sim.exe
+[165/240] Linking CXX executable tests\test_math.exe
+[166/240] Linking CXX executable tests\test_format.exe
+[167/240] Linking CXX executable tests\test_tensor.exe
+[168/240] Linking CXX executable tests\test_hybrid_expert.exe
+[169/240] Linking CXX executable tests\test_kernel.exe
+[170/240] Linking CXX executable tests\test_model.exe
+[171/240] Building CXX object tests/CMakeFiles/test_trainer_core.dir/test_trainer_core.cpp.obj
+[172/240] Linking CXX executable tests\test_hybrid_scheduler.exe
+[173/240] Linking CXX executable tests\test_hybrid_moe.exe
+[174/240] Linking CXX executable tests\test_mix_components.exe
+[175/240] Linking CXX executable tests\test_hybrid_model.exe
+[176/240] Linking CXX executable tests\test_gle_telemetry.exe
+[177/240] Linking CXX executable tests\test_all.exe
+[178/240] Linking CXX executable tests\test_tokenizer.exe
+[179/240] Linking CXX executable tests\test_debug.exe
+[180/240] Linking CXX executable tests\test_trainer.exe
+[181/240] Linking CXX executable tests\test_gradient_check.exe
+[182/240] Linking CXX executable tests\test_training.exe
+[183/240] Linking CXX executable tests\test_quant_engines.exe
+[184/240] Linking CXX executable tests\test_mixed_precision_proof.exe
+[185/240] Linking CXX executable tests\test_expert_parallel.exe
+[186/240] Linking CXX executable tests\test_quant_convergence.exe
+[187/240] Linking CXX executable tests\test_native_quant_moe.exe
+[188/240] Linking CXX executable tests\test_moe_training.exe
+[189/240] Linking CXX executable tests\test_native_quant.exe
+[190/240] Linking CXX executable tests\test_grpo.exe
+[191/240] Linking CXX executable tests\test_native_weight.exe
+[192/240] Linking CXX executable tests\test_rll_e2e.exe
+[193/240] Linking CXX executable tests\test_training_features.exe
+[194/240] Linking CXX executable tests\test_fine_tuning.exe
+[195/240] Linking CXX executable tests\test_rollout_worker.exe
+[196/240] Linking CXX executable tests\test_inference_batch.exe
+[197/240] Linking CXX executable tests\test_ops.exe
+[198/240] Linking CXX executable tests\test_gpu.exe
+[199/240] Linking CXX executable tests\test_inference_opt.exe
+[200/240] Linking CXX executable tests\test_moe_crash_repro.exe
+[201/240] Linking CXX executable tests\test_agi.exe
+[202/240] Linking CXX executable tests\test_agi_flywheel.exe
+[203/240] Linking CXX executable tests\test_multimodal.exe
+[204/240] Linking CXX executable tests\test_multimodal_encoders.exe
+[205/240] Linking CXX executable tests\test_production.exe
+[206/240] Linking CXX executable tests\test_protected.exe
+[207/240] Linking CXX executable tests\test_block_codec.exe
+[208/240] Linking CXX executable tests\grp_proof_test.exe
+[209/240] Linking CXX executable tests\test_format_registry_complete.exe
+[210/240] Linking CXX executable tests\test_fp32_gather_quality.exe
+[211/240] Linking CXX executable tests\test_cuda_backend.exe
+[212/240] Linking CXX executable tests\test_sha256_corrupt.exe
+[213/240] Linking CXX executable tests\test_quant_mix.exe
+[214/240] Linking CXX executable tests\test_backends_realonly.exe
+[215/240] Linking CXX executable tests\test_gpu_capability.exe
+[216/240] Linking CXX executable tests\test_paged_kv_4m.exe
+[217/240] Linking CXX executable tests\test_expert_prefetch.exe
+[218/240] Linking CXX executable tests\test_continual_anticollapse.exe
+[219/240] Linking CXX executable tests\test_format_audit.exe
+[220/240] Linking CXX executable tests\test_fuzz_codec.exe
+[221/240] Linking CXX executable tests\test_ste_codebook.exe
+[222/240] Linking CXX executable tests\test_kv_cache_quant4.exe
+[223/240] Linking CXX executable tests\test_sampler.exe
+[224/240] Linking CXX executable tests\test_transformer.exe
+[225/240] Linking CXX executable tests\test_autograd.exe
+[226/240] Linking CXX executable tests\test_optimizer.exe
+[227/240] Linking CXX executable tests\test_server_contract.exe
+[228/240] Linking CXX executable tests\test_code_gen.exe
+[229/240] Linking CXX executable tests\test_simd_math.exe
+[230/240] Linking CXX executable tests\test_unified_trainer.exe
+[231/240] Linking CXX executable tests\test_wave7_missing.exe
+[232/240] Linking CXX executable tests\test_data_trust.exe
+[233/240] Linking CXX executable tests\test_wave6_model_feats.exe
+[234/240] Linking CXX executable tests\test_guard_probes.exe
+[235/240] Linking CXX executable tests\test_hotswap_compact.exe
+[236/240] Linking CXX executable tests\test_platform_packs.exe
+[237/240] Linking CXX executable tests\test_agi_safety.exe
+[238/240] Linking CXX executable tests\test_trainer_engine.exe
+[239/240] Linking CXX executable tests\test_trainer_moe_multimodal.exe
+[240/240] Linking CXX executable tests\test_trainer_core.exe

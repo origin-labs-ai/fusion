@@ -1,0 +1,297 @@
+{
+ "": {
+  "label": "",
+  "phases": [],
+  "started": 0,
+  "result_events": 2,
+  "failed_events": 5,
+  "other_events": {
+   "launched": 1
+  },
+  "results": [
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a8a074969b054565b",
+    "key": "v2:7398930cad83b75ef9f8349d3eb94cf210f9340481921d182b0d023d0d163c05",
+    "payload": {
+     "claims": [
+      {
+       "claim": "Final ladder = 69 formats: 10 base + 18 plain M/H + 9 GRP base + 18 GRP M/H + 14 MX; FORMAT_COUNT becomes 69, FORMAT_ID_SLOTS=105, format_is_valid() replaces range predicates",
+       "verdict": "confirmed",
+       "evidence": "Arithmetic and enum census verified against C:/Users/thaku/Workspaces/fusion/transformers-fusion/include/quant/types.h:22-166: base 0-9 (10), plain K 10-36 (27), GRP base 37-45 (9), K_G 46-72 (27), halves 73-90 (18), MX 91-104 (14) = 105. 10 base + 18 M/H (9 families x2, Q_32 excluded) + 9 GRP + 18 GRP M/H + 14 MX = 69, and the 36-hole set below leaves exactly those 69 surviving ids. FORMAT_ID_SLOTS/format_is_valid/kFormatValid/format_compat are confirmed ABSENT today (repo-wide grep: 0 hits) and types.h:167 still reads `constexpr int FORMAT_COUNT = 105;` — so 69/105/validity are forward targets, correctly sized.",
+       "impact": "No change needed to this claim. Caveat for execution (not a plan error): today FORMAT_COUNT is simultaneously 'count' AND 'id upper bound' — 4 clamp sites read `wire_fmt < FORMAT_COUNT && wire_fmt != 19` (src/codec/quant_format.cpp:456,611; src/adapters/tools/qwen35_engine.cpp:32,145) and 5 enumerators do `for(v=0; v<FORMAT_COUNT; ++v)` (tests/test_format.cpp:83, tests/test_all.cpp:33, tests/test_format_audit.cpp:55, tests/test_fuzz_codec.cpp:254, bench/bench_format_comparison.cpp:581). Setting FORMAT_COUNT=69 while ids 71,72 and 91-104 survive will silently truncate all of those unless every site switches to the validity table; the plan names the 4 clamp sites (decision 5) and the 3 tests (decision 6) but NOT bench_format_comparison.cpp:581."
+      },
+      {
+       "claim": "Retired id holes: plain K_L {10,13,16,19,22,25,28,31,34}, GRP K_L {46,49,52,55,58,61,64,67,70}, halves {73-90} = 36 holes (105-36=69)",
+       "verdict": "confirmed",
+       "evidence": "Every id matches the enum exactly. types.h:35-43: Q_1_K_L=10, Q_2_K_L=13, Q_3_K_L=16, Q_4_K_L=19, Q_6_K_L=22, Q_8_K_L=25, Q_12_K_L=28, Q_16_K_L=31, Q_24_K_L=34. types.h:48-56: Q_G_1_K_L=46, Q_G_2_K_L=49, Q_G_3_K_L=52, Q_G_4_K_L=55, Q_G_6_K_L=58, Q_G_8_K_L=61, Q_G_12_K_L=64, Q_G_16_K_L=67, Q_G_24_K_L=70. types.h:58-62: halves 73-90 (9 plain + 9 GRP). 9+9+18=36; 105-36=69; survivors = {0-9} + {11,12,14,15,17,18,20,21,23,24,26,27,29,30,32,33,35,36} + {37-45} + {47,48,50,51,53,54,56,57,59,60,62,63,65,66,68,69,71,72} + {91-104} = exactly 69, i.e. the surviving ids are precisely base + M/H + GRP base + GRP M/H + MX.",
+       "impact": "No change to the hole set. Two companion defects in the same decision that execution WILL hit: (a) the remap example in decision 5 is wrong — `halves->_K_H same BPW: 73->12, 74->14, ...` — 74 is Q_2_5 (2.50) and its same-BPW target under the new ladder is Q_2_K_H = id 15 (2.50), NOT id 14 = Q_2_K_M (2.25); the implied step of +2 is also wrong, K_H ids step by +3 (12,15,18,21,24,27,30,33,36). (b) The GRP half ids 82-90 get no remap rule at all (correct targets: 82->48, 83->51, 84->54, 85->57, 86->60, 87->63, 88->66, 89->69, 90->72). Both must be written into decision 5's remap table before L4."
+      },
+      {
+       "claim": "Format enum currently has 105 ids at types.h:22-166, FORMAT_COUNT=105 at :167, format_bpw at :197-230, nominal at :236-264, ID-range predicates at :268-276",
+       "verdict": "confirmed",
+       "evidence": "All five ranges are exact. types.h:22 `enum class Format : uint8_t {`, canonical ids end at :65 (Q_G_MX_24_5=104), legacy aliases :67-165 (98 spellings, 203 total), enum closes at :166. :167 `constexpr int FORMAT_COUNT = 105;`. :197 `inline float format_bpw(Format f)` closes :230. :236 `inline float format_nominal_bpw(Format f)` closes :264. :265-267 format_wire_bpw is a pure alias (`return format_bpw(f);`). Predicates :268-276 are pure ID arithmetic: `inline bool format_is_base(Format f){ auto v=(int)f; return v<=9; }` :268, `format_is_k` :269, `format_is_grp` :270, `format_is_half` :271, `format_is_mx` :272, `format_is_mx_plain` :273, `format_is_mixed` :274, `format_is_twi_mix` :275 (hardcoded false), `format_is_quad_mix` :276.",
+       "impact": "None — the plan's baseline reading of types.h is exact. Supporting note for L1: these predicates are consumed by the registry's lossy map (include/quant/format_registry.h:203-242, confirmed: GRP/K/K_G all collapse to plain RegFormat at :205-213, halves to Q_G_* at :215-232, Q_MX_* into Q_G_MX_* at :233-239), so format_is_valid() must land in types.h before L3 touches the registry, exactly as the plan's L1->L3 ordering requires."
+      },
+      {
+       "claim": "Rewire targets still sit at these literals in block_codec.cpp: :2596/:3044 (2.625), :2753 (2.4375), :2772 (3.4375), :2791 (4.4375), :1149 (6.5625), :865 grp16 sizing table, :2833 (8.0f stale), :2865-2867 (12.0 pad), :2904-2922 (half-twin affine budgets), :3149-3152 block_claimed_bytes",
+       "verdict": "confirmed",
+       "evidence": "All ten targets verified in C:/Users/thaku/Workspaces/fusion/transformers-fusion/src/codec/block_codec.cpp (file is exactly 3154 lines, matching the plan). :2596 `quant_affine(2, w, n, 16, 4, 4, 2.625f, indices);` (Q_G_2 encode); :3044 `dequant_affine(2, indices, idx_bytes, n, 16, 4, 4, 2.625f, out);` (decode); :2753/:2757/:2763-2764 `...2.4375f...` (Q_G_2_K, 4 sites); :2772/:2776/:2782-2783 `...3.4375f...`; :2791/:2795/:2801-2802 `...4.4375f...`; :1149 `const size_t budget = (size_t)std::ceil(6.5625 * (double)n / 8.0);` (quant_6k); :865 `const float table = (bits == 2) ? 2.5f : (bits == 3) ? 3.5f : (bits == 4) ? 4.5f : (bits == 8) ? 8.5f : (bits == 12) ? 12.5f : (bits == 16) ? 16.5f : 24.5f;` (quant_grp16 sizing table, inside the fn declared at :863); :2833 `else quant_affine(8, w, n, 32, 6, 6, 8.0f, indices);` (Q_G_8_K fallback vs format_bpw 8.5 at types.h:218); :2865 `const size_t pad12 = (size_t)std::ceil(12.0 * (double)n / 8.0);` (Q_G_12_K, vs 12.5 at types.h:219); :2904-2912 plain halves / :2914-2922 GRP halves all carry 1.5f/2.5f/3.5f/4.5f/6.5f/8.5f + the 16.5/24.5 resizes; :3149-3152 `size_t block_claimed_bytes(Format fmt, uint32_t n) { const float bpw = format_bpw(fmt); return (size_t)std::ceil(bpw * (float)n / 8.0f); }`.",
+       "impact": "Claim stands; extend the rewire list with 12 more same-file literals the plan's rewire table does not enumerate, or L2 will leave the codec internally inconsistent: encode+decode pairs Q_G_3 :2584/:3046 (4.5f), Q_G_4 :2588/:3048 (4.5f), Q_G_8 :2590-ish/:3050 (8.5f), Q_G_12 :2569/:3027 (12.5 table via quant_grp16), Q_G_16 :2560/:3020, Q_G_24 :2538/:3040 (24.5), Q_G_16_K :2898 (claimed=ceil(16.0n/8)) and Q_G_24_K :2900 (claimed=ceil(24.0n/8)) — the two 'keep as-is' K_G formats hardcode their budget instead of calling format_bpw, so they are rewire targets too. Also :2573 `quant_grp16(12, w, n, indices);` (Q_G_12 odd-n fallback) has NO claimed_override and therefore reads the :865 table directly; :1485 (quant_affine fallback) and :2911-2922 (resizes) do pass overrides — so a table edit alone silently changes Q_G_12's tail behavior. :2810-2812 and :2901 comments still assert '6.5625 BPW budget' / 16.0 and must be rewritten with the numbers."
+      },
+      {
+       "claim": "Q_X_5 and Q_G_X_5 are byte-identical encoder pairs at :2904-2912 vs :2914-2922 (9 pairs)",
+       "verdict": "confirmed",
+       "evidence": "src/codec/block_codec.cpp:2904-2912 (plain) and :2914-2922 (GRP) are line-for-line identical, one case per line: Q_1_5/Q_G_1_5 `quant_affine(1, w, n, 32, 6, 6, 1.5f, indices)` (:2904/:2914); Q_2_5/Q_G_2_5 `quant_affine(2, w, n, 16, 4, 4, 2.5f, ...)` (:2905/:2915); Q_3_5 3.5f (:2906/:2916); Q_4_5 4.5f (:2907/:2917); Q_6_5 `quant_affine(6, w, n, 32, 8, 8, 6.5f, ...)` (:2908/:2918); Q_8_5 grp8_compound_fits/else 8.5f (:2909/:2919); Q_12_5 grp12_compound_fits/else quant_fixed_codebook(12,...) (:2910/:2920); Q_16_5 resize ceil(16.5n/8) (:2911/:2921); Q_24_5 resize ceil(24.5n/8) (:2912/:2922). Decode twins are likewise identical at :3104-3112 vs :3114-3122.",
+       "impact": "None to the claim. Execution note the plan states but L2 must schedule: the 9 twins differ ONLY in the types.h format_is_grp predicate (:270 covers 82-90 but not 73-81), so deleting the twins during the half->tier fold removes 9 encode cases + 9 decode cases with zero wire change — a safe first commit inside L2 that shrinks the remaining diff."
+      },
+      {
+       "claim": "k_tier() parses the _L/_M/_H name suffix as a string at :2464-2470, and Q_16_K/Q_24_K trios share one body with no k_tier at :2740-2743",
+       "verdict": "confirmed",
+       "evidence": "src/codec/block_codec.cpp:2464-2470 is exactly the k_tier definition — `static int k_tier(Format f) { const char* nm = format_name(f); const size_t L = std::strlen(nm); if (L >= 2 && nm[L-2] == '_' && (nm[L-1] == 'L' || nm[L-1] == 'M' || nm[L-1] == 'H')) return nm[L-1] == 'L' ? 0 : (nm[L-1] == 'M' ? 1 : 2); return 0; }` (k_mse follows at :2471). Shared trios: `case Format::Q_16_K_L: case Format::Q_16_K_M: case Format::Q_16_K_H: quant_q16_enhanced(w, n, indices); return true;` at :2739-2740 and the Q_24_K trio at :2741-2742 — no k_tier, one body each, preceded by the comment at :2618-2619 'Q_16/Q_24 (+G) K trios intentionally share one body'.",
+       "impact": "Only a 1-line drift: the plan's ':2740-2743' should read ':2739-2742' (case labels at 2739/2741, bodies at 2740/2742). Material consequence the plan already flags and L2 must honor: because tier is derived from format_name()'s last character, deleting the _K_L names or renaming any K format silently re-terraces its encoder (k_tier returns 0 for unrecognized suffixes), so the enum/name edit (L1) and the k_tier rewire (L2) cannot be split across builds — same-commit or L1 must carry a temporary id-based k_tier."
+      },
+      {
+       "claim": "Q_1_5/Q_G_1_5 call quant_affine(1, w, n, 32, 6, 6, 1.5f) — affine [0,1] binary, NOT ternary",
+       "verdict": "confirmed",
+       "evidence": "src/codec/block_codec.cpp:2904 `case Format::Q_1_5: quant_affine(1, w, n, 32, 6, 6, 1.5f, indices); return true;` and :2914 identical for Q_G_1_5 — signature matches the plan verbatim (quant_affine declared :1481: `static void quant_affine(int bits, const float* w, int n, int gsz, int scb, int mb, float claimed, std::vector<uint8_t>& indices, int affine_iters = 5, float affine_dmult = 1.0f)`). The bits=1 lattice is the 2-point [0,1] grid: level_value_affine :1390 `if (bits == 1) return (float)std::min(index, 1u);` with nearest_level_affine :1396 `if (bits == 1) return (uint32_t)std::lround(v * 1.0f);`, plus per-group signed min `w ~= d * sc[g] * lv[i] - dm * mc[g]` (header comment :1379-1385) — an affine offset binary codec, not ternary and not the Q_1 slot-sign path (:2510-2525 uses rms_scale + is_slot(i,n,16) + sign bits).",
+       "impact": "None — this kills any assumption that a ternary encoder already exists and confirms L2 must WRITE the Q_1_K_H ternary path from scratch. Note the existing 16-slot machinery the new encoder can reuse: Q_1_K trio at :2620-2625 already emits `[FP16 scale][sign bits, is_slot(i,n,16) zeroed]` at 1.0 BPW, so the ternary H encoder is a slot-count + base-3-pack extension of that body, not a new engine."
+      },
+      {
+       "claim": "M-tier design: base layout + 1 refinement byte per 32 weights = 4x 2-bit sub-block scale multipliers, provably 0.25-exact",
+       "verdict": "confirmed",
+       "evidence": "Design-only claim (no M-tier code exists in the tree — grep for refinement/multiplier tables in src/codec returns nothing), but the arithmetic is exact and consistent with the ladder: 8 bits / 32 weights = 0.2500 BPW, and block_claimed_bytes (block_codec.cpp:3149-3152, ceil(bpw*n/8)) yields an integer byte count for every valid family base B in {1,2,3,4,6,8,12,16,24} at n=256 ((B+0.25)*256/8 = 32B+8), so B.25 is achievable with no padding slack at canonical block size. 4 codes x 2 bits = the stated {x0.75, 1.0, x1.25, x1.5} set is 4 distinct multipliers.",
+       "impact": "No change to the budget math. Two design gaps execution will hit that the plan should close before L2: (a) the multiplier codebook {0.75, 1.0, 1.25, 1.5} has no code at or below 0.5x and no 2.0x, so a sub-block whose true scale is far from the block scale (heavy-tailed real weights, or the per-group scales of the affine/GRP families) cannot be corrected — the M tier may fail the plan's own acceptance gate ('PSNR strictly between L and H') on real weights for some families; the plan pre-authorizes per-family alternatives 'by measurement' but schedules no measurement before the encoder is written. (b) Tail sizes are unspecified for M: 1 byte per 32 weights is only exact when n%32==0; for n=48/80/200 the byte rounding makes the realized delta 0.167-0.33 BPW, so per-size budget rules (like decision 4's Diophantine solve for ternary) are needed or block_claimed_bytes will disagree with the encoder on tails."
+      },
+      {
+       "claim": "Q_1_K_H ternary wire for n=256: [FP16 scale 16b][232 trits base-3 = 368b][24 implicit-zero slots] = 384b = 48B = 1.5000 exact",
+       "verdict": "confirmed",
+       "evidence": "Bit arithmetic verified and it is exactly what the existing slot machinery supports. Budget: format_bpw(Q_1_K_H) target 1.5f x 256 / 8 = 48 B, and block_claimed_bytes (block_codec.cpp:3149-3152) computes ceil(1.5*256/8)=48 with zero slack. Packing: 232 * log2(3) = 367.71 -> ceil = 368 bits = 46 B (byte-aligned); 16 (FP16 scale) + 368 = 384 bits = 48 B; 232 trits + 24 implicit-zero slots = 256 weights. Tightness: T=233 would need 369 bits (1 over), T=231 leaves a wasted bit, so 232/24 is the unique maximal-trit solution. The slot convention already exists in-tree: Q_1 encode at :2510-2525 uses `bw.put(f32_to_f16(scale),16)` + `if (is_slot(i, n, 16)) continue;` (is_slot at :176), so 'evenly-spread implicit-zero slots' is the same mechanism at count 24.",
+       "impact": "None to the wire math — it is 1.5000 exact and self-consistent. Execution gaps to add to the L2 task brief: (1) no base-3 bitstream packer/unpacker exists anywhere in block_codec.cpp (all live codecs are 1/2/3/4/6/8/16-bit lanes), so pack+unpack + roundtrip tests must be written new; (2) the plan's Diophantine tail rule is stated but the feasibility set is not — 1.5*n is an integer only when n is even, so odd tails (n=9,11,...) cannot hit 1.50 exactly and the ternary->M-layout->L fallback chain will fire there; the plan should pin which n take which path; (3) Q_1_K_H's current encoder body at :2620-2625 emits the 1.0-BPW slot-sign layout for the whole trio, so that body must be split per-tier (the shared trio is exactly the L=M=H lie the plan is ending), and its decode twin at :3051-3060 must gain the trit unpack in the same commit."
+      }
+     ],
+     "enhancements": [
+      "BLOCKING defect in the audited decision set (decision 5, remap table): `halves->_K_H same BPW: 73->12, 74->14, ...` is wrong. Under the new ladder family-2's H tier (2.50) is Q_2_K_H = id 15, not 14 (= Q_2_K_M = 2.25). The correct plain-half remap is 73->12, 74->15, 75->18, 76->21, 77->24, 78->27, 79->30, 80->33, 81->36 (step +3, not +2). As written, executing L4 would silently re-quantize every stored Q_2_5..Q_24_5 block at the WRONG density and corrupt old .quant files.",
+      "GRP half ids 82-90 have NO remap rule in decision 5 at all (only the plain 73-81 series is implied). Correct same-BPW targets: 82->48 (Q_G_1_K_H), 83->51, 84->54, 85->57, 86->60, 87->63, 88->66, 89->69, 90->72. The remap fixture (105 ids x 1 block) in decision 6 cannot pass until this table exists.",
+      "FORMAT_COUNT semantic change is a footgun the plan under-lists: it stops being an id upper bound and becomes a count, so EVERY `v < FORMAT_COUNT` loop silently truncates surviving ids 71,72 and 91-104. The plan names the 4 clamp sites and 3 tests; it misses bench/bench_format_comparison.cpp:581 (`for (int v = 0; v < quant::FORMAT_COUNT; ++v)` with a 'skip unknown' guard that does NOT help once COUNT=69), and misses that the same pattern is the sole driver of test_format_audit.cpp:55, test_fuzz_codec.cpp:254, test_format.cpp:83, test_all.cpp:33 — all five must iterate 0..FORMAT_ID_SLOTS-1 with format_is_valid(). Recommend making FORMAT_COUNT a count-only name (or renaming to FORMAT_VALID_COUNT) so a missed site fails loudly rather than silently dropping 36 formats.",
+      "install_test/include/quant/types.h and install_test/include/quant/constants.h are byte-copies of the public headers (types.h:167 `FORMAT_COUNT = 105` present in both). They are not referenced by CMakeLists.txt/tests/CMakeLists.txt, but they will fail the plan's Z1 'grep-zero stale symbol' asserts and any repo-wide FORMAT_COUNT grep. Add a P0.0 or Z1 disposition line (delete the tree, or regenerate from the new headers) — the plan never mentions install_test/.",
+      "The rewire list in the Rewire-math section is incomplete: beyond the literals the plan names, block_codec.cpp carries Q_G_3 :2584/:3046 (4.5f), Q_G_4 :2588/:3048 (4.5f), Q_G_8 :2590/:3050 (8.5f), Q_G_12 :2569/:2573/:3027 (12.5 via the :865 table), Q_G_16 :2560/:3020, Q_G_24 :2538/:2544/:3040 (24.5), plus the two 'keep as-is' formats Q_G_16_K :2898 and Q_G_24_K :2900, which hardcode ceil(16.0n/8)/ceil(24.0n/8) instead of calling block_claimed_bytes. If only the plan's ten sites change, format_bpw (types.h) and the encoders will disagree on 6 GRP families and the new test_wire_budgets harness will fail immediately.",
+      "quant_grp16 (:863, sizing table :865) is called with NO claimed_override from exactly one live site — Q_G_12 odd-n fallback at :2573 — while the two other callers (:1485 quant_affine fallback, :2911-2922 resizes) pass overrides. Editing the :865 table as the plan directs therefore changes Q_G_12 tail sizing as a side effect; L2 should either pass an override at :2573 or pin the Q_G_12 tail bytes in test_wire_budgets before touching the table.",
+      "M-tier tail rules are unspecified (decision 3 gives only the per-32 steady-state math). block_claimed_bytes uses ceil(), so for n not divisible by 32 the realized M delta is 0.167-0.33 BPW, not 0.25 — same class of problem the plan already solves for ternary tails via Diophantine (decision 4). Add an M-tier per-size budget rule or the strict no-slack budget test will fail on tails.",
+      "Ternary feasibility set is unstated: 1.5*n is an integer only for even n, so every odd tail (n=9,11,...) cannot be exact and must be listed as fallback-chain cases in the L2 brief; the plan asserts 'else fallback chain ternary->M-layout->L — never inflate' but gives no per-size table for the test to pin.",
+      "Multipliers {x0.75, 1.0, x1.25, x1.5} are asymmetric (no <=0.5x, no 2.0x). For the affine/GRP families the per-group scale codes (scb 4-6 bits) already span a wide range, so a single 2-bit multiplier may be too coarse to beat H on real weights; the plan's own acceptance gate (PSNR strictly between L and H) needs a pre-L2 measurement pass on the real-weight corpus, which is not scheduled anywhere in the task DAG (Q1 wires fit_scale_true_mse AFTER L2).",
+      "Rewire-math section (plan lines ~56-58) contradicts Key-design-decision-2 in the same document: it says '9 base (Q_1..Q_24, Q_32 lossless) ... + Q_32 ... ~= 70ish' (double-counts Q_32, and '9 base + 9x2 M/H' would mean Q_32 gets tiers), while decision 2 says exactly 69 with 10 base and Q_32 tier-less. Decision 2 is the correct one (it matches the 36-hole census); the rewire-math paragraph must be corrected so L1 is not built from the wrong count.",
+      "Same section, Q_1 M-tier note says '25 more bits/group' for a +0.25 BPW step. For group=32 that is 0.78125 BPW, not 0.25; +0.25 BPW = 8 bits per 32 weights. Either 'group' is undefined (then define it) or the number is wrong — as written it contradicts decision 3's 1-refinement-byte design in the next paragraph.",
+      "k_tier string-parsing (confirmed at :2464-2470) makes L1 and L2 non-splittable: deleting/renaming the _K_L names changes format_name()'s last character for every surviving K format, silently re-terracing encoder effort mid-migration. The plan flags the hazard in decision 8 but assigns no concrete step — recommend L1 lands a temporary id-based k_tier (switch on (int)f) in the same commit as the enum change, replaced by the real per-family tier logic in L2.",
+      "Missing from the ladder section's test pins: tests/test_format.cpp:75 prints 'All 38 format enum definitions verified' and :91 asserts `valid == quant::FORMAT_COUNT` where valid counts non-'unknown' names — both break under 69+holes (and the 38 is already stale vs 105 today). tests/test_all.cpp:37 prints 'All 105 defined v4 formats'. decision 6 covers the ==105 asserts and the kCaps rows but not these two assertions/print pins.",
+      "Ordering hazard inside the DAG: L2 must delete the 18 half-twin encode cases (:2904-2922) and 18 decode twins (:3104-3122) BEFORE T1 regenerates test_fuzz_codec kCaps, otherwise the retired half ids still resolve through format_bpw>0 and die at cap_for() ('no cap registered for format id') at test_fuzz_codec.cpp:241-246. The plan sequences L2 before T1 correctly but does not state this dependency, so a worker could reorder or parallelize it.",
+      "format_registry.h audit section offsets in the plan hold (format_to_regformat :203-242 confirmed, Q_MX_*->Q_G_MX_* collapse at :233-239 confirmed), but RegFormat itself has its own independent id space (RegFormat Q_G_1=10 ... QG_MX_24_5=32 with 23 legacy aliases at format_registry.h:44-70). L3 must not reuse the Format hole list for RegFormat — the two enums' ids collide numerically (RegFormat 10 = Q_G_1 vs Format 10 = Q_1_K_L retired) and the plan's decision 5 remap table is Format-only."
+     ],
+     "summary": "All 9 claims in the LADDER/L-M-H + format-enum section verified against disk: 9/9 confirmed, zero refuted. The plan's reading of the code is exceptionally accurate — types.h:22-166 (105 ids + 98 aliases), FORMAT_COUNT=105 at :167, format_bpw :197-230, nominal :236-264, ID-range predicates :268-276, all ten block_codec.cpp rewire literals (:2596/:3044 2.625, :2753 2.4375, :2772 3.4375, :2791 4.4375, :1149 6.5625, :865 table, :2833 8.0f, :2865 pad12, :2904-2922 halves, :3149-3152 block_claimed_bytes), the 9 byte-identical Q_X_5/Q_G_X_5 encode+decode twin pairs, k_tier's string parse at :2464-2470, the k_tier-less Q_16_K/Q_24_K shared trios, and the affine [0,1] binary nature of Q_1_5/Q_G_1_5 (quant_affine(1,...,1.5f) at :2904/:2914, lattice {0,1} at :1390). The 69/105/36-hole ladder arithmetic is internally consistent with the actual enum census, the M-tier 8-bits-per-32-weights = 0.25-exact math is exact, and the ternary wire (16b scale + 232 trits in 368b + 24 slots = 384b = 48B = 1.5000) is information-theoretically tight and matches the existing is_slot/BitWriter machinery. One line-range is off by one (K trios at :2739-2742, not :2740-2743) — cosmetic. The real exposure is in companion details execution will hit: decision 5's remap example 74->14 is wrong (must be 74->15, and the step is +3 not +2) and GRP halves 82-90 have no remap rule at all; FORMAT_COUNT's semantic change from id-bound to count silently truncates surviving ids 71,72,91-104 in five v<COUNT loops including bench_format_comparison.cpp:581 which the plan never lists; the rewire list misses ~12 further same-file literals (Q_G_3/4/8/12/16/24 encode+decode pairs and the hardcoded Q_G_16_K/Q_G_24_K claimed sizes); quant_grp16's :865 table has one caller (:2573) with no override, so editing it changes Q_G_12 tails as a side effect; and M-tier tail sizing, the ternary odd-n feasibility set, the asymmetric {0.75..1.5} multiplier codebook, and the non-splittable L1/L2 k_tier dependency all need concrete steps added before L2 starts."
+    }
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a7c2396813b049f52",
+    "key": "v2:29f71ed560d96ce9043b14c08c8d6aa05de46b9ad625ac2331235d8078cda377",
+    "payload": "Note: claude-opus-5-5 (the safety classifier) was unavailable (server error) when reviewing this subagent's work. Please carefully verify the subagent's actions and output before acting on them.\n\n## Plan enhancements (post-audit)\n\nAudit of section `audit-ladder`: **9/9 claims confirmed, 0 refuted** — the plan's reading of `types.h` / `block_codec.cpp` is accurate (enum census, FORMAT_COUNT=105, format_bpw/nominal, ID-range predicates, all ten rewire literals, 9 byte-identical Q_X_5/Q_G_X_5 twin pairs, k_tier string parse at :2464-2470, affine [0,1] binary nature of Q_1_5). Corrections below are to the plan's **decisions and arithmetic**, not to its code readings.\n\n### Corrections to the plan\n\n| Claim (short) | Was | Now (verified) | Plan edit needed |\n|---|---|---|---|\n| Decision 5 plain-half remap | `73->12, 74->14, ...` step +2 | `73->12, 74->15, 75->18, 76->21, 77->24, 78->27, 79->30, 80->33, 81->36` (step **+3**; family-2 H tier is 2.50 = Q_2_K_H = id 15; 14 = Q_2_K_M = 2.25) | Replace the remap example verbatim; **BLOCKING** — as written L4 re-quantizes every stored Q_2_5..Q_24_5 block at the wrong density |\n| Decision 5 GRP halves 82-90 | No rule at all | `82->48, 83->51, 84->54, 85->57, 86->60, 87->63, 88->66, 89->69, 90->72` | Add the GRP half series to decision 5; decision 6's 105x1 fixture cannot pass without it |\n| FORMAT_COUNT semantic flip | 4 clamp sites + 3 tests | 5 `v < FORMAT_COUNT` loops truncate ids 71,72,91-104: `bench/bench_format_comparison.cpp:581`, `test_format_audit.cpp:55`, `test_fuzz_codec.cpp:254`, `test_format.cpp:83`, `test_all.cpp:33` | Name the 5 loops; each must iterate `0..FORMAT_ID_SLOTS-1` + `format_is_valid()`; prefer renaming to `FORMAT_VALID_COUNT` so a missed site fails to compile |\n| `install_test/` tree | Never mentioned | `install_test/include/quant/types.h` + `constants.h` are byte-copies carrying `FORMAT_COUNT = 105` | Add disposition line (delete or regenerate) — unreferenced by CMake, but fails Z1 grep-zero |\n| Rewire literal list | 10 sites named | ~12 more in `block_codec.cpp`: Q_G_3 `:2584/:3046` (4.5f), Q_G_4 `:2588/:3048` (4.5f), Q_G_8 `:2590/:3050` (8.5f), Q_G_12 `:2569/:2573/:3027` (12.5), Q_G_16 `:2560/:3020`, Q_G_24 `:2538/:2544/:3040` (24.5), plus \"keep\" formats Q_G_16_K `:2898` / Q_G_24_K `:2900` hardcoding `ceil(16.0n/8)` / `ceil(24.0n/8)` | Add all 12 to the rewire list; convert :2898/:2900 to `block_claimed_bytes` |\n| `quant_grp16` sizing table `:865` | Edit it as part of the rewire | One live caller passes **no** override — Q_G_12 odd-n fallback at `:2573` (the other two, `:1485` and `:2911-2922`, do pass overrides) | Editing `:865` changes Q_G_12 tail sizing as a side effect; pass an override at `:2573` or pin Q_G_12 tails in `test_wire_budgets` first |\n| M-tier tail sizing | Per-32 steady-state math only (decision 3) | `block_claimed_bytes` uses `ceil()`, so tails realize 0.167-0.33 BPW, not 0.25 | Add a per-size M tail budget rule (same class as the ternary Diophantine) or the strict no-slack budget test fails |\n| Ternary feasibility set | \"else fallback chain ternary->M-layout->L — never inflate\" | `1.5n` integral only for even n; every odd tail (9,11,...) is inexact | Add a per-size fallback table for odd n to the L2 brief |\n| Multiplier codebook | {x0.75, 1.0, x1.25, x1.5}, 2-bit, acceptance = PSNR strictly between L and H | Asymmetric (no <=0.5x, no 2.0x); for affine/GRP families per-group scale codes already span wide ranges, so 2 bits may be too coarse | Schedule a pre-L2 measurement pass (currently `fit_scale_true_mse` is wired by Q1, i.e. **after** L2) |\n| Rewire-math final count (plan ~lines 255-257) | \"9 base ... + Q_32 ... ~= 70ish\" (double-counts Q_32; implies Q_32 gets tiers) | Decision 2 is correct: **69**, 10 base incl. Q_32 tier-less, matches the 36-hole census | Rewrite the rewire-math paragraph; delete \"9 base ... ~70ish\" |\n| Q_1 M-tier bit math | \"25 more bits/group\" for +0.25 BPW | For group=32 that is 0.78125 BPW; +0.25 BPW = **8 bits per 32 weights** | Fix the number or define \"group\"; as written it contradicts decision 3's 1-refinement-byte design |\n| k_tier hazard (decision 8) | Flagged, no step | String parse confirmed `:2464-2470`; renaming `_K_L` changes `format_name()`'s last char → silent re-terracing | Assign the concrete step: L1 lands a temporary id-based `k_tier` (`switch ((int)f)`) in the same commit as the enum change |\n| Test pins (decision 6) | Covers `==105` asserts + kCaps rows | Misses `test_format.cpp:75` print (\"All 38 ... verified\"), `:91` `valid == FORMAT_COUNT`, `test_all.cpp:37` print (\"All 105 defined v4 formats\") | Add both assertions/prints to decision 6 |\n| L2 -> T1 ordering | Sequenced L2 before T1, dependency unstated | L2 must delete the 18 half-twin encode cases `:2904-2922` and 18 decode twins `:3104-3122` **before** T1 regenerates kCaps, else retired half ids resolve via `format_bpw>0` and die at `cap_for()` (`test_fuzz_codec.cpp:241-246`) | State the dependency explicitly as non-reorderable/non-parallelizable |\n| RegFormat id space (L3) | Hole list reused implicitly | RegFormat has its own ids (`format_registry.h:44-70`: Q_G_1=10 ... QG_MX_24_5=32, 23 legacy aliases); RegFormat 10 = Q_G_1 collides with Format 10 = retired Q_1_K_L | Forbid reusing the Format hole list for RegFormat; remap table is Format-only |\n| K-trio line range (cosmetic) | `:2740-2743` | `:2739-2742` | Fix line range in explorer notes |\n\n### New tasks to insert into the DAG\n\n**P0.3 install_test-tree disposition** — Objective: resolve the byte-copy header tree before it breaks Z1. Files: `install_test/include/quant/types.h`, `install_test/include/quant/constants.h`. DoD: tree deleted, or regenerated from post-L1 headers; `grep -rn \"FORMAT_COUNT\" install_test/` → 0 hits; configure/build unaffected (tree unreferenced by `CMakeLists.txt` and `tests/CMakeLists.txt`). Insert: **after P0.0, before P0.2**.\n\n**L1a format-compat table freeze** — Objective: author the single-truth validity + legacy remap tables with corrected arithmetic, before any consumer exists. Files: new `include/quant/format_compat.h`, new `tests/test_format_compat.cpp`. DoD: `kFormatValid[105]` with exactly 69 true; `legacy_format_id_remap()` covers all 36 holes — plain K_L {10,13,16,19,22,25,28,31,34}→base, GRP K_L {46,49,52,55,58,61,64,67,70}→GRP base, plain halves 73-81→12,15,18,21,24,27,30,33,36, GRP halves 82-90→48,51,54,57,60,63,66,69,72; test asserts every retired id maps to a valid id of **identical wire BPW (delta == 0)** and that no target id is claimed by two different source BPWs. Insert: **between L1 and L2** (L4 consumes it).\n\n**L1b tail-budget tables (M-tier + ternary)** — Objective: make per-size tails exact so the strict no-slack harness can pass. Files: new `include/quant/tail_budget.h`, unit test in `tests/test_wire_budgets.cpp`. DoD: for every M/H format and every n in the T1 harness size set, `budget(n) == ceil(exact_name_bpw * n)` and realized == budget; M tails use Diophantine refinement-byte allocation, not blind ceil; ternary H table of (T trits, S slots) with `ceil(T*log2 3)+16 == 1.5n` for even n and an explicit fallback-chain entry for every odd n (9,11,...) → M-layout → L; no entry inflates. Insert: **between L1a and L2**.\n\n**Q0 multiplier feasibility probe** — Objective: pre-L2 go/no-go on the 2-bit {x0.75, 1.0, x1.25, 1.5} codebook that decision 3's acceptance gate depends on. Files: `block_codec.cpp` (wire the dead `fit_scale_true_mse` :632-695), `tools/probe_t4.cpp` or new `tools/probe_multiplier.cpp`. DoD: per-family PSNR(L,M,H) report on the cached real-weight corpus + 4 fuzz dists; each family labelled codebook-wins / tie / loses; any loser escalates (3-bit codebook, or soft-threshold for the binary family) **before L2 starts**; result appended to `DECISIONS.md`. Insert: **between L1b and L2** (pulls the helper-wiring half of Q1 earlier; Q1 then keeps only production wiring).\n\n**Z0 RegFormat id-space map** — Objective: stop L3 from applying the Format hole list to RegFormat. Files: `include/quant/format_registry.h` (:44-70), `format_registry.cpp` (:85-109), new `tests/test_regformat_ids.cpp`. DoD: written map of all 33 RegFormat ids + 23 legacy aliases with current name and target name; test asserts no Format retired id is treated as a RegFormat id and pins the numeric collision (RegFormat 10 = Q_G_1 vs Format 10 = retired Q_1_K_L). Insert: **between L2 and L3**.\n\n### In-task edits\n\n- **P0.0**: add `install_test/` to the tree-disposition table; working tree is 10 dirty files (not 9) — `tests/CMakeLists.txt` +11 registering `test_trainer_engine.cpp` must be verified to compile or the hunk dropped.\n- **P0.2**: planning docs must record the location of `include/quant/format_compat.h` (L1a) and `include/quant/tail_budget.h` (L1b) as the two new single-truth headers.\n- **L1**: land a temporary id-based `k_tier` (`switch ((int)f)`, replacing the string parse at `block_codec.cpp:2464-2470`) in the **same commit** as the enum change — L1 and L2 are not splittable otherwise. Rename `FORMAT_COUNT` → `FORMAT_VALID_COUNT` (count) and add `FORMAT_ID_SLOTS = 105` (bound); keep `format_is_valid()` as the replacement for the range predicates at `types.h:268-276`. Correct the plan's own rewire-math paragraph (10 base incl. Q_32 tier-less → 69). Correct the Q_1 M-tier note to 8 bits per 32 weights. Fix the K-trio range to `:2739-2742`.\n- **L2**: rewire the 12 extra literals — Q_G_3 `:2584/:3046`, Q_G_4 `:2588/:3048`, Q_G_8 `:2590/:3050`, Q_G_12 `:2569/:2573/:3027`, Q_G_16 `:2560/:3020`, Q_G_24 `:2538/:2544/:3040`, and convert Q_G_16_K `:2898` / Q_G_24_K `:2900` to `block_claimed_bytes`. Pass a `claimed_override` at `:2573` before touching the `:865` grp16 table, or pin Q_G_12 tail bytes in `test_wire_budgets` first. Use the L1b tables for M tails and ternary odd-n fallbacks. Add a per-family wire-desync probe. Deleting the half-twin encode/decode cases (`:2904-2922`, `:3104-3122`) must complete before T1 runs — mark non-reorderable.\n- **L3**: do not reuse the Format hole list for RegFormat (see Z0); RegFormat 10 = Q_G_1 collides with retired Format 10.\n- **L4**: build `kFormatValid[105]` + `legacy_format_id_remap()` from L1a (do not re-derive in `format_compat.h`); all 4 clamp sites (`quant_format.cpp:456/:611`, `qwen35_engine.cpp:33/:147`) call `wire_format_valid()`; writer asserts validity before write.\n- **T1**: all five `v < FORMAT_COUNT` loops iterate `0..FORMAT_ID_SLOTS-1` with `format_is_valid()` — `bench/bench_format_comparison.cpp:581`, `test_format_audit.cpp:55`, `test_fuzz_codec.cpp:254`, `test_format.cpp:83`, `test_all.cpp:33`. Re-pin `test_format.cpp:75` print and `:91` `valid == FORMAT_COUNT`, plus `test_all.cpp:37` print. kCaps regen must run **after** L2's half-twin deletion.\n- **Q1**: consume Q0's verdict; if Q0 escalated the codebook, wire the escalated form, not the 2-bit original.\n- **Z1**: add `grep -rn \"FORMAT_COUNT\\|QUANT_FORMAT_COUNT\" install_test/` to the stale-symbol asserts (discharged by P0.3).\n\n### Risks added by the audit\n\n- Wrong remap arithmetic (74→14) silently re-quantizes stored Q_2_5..Q_24_5 blocks — legacy .quant corruption with no error surfaced.\n- `FORMAT_COUNT` flip to a count silently truncates 36 formats at five unlisted sites; the existing \"skip unknown\" guard does not help once COUNT=69.\n- Editing the `:865` grp16 sizing table shifts Q_G_12 tail bytes through its one un-overridden caller.\n- M-tier tails realize 0.167-0.33 BPW under `ceil()`, so the strict no-slack budget test fails on tails even though steady-state math is exact.\n- Odd-n ternary sizes are information-theoretically infeasible at 1.50; without a pinned fallback table the L/M/H ordering gate cannot be written.\n- 2-bit multipliers may be too coarse for affine/GRP families, in which case the acceptance gate (PSNR strictly between L and H) fails after L2 has already been built — and the measurement that would have caught it is currently scheduled post-L2 (Q1).\n- `install_test/` stale headers fail Z1's grep-zero assert on a tree the plan never mentions.\n- k_tier's string parse makes L1/L2 non-splittable; any worker splitting or reordering them silently re-tiers encoder effort mid-migration.\n- RegFormat/Format id collisions (10, and the whole 23-alias space) can be mis-mapped if L3 reuses the Format hole list."
+   }
+  ],
+  "failures": [
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a2037741ce7c4e0c6",
+    "key": "v2:379437d2c36bfb3b01210ea7a3eaa29e010d6eedf9819442718646e48d4aba2d",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "ad24a0fee8bc6f971",
+    "key": "v2:e77b129f5b4a5157f360d9294f8bff1acad9d3a9de2931bb8e4075ff5e27962e",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a65f8f52afd67b0da",
+    "key": "v2:0770314998bb70db7be2365fd33cd91e1c7cd1ff5cea55644d565e75f5664e72",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "af72ae05fa5dc5873",
+    "key": "v2:b2c320d2cca9f20aa7142f7ee369ffc60fc79afd80a21a0b37abff93bcc2ac97",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a2f353bdbf71f1d6a",
+    "key": "v2:22eaf9678440410df341fe37abc15e2b5f9daf19c2dd5f693dfd6124bfcfe6a3",
+    "error": null
+   }
+  ],
+  "agents": [],
+  "agentCount": 0,
+  "withPayload": 0
+ },
+ "audit-ladder": {
+  "label": "audit-ladder",
+  "phases": [
+   "Audit"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a8a074969b054565b",
+    "phase": "Audit",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "All verification complete. Compiling the audit."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "audit-safety": {
+  "label": "audit-safety",
+  "phases": [
+   "Audit"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "af72ae05fa5dc5873",
+    "phase": "Audit",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/deepseek/deepseek-v4.1-flash-free] [402]: {\"error\":{\"code\":\"free_quota_exhausted\",\"message\":\"your orcarouter/free allowance is used up — top up your balance and call a specific model with wallet billing to keep going https://www.orcaro (reset after 1m 11s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "audit-persistence": {
+  "label": "audit-persistence",
+  "phases": [
+   "Audit"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a65f8f52afd67b0da",
+    "phase": "Audit",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/deepseek/deepseek-v4-flash-free] [429]: {\"error\":{\"code\":\"free_rate_limited\",\"message\":\"Free model capacity is limited right now. Retry shortly, or add credits for higher, more stable limits: https://www.orcarouter.ai/console/billing (reset after 15s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "audit-tests": {
+  "label": "audit-tests",
+  "phases": [
+   "Audit"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "ad24a0fee8bc6f971",
+    "phase": "Audit",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250431813549938268d9d6uKDQcEaK)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "audit-casing-dead": {
+  "label": "audit-casing-dead",
+  "phases": [
+   "Audit"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a2037741ce7c4e0c6",
+    "phase": "Audit",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250228481688188268d9d6f2AosI3s)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "plan-completeness-critic": {
+  "label": "plan-completeness-critic",
+  "phases": [
+   "Gaps"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a2f353bdbf71f1d6a",
+    "phase": "Gaps",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [cline/cline-free/minimax-m3.1-flash] [404]: {\"error\":\"model not found\",\"success\":false}\n (reset after 1m 45s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "enhancement-merge": {
+  "label": "enhancement-merge",
+  "phases": [
+   "Enhance"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a7c2396813b049f52",
+    "phase": "Enhance",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "## Plan enhancements (post-audit)\n\nAudit of section `audit-ladder`: **9/9 claims confirmed, 0 refuted** — the plan's reading of `types.h` / `block_codec.cpp` is accurate (enum census, FORMAT_COUNT=105, format_bpw/nominal, ID-range predicates, all ten rewire literals, 9 byte-identical Q_X_5/Q_G_X_5 twin pairs, k_tier string parse at :2464-2470, affine [0,1] binary nature of Q_1_5). Corrections below are to the plan's **decisions and arithmetic**, not to its code readings.\n\n### Corrections to the plan\n\n| Claim (short) | Was | Now (verified) | Plan edit needed |\n|---|---|---|---|\n| Decision 5 plain-half remap | `73->12, 74->14, ...` step +2 | `73->12, 74->15, 75->18, 76->21, 77->24, 78->27, 79->30, 80->33, 81->36` (step **+3**; family-2 H tier is 2.50 = Q_2_K_H = id 15; 14 = Q_2_K_M = 2.25) | Replace the remap example verbatim; **BLOCKING** — as written L4 re-quantizes every stored Q_2_5..Q_24_5 block at the wrong density |\n| Decision 5 GRP halves 82-90 | No rule at all | `82->48, 83->51, 84->54, 85->57, 86->60, 87->63, 88->66, 89->69, 90->72` | Add the GRP half series to decision 5; decision 6's 105x1 fixture cannot pass without it |\n| FORMAT_COUNT semantic flip | 4 clamp sites + 3 tests | 5 `v < FORMAT_COUNT` loops truncate ids 71,72,91-104: `bench/bench_format_comparison.cpp:581`, `test_format_audit.cpp:55`, `test_fuzz_codec.cpp:254`, `test_format.cpp:83`, `test_all.cpp:33` | Name the 5 loops; each must iterate `0..FORMAT_ID_SLOTS-1` + `format_is_valid()`; prefer renaming to `FORMAT_VALID_COUNT` so a missed site fails to compile |\n| `install_test/` tree | Never mentioned | `install_test/include/quant/types.h` + `constants.h` are byte-copies carrying `FORMAT_COUNT = 105` | Add disposition line (delete or regenerate) — unreferenced by CMake, but fails Z1 grep-zero |\n| Rewire literal list | 10 sites named | ~12 more in `block_codec.cpp`: Q_G_3 `:2584/:3046` (4.5f), Q_G_4 `:2588/:3048` (4.5f), Q_G_8 `:2590/:3050` (8.5f), Q_G_12 `:2569/:2573/:3027` (12.5), Q_G_16 `:2560/:3020`, Q_G_24 `:2538/:2544/:3040` (24.5), plus \"keep\" formats Q_G_16_K `:2898` / Q_G_24_K `:2900` hardcoding `ceil(16.0n/8)` / `ceil(24.0n/8)` | Add all 12 to the rewire list; convert :2898/:2900 to `block_claimed_bytes` |\n| `quant_grp16` sizing table `:865` | Edit it as part of the rewire | One live caller passes **no** override — Q_G_12 odd-n fallback at `:2573` (the other two, `:1485` and `:2911-2922`, do pass overrides) | Editing `:865` changes Q_G_12 tail sizing as a side effect; pass an override at `:2573` or pin Q_G_12 tails in `test_wire_budgets` first |\n| M-tier tail sizing | Per-32 steady-state math only (decision 3) | `block_claimed_bytes` uses `ceil()`, so tails realize 0.167-0.33 BPW, not 0.25 | Add a per-size M tail budget rule (same class as the ternary Diophantine) or the strict no-slack budget test fails |\n| Ternary feasibility set | \"else fallback chain ternary->M-layout->L — never inflate\" | `1.5n` integral only for even n; every odd tail (9,11,...) is inexact | Add a per-size fallback table for odd n to the L2 brief |\n| Multiplier codebook | {x0.75, 1.0, x1.25, x1.5}, 2-bit, acceptance = PSNR strictly between L and H | Asymmetric (no <=0.5x, no 2.0x); for affine/GRP families per-group scale codes already span wide ranges, so 2 bits may be too coarse | Schedule a pre-L2 measurement pass (currently `fit_scale_true_mse` is wired by Q1, i.e. **after** L2) |\n| Rewire-math final count (plan ~lines 255-257) | \"9 base ... + Q_32 ... ~= 70ish\" (double-counts Q_32; implies Q_32 gets tiers) | Decision 2 is correct: **69**, 10 base incl. Q_32 tier-less, matches the 36-hole census | Rewrite the rewire-math paragraph; delete \"9 base ... ~70ish\" |\n| Q_1 M-tier bit math | \"25 more bits/group\" for +0.25 BPW | For group=32 that is 0.78125 BPW; +0.25 BPW = **8 bits per 32 weights** | Fix the number or define \"group\"; as written it contradicts decision 3's 1-refinement-byte design |\n| k_tier hazard (decision 8) | Flagged, no step | String parse confirmed `:2464-2470`; renaming `_K_L` changes `format_name()`'s last char → silent re-terracing | Assign the concrete step: L1 lands a temporary id-based `k_tier` (`switch ((int)f)`) in the same commit as the enum change |\n| Test pins (decision 6) | Covers `==105` asserts + kCaps rows | Misses `test_format.cpp:75` print (\"All 38 ... verified\"), `:91` `valid == FORMAT_COUNT`, `test_all.cpp:37` print (\"All 105 defined v4 formats\") | Add both assertions/prints to decision 6 |\n| L2 -> T1 ordering | Sequenced L2 before T1, dependency unstated | L2 must delete the 18 half-twin encode cases `:2904-2922` and 18 decode twins `:3104-3122` **before** T1 regenerates kCaps, else retired half ids resolve via `format_bpw>0` and die at `cap_for()` (`test_fuzz_codec.cpp:241-246`) | State the dependency explicitly as non-reorderable/non-parallelizable |\n| RegFormat id space (L3) | Hole list reused implicitly | RegFormat has its own ids (`format_registry.h:44-70`: Q_G_1=10 ... QG_MX_24_5=32, 23 legacy aliases); RegFormat 10 = Q_G_1 collides with Format 10 = retired Q_1_K_L | Forbid reusing the Format hole list for RegFormat; remap table is Format-only |\n| K-trio line range (cosmetic) | `:2740-2743` | `:2739-2742` | Fix line range in explorer notes |\n\n### New tasks to insert into the DAG\n\n**P0.3 install_test-tree disposition** — Objective: resolve the byte-copy header tree before it breaks Z1. Files: `install_test/include/quant/types.h`, `install_test/include/quant/constants.h`. DoD: tree deleted, or regenerated from post-L1 headers; `grep -rn \"FORMAT_COUNT\" install_test/` → 0 hits; configure/build unaffected (tree unreferenced by `CMakeLists.txt` and `tests/CMakeLists.txt`). Insert: **after P0.0, before P0.2**.\n\n**L1a format-compat table freeze** — Objective: author the single-truth validity + legacy remap tables with corrected arithmetic, before any consumer exists. Files: new `include/quant/format_compat.h`, new `tests/test_format_compat.cpp`. DoD: `kFormatValid[105]` with exactly 69 true; `legacy_format_id_remap()` covers all 36 holes — plain K_L {10,13,16,19,22,25,28,31,34}→base, GRP K_L {46,49,52,55,58,61,64,67,70}→GRP base, plain halves 73-81→12,15,18,21,24,27,30,33,36, GRP halves 82-90→48,51,54,57,60,63,66,69,72; test asserts every retired id maps to a valid id of **identical wire BPW (delta == 0)** and that no target id is claimed by two different source BPWs. Insert: **between L1 and L2** (L4 consumes it).\n\n**L1b tail-budget tables (M-tier + ternary)** — Objective: make per-size tails exact so the strict no-slack harness can pass. Files: new `include/quant/tail_budget.h`, unit test in `tests/test_wire_budgets.cpp`. DoD: for every M/H format and every n in the T1 harness size set, `budget(n) == ceil(exact_name_bpw * n)` and realized == budget; M tails use Diophantine refinement-byte allocation, not blind ceil; ternary H table of (T trits, S slots) with `ceil(T*log2 3)+16 == 1.5n` for even n and an explicit fallback-chain entry for every odd n (9,11,...) → M-layout → L; no entry inflates. Insert: **between L1a and L2**.\n\n**Q0 multiplier feasibility probe** — Objective: pre-L2 go/no-go on the 2-bit {x0.75, 1.0, x1.25, 1.5} codebook that decision 3's acceptance gate depends on. Files: `block_codec.cpp` (wire the dead `fit_scale_true_mse` :632-695), `tools/probe_t4.cpp` or new `tools/probe_multiplier.cpp`. DoD: per-family PSNR(L,M,H) report on the cached real-weight corpus + 4 fuzz dists; each family labelled codebook-wins / tie / loses; any loser escalates (3-bit codebook, or soft-threshold for the binary family) **before L2 starts**; result appended to `DECISIONS.md`. Insert: **between L1b and L2** (pulls the helper-wiring half of Q1 earlier; Q1 then keeps only production wiring).\n\n**Z0 RegFormat id-space map** — Objective: stop L3 from applying the Format hole list to RegFormat. Files: `include/quant/format_registry.h` (:44-70), `format_registry.cpp` (:85-109), new `tests/test_regformat_ids.cpp`. DoD: written map of all 33 RegFormat ids + 23 legacy aliases with current name and target name; test asserts no Format retired id is treated as a RegFormat id and pins the numeric collision (RegFormat 10 = Q_G_1 vs Format 10 = retired Q_1_K_L). Insert: **between L2 and L3**.\n\n### In-task edits\n\n- **P0.0**: add `install_test/` to the tree-disposition table; working tree is 10 dirty files (not 9) — `tests/CMakeLists.txt` +11 registering `test_trainer_engine.cpp` must be verified to compile or the hunk dropped.\n- **P0.2**: planning docs must record the location of `include/quant/format_compat.h` (L1a) and `include/quant/tail_budget.h` (L1b) as the two new single-truth headers.\n- **L1**: land a temporary id-based `k_tier` (`switch ((int)f)`, replacing the string parse at `block_codec.cpp:2464-2470`) in the **same commit** as the enum change — L1 and L2 are not splittable otherwise. Rename `FORMAT_COUNT` → `FORMAT_VALID_COUNT` (count) and add `FORMAT_ID_SLOTS = 105` (bound); keep `format_is_valid()` as the replacement for the range predicates at `types.h:268-276`. Correct the plan's own rewire-math paragraph (10 base incl. Q_32 tier-less → 69). Correct the Q_1 M-tier note to 8 bits per 32 weights. Fix the K-trio range to `:2739-2742`.\n- **L2**: rewire the 12 extra literals — Q_G_3 `:2584/:3046`, Q_G_4 `:2588/:3048`, Q_G_8 `:2590/:3050`, Q_G_12 `:2569/:2573/:3027`, Q_G_16 `:2560/:3020`, Q_G_24 `:2538/:2544/:3040`, and convert Q_G_16_K `:2898` / Q_G_24_K `:2900` to `block_claimed_bytes`. Pass a `claimed_override` at `:2573` before touching the `:865` grp16 table, or pin Q_G_12 tail bytes in `test_wire_budgets` first. Use the L1b tables for M tails and ternary odd-n fallbacks. Add a per-family wire-desync probe. Deleting the half-twin encode/decode cases (`:2904-2922`, `:3104-3122`) must complete before T1 runs — mark non-reorderable.\n- **L3**: do not reuse the Format hole list for RegFormat (see Z0); RegFormat 10 = Q_G_1 collides with retired Format 10.\n- **L4**: build `kFormatValid[105]` + `legacy_format_id_remap()` from L1a (do not re-derive in `format_compat.h`); all 4 clamp sites (`quant_format.cpp:456/:611`, `qwen35_engine.cpp:33/:147`) call `wire_format_valid()`; writer asserts validity before write.\n- **T1**: all five `v < FORMAT_COUNT` loops iterate `0..FORMAT_ID_SLOTS-1` with `format_is_valid()` — `bench/bench_format_comparison.cpp:581`, `test_format_audit.cpp:55`, `test_fuzz_codec.cpp:254`, `test_format.cpp:83`, `test_all.cpp:33`. Re-pin `test_format.cpp:75` print and `:91` `valid == FORMAT_COUNT`, plus `test_all.cpp:37` print. kCaps regen must run **after** L2's half-twin deletion.\n- **Q1**: consume Q0's verdict; if Q0 escalated the codebook, wire the escalated form, not the 2-bit original.\n- **Z1**: add `grep -rn \"FORMAT_COUNT\\|QUANT_FORMAT_COUNT\" install_test/` to the stale-symbol asserts (discharged by P0.3).\n\n### Risks added by the audit\n\n- Wrong remap arithmetic (74→14) silently re-quantizes stored Q_2_5..Q_24_5 blocks — legacy .quant corruption with no error surfaced.\n- `FORMAT_COUNT` flip to a count silently truncates 36 formats at five unlisted sites; the existing \"skip unknown\" guard does not help once COUNT=69.\n- Editing the `:865` grp16 sizing table shifts Q_G_12 tail bytes through its one un-overridden caller.\n- M-tier tails realize 0.167-0.33 BPW under `ceil()`, so the strict no-slack budget test fails on tails even though steady-state math is exact.\n- Odd-n ternary sizes are information-theoretically infeasible at 1.50; without a pinned fallback table the L/M/H ordering gate cannot be written.\n- 2-bit multipliers may be too coarse for affine/GRP families, in which case the acceptance gate (PSNR strictly between L and H) fails after L2 has already been built — and the measurement that would have caught it is currently scheduled post-L2 (Q1).\n- `install_test/` stale headers fail Z1's grep-zero assert on a tree the plan never mentions.\n- k_tier's string parse makes L1/L2 non-splittable; any worker splitting or reordering them silently re-tiers encoder effort mid-migration.\n- RegFormat/Format id collisions (10, and the whole 23-alias space) can be mis-mapped if L3 reuses the Format hole list."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ }
+}

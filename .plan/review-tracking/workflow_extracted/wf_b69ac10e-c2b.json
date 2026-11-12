@@ -1,0 +1,1186 @@
+{
+ "": {
+  "label": "",
+  "phases": [],
+  "started": 0,
+  "result_events": 4,
+  "failed_events": 47,
+  "other_events": {
+   "launched": 1
+  },
+  "results": [
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a7e7080055fb03c5e",
+    "key": "v2:7c3efc655f3e4a7a5c6ff52927b0b59062efd1c3078ec2b97c4edd6c2bcfd4fa",
+    "payload": {
+     "refuted": true,
+     "reason": "The mechanics are accurate but the impact premise is wrong. The string-literal rail is deliberately scoped to the CLI flag surface, not a global invariant: the design note 2026-07-22-web-bind-address.md states 'Programmatic carrier consumers may select another hostname or address directly,' and the webserver docs/docs note 2026-07-28-api-browser-trust-boundary.md document 0.0.0.0 as 'deliberate network exposure' whose 'trusted-network assumption ... is now documented instead of implicit,' with 'reachability [being] the webserver binding's policy.' Reaching 0.0.0.0 through any alternate path requires the operator to author a cordis.patch.yml/--patch overlay (documented consequence, chosen by the operator) or an attacker to already have $CF_HOME write access (machine compromise), so it is not exploitable by a network or confused user. In the default shipped composition no --host flag means the row defaults to 127.0.0.1 and resolveLanTrust derives nothing, and the flag path is airtight (the schema z.union of z.const('127.0.0.1')/z.const('0.0.0.0') rejects every other spelling, so only the exact literal could even reach the rail). Finally, the 'auto-trusts every LAN IPv4' consequence is not a security regression but the fence's intended shape: the /api fence is explicitly a confused-deputy/DNS-rebinding defense, not an auth layer, so once the server is bound to 0.0.0.0 a LAN attacker reaches the socket directly regardless of fence entries; adding derived IP-literal entries narrows the rebinding gap rather than widening access. This is documented intended behavior, not a defect.",
+     "adjusted_severity": "not-a-bug",
+     "evidence_seen": "packages/bundle/web-app/src/startup.ts:73-79 `if (options.host === '0.0.0.0') { program.error('error: --host 0.0.0.0 is intentionally not supported yet for safety: ...') }`; packages/host/webserver/src/index.ts:59-77 `host: '127.0.0.1' | '0.0.0.0'` with `z.union([z.const('127.0.0.1'), z.const('0.0.0.0')]).required()`; packages/bundle/web-app/src/index.ts:132-139 resolveLanTrust only collects LAN IPv4s `bindHost === ALL_INTERFACES_HOST ? ... : []`; packages/bundle/web-app/cordis.patch.yml webserver row `host: !!js ctx.webStartup.host ?? '127.0.0.1'` and connection row `trustedHosts: !!js ctx.webRuntime.trustedHosts`; .agents/notes/implemented/feature/2026-07-22-web-bind-address.md ('Programmatic carrier consumers may select another hostname or address directly'); .agents/notes/implemented/architecture/2026-07-28-api-browser-trust-boundary.md ('reachability is the webserver binding's policy', 'The trusted-network assumption of an unauthenticated 0.0.0.0 deployment is now documented instead of implicit'); docs/subsystems/web-server.md ('host accepts ... 0.0.0.0 (deliberate network exposure); there is no TLS, auth, or origin policy, so a non-loopback bind exposes the server to that network'); apps/cli/reference/README.md:75 ('The CLI intentionally does not support --host 0.0.0.0 yet and exits with a usage error'); apps/cli/tests/built-bin.e2e.ts:342-348 pinning the rejection."
+    }
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a72873743a35a19d0",
+    "key": "v2:e31688c2986d44ecbe1b904af25a7dd521e0afae558bb875d789d4a487b027a3",
+    "payload": {
+     "refuted": false,
+     "reason": "The mechanism is real and I confirmed it end to end: vite.config.ts:113 sets sourcemap:true, 25 .js.map files land in apps/web/dist with full sourcesContent, the emitted chunks carry live //# sourceMappingURL comments, and frontend-static's serveStatic serves any GET/HEAD file under distRoot with no extension allowlist while its MIME table deliberately maps '.map' -> 'application/json'. package.json files:[\"dist\",\"!dist/**/*.map\"] and .npmignore *.map only affect npm pack; check-workspace-constraints.ts:61-63 confirms maps are intentionally left on disk and merely kept out of the tarball. Nothing refutes the mechanism.\n\nHowever the claimed IMPACT is overstated, so medium -> low. (1) The maps do NOT expose original first-party source: of 191 unique sources across all 25 maps, only two are genuine TypeScript (apps/web/src/main.ts, 421 chars of trivial bootstrap, and src/node-module-stub.ts, 481 chars). Every substantive first-party source is already-compiled packages/client/{ui-primitives,ui-slots,web}/lib/index.js -- and those packages publish lib/index.js publicly to npm verbatim (files:[\"lib/index.js\",...], private:false), so the served map discloses no code the registry does not already give away. The real TSX mapping (tsdown.client.ts's client.js.map sourcemapPathTransform/browserSourcePath) is never in this dist, and publication-payload.ts forbids those maps from ever being packed. (2) No secret material: build defines inject only CF_CLIENT_* values (commit hash, title, profile), which are public and pinned by .cf-build/client-build-environment.json; a secret-pattern scan of all 25 maps found only React internals, HTML input types and shiki grammar keyword lists. (3) Default bind is loopback (cordis.patch.yml:125 host: !!js ctx.webStartup.host ?? '127.0.0.1'), so exposure is same-host by default, not LAN.\n\nWhat actually survives is a hygiene/perf inconsistency plus a contradiction with the repo's own map-stripping policy -- multi-MB .map payloads fetched whenever DevTools is open on an origin the project otherwise keeps map-free. That is a real cleanup a maintainer would accept, but it is not the source-disclosure/secret-leak defect the finding frames, and it is not medium severity.",
+     "adjusted_severity": "low",
+     "evidence_seen": "apps/web/vite.config.ts:112-120 — `build: { sourcemap: true, rollupOptions: { output: { /* Sourcemaps need no arrangement: rollup writes each .map next to its js and references it by bare relative filename. */`\n\npackages/host/frontend-static/src/index.ts:39-47 — MIME table with `'.map': 'application/json'`; and :68-96 serveStatic with no allowlist:\n```\nconst target = resolve(normalize(join(distRoot, pathname)))\nif (target !== distRoot && !target.startsWith(distRoot + sep)) { res.writeHead(403); ... }\n...\nbody = await readFile(target)\ntype = MIME[extname(target)] ?? 'application/octet-stream'\n...\nres.writeHead(200, { 'content-type': type })\n```\n\nscripts/check-workspace-constraints.ts:61-64 — intent is publication-only:\n```\n// The Web build emits sourcemaps for browser debugging; publishing them is\n// what the payload policy forbids, so the bundle ships without them.\n'@origin-ai/cf-web-frontend': ['dist', '!dist/**/*.map'],\n```\n\npackages/bundle/web-app/src/index.ts:163-171 resolveDistIndex() -> require.resolve('@origin-ai/cf-web-frontend/dist/index.html'), and :233 ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })\n\nObserved on disk: 25 *.map under apps/web/dist/assets; assets/index-BKSebiLg.js ends `//# sourceMappingURL=index-BKSebiLg.js.map`; index-BKSebiLg.js.map keys = [version, mappings, names, ignoreList, sources, sourcesContent, file], 19 sources with sourcesContent.\n\nCounter-evidence on impact — map contents enumerated across all 25 maps: 191 unique sources, only 2 first-party TS/TSX (`../../src/main.ts` len 421, `../../src/node-module-stub.ts` len 481); largest first-party entries are already-published artifacts `packages/client/ui-primitives/lib/index.js` (289021), `ui-slots/lib/index.js` (17386), `web/lib/index.js` (10024), each matching those packages' public `files: [\"lib/index.js\",\"lib/invariant.js\",...]` with private:false.\n\nscripts/publication-payload.ts isForbiddenPublicationFile — `.js.map`/`.d.ts.map` are the forbidden class, covering packages/client/tsdown.client.ts:460 `sourcemap: true` + :569 `sourcemapPathTransform: browserSourcePath` outputs that carry real TSX; those files are absent from apps/web/dist.\n\nscripts/client-build-environment.ts clientBuildEnvironmentDefines — only `CF_CLIENT_*` prefixed vars are inlined, plus `'process.env': '{}'`; .cf-build/client-build-environment.json shows the entire public environment is `{\"CF_CLIENT_COMMIT_HASH\":\"2b6ebb0\"}`.\n\npackages/bundle/web-app/cordis.patch.yml:125 — `host: !!js ctx.webStartup.host ?? '127.0.0.1'` (loopback default)."
+    }
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a805206c52ad7d39b",
+    "key": "v2:360e9deca2b8d017f7f0b03a28c88ae22ce0410b0d7cf7619f3b76a7745dbf5c",
+    "payload": {
+     "findings": [
+      {
+       "category": "orphaned-reference",
+       "detail": "The file that every real-API e2e vitest run loads as its config is gone from the working tree, but six call sites still point at it. Reproduced locally with the exact CI command (`npx vitest run --config vitest.e2e.config.ts`): vite fails with `Cannot resolve entry module vitest.e2e.config.ts` ([UNRESOLVED_ENTRY]), so `npm run test:e2e` (package.json line 41) and the deleted-file-referencing `run-gates` built-bin-smoke lane both exit nonzero before any test runs. Impact: (1) every required CI lane that calls `builtBinSmokeGate()` (run-gates.ts lines 307, 408, 437, 504, all referenced from the `ci-primary` / `ci-artifacts` / `ci-consumers` / `ci-windows-*` / `check-all` lanes) fails; (2) the standalone real-API workflows `.github/workflows/e2b-e2e.yml:55`, `e2b-e2e.yml` sibling `pi-ai-provider-e2e.yml:69`, and `sandbox.yml:104,126` all fail their vitest step; (3) local `npm run test:e2e` is broken. The file is recoverable from git HEAD (`git show HEAD:vitest.e2e.config.ts`证实 it still exists in the last commit), so the working-tree deletion appears unintended rather than an intentional removal whose references were supposed to be cleaned up.",
+       "evidence": "git status --porcelain: ` D vitest.e2e.config.ts` (deleted, unstaged)\npackage.json:41: \"test:e2e\": \"vitest run --config vitest.e2e.config.ts\",\nscripts/run-gates.ts:693: 'vitest.e2e.config.ts',\n.github/workflows/e2b-e2e.yml:55 / pi-ai-provider-e2e.yml:69 / sandbox.yml:104,126: `npx vitest run --config vitest.e2e.config.ts`\nReproduction: `npx vitest run --config vitest.e2e.config.ts` → `[UNRESOLVED_ENTRY] Cannot resolve entry module vitest.e2e.config.ts. Build failed with 1 error:`",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/vitest.e2e.config.ts",
+       "line": 1,
+       "severity": "critical",
+       "title": "vitest.e2e.config.ts deleted but still referenced — CI and test:e2e cannot load it"
+      },
+      {
+       "category": "orphaned-reference",
+       "detail": "The `builtBinSmokeGate()` agent list passes `vitest.e2e.config.ts` as its `--config` argument, and that gate is included in the required CI lane composition (`ci-primary` line ~307, `ci-artifacts` line 408, `ci-consumers` line 437, `ci-windows` line 504 via `ciWindowsComplete/Blocking` paths). With the config file missing, vitest fails config load with `Cannot resolve entry module vitest.e2e.config.ts` before any of the listed built-bin smoke specs can execute. This is the concrete CI break referenced in the lost finding: the run-gates lane cannot pass in its current state.",
+       "evidence": "npmExec('built-bin-smoke', [\n  'vitest', 'run', '--config', 'vitest.e2e.config.ts',\n  'examples/headless-agent/tests/keyless-smoke.e2e.ts', ...\n], { label: 'built-bin smoke', needs, env: { CF_EXAMPLE_MODE: 'lib' } })\n— invoked as `builtBinSmokeGate()` at scripts/run-gates.ts:307, 408, 437, 504",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/scripts/run-gates.ts",
+       "line": 693,
+       "severity": "critical",
+       "title": "run-gates builtBinSmokeGate references the deleted config on every required CI lane"
+      },
+      {
+       "category": "orphaned-reference",
+       "detail": "The `test:e2e` script, which is the repo's documented local entry point for the real-API suite (and the command `.github/workflows/e2e.yml:118` invokes as `npm run test:e2e`), resolves its config file by relative path. Since `vitest.e2e.config.ts` was deleted from the working tree, running the script reproduces `Build failed with 1 error: Cannot resolve entry module vitest.e2e.config.ts`, breaking both local usage and the `e2e.yml` workflow job that calls it.",
+       "evidence": "\"test:e2e\": \"vitest run --config vitest.e2e.config.ts\"\n.npm run test:e2e -- --run → Error: Build failed with 1 error: [UNRESOLVED_ENTRY] Cannot resolve entry module vitest.e2e.config.ts.",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/package.json",
+       "line": 41,
+       "severity": "high",
+       "title": "package.json test:e2e script points at the deleted config"
+      },
+      {
+       "category": "orphaned-reference",
+       "detail": "Four separate workflow files invoke vitest with `--config vitest.e2e.config.ts` on files that are now missing, so each workflow's key-gated real-API test step fails at config-load time rather than producing a test result. These are scheduled/dispatch real-API verification lanes; their failure signal is a build error, not a missing test, which could mask an actual regression the lanes exist to catch.",
+       "evidence": "e2b-e2e.yml: `npx vitest run --config vitest.e2e.config.ts packages/e2b/e2b/tests/composition.e2e.ts`\npi-ai-provider-e2e.yml: `npx vitest run --config vitest.e2e.config.ts packages/llm/llm-pi-ai/tests/provider-apis.e2e.ts`\nsandbox.yml: `out=$(npx vitest run --config vitest.e2e.config.ts packages/sandbox/sandbox-local/tests/${{ matrix.runner }}.e2e.ts ...)` (lines 104, 126)",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.github/workflows/e2b-e2e.yml",
+       "line": 55,
+       "severity": "high",
+       "title": "Three standalone CI workflows reference the deleted config in their test steps"
+      }
+     ],
+     "note": "Confirmed the lost finding is a real, reproducible defect, not a false positive. The deletion is unstaged (git status ` D vitest.e2e.config.ts`) so the file's last known content is still in HEAD and can be restored with `git show HEAD:vitest.e2e.config.ts` or `git checkout -- vitest.e2e.config.ts`. Reproduced the exact failure mode the lost review recorded: `npx vitest run --config vitest.e2e.config.ts` in code-fusion/ exits with `Build failed with 1 error: [UNRESOLVED_ENTRY] Cannot resolve entry module vitest.e2e.config.ts.`, verified both directly and via `npm run test:e2e` and via vite's own config loader (`loadConfigFromFile`), so this breaks the required CI gate and the `test:e2e` script, not just an unused reference. vitest.config.ts itself is intact and not implicated. Findings are ordered by blast radius (the gate spanning every required lane first, then the more contained workflow/package-script references)."
+    }
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a25317a78603a1a70",
+    "key": "v2:5afa12b7eacd7e00f334f376c769615e2e86cfbd029f5b27511c5461d751a355",
+    "payload": {
+     "findings": [
+      {
+       "category": "security/config-integrity",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/byok.ts",
+       "line": 686,
+       "severity": "high",
+       "title": "exportConfig redaction flag is inverted: redactKeys=false writes a literal '***REDACTED***' placeholder as a real apiKey value",
+       "detail": "In BYOKEngine.exportConfig (lines 679-695), the spread `...(redactKeys ? {} : { apiKey: '***REDACTED***' })` has the branches exactly backwards relative to the flag's meaning. With redactKeys=true the apiKey field is dropped (correct redaction); with redactKeys=false — the documented way to get an unredacted export (e.g. a backup before moving machines) — no real key is ever emitted; instead the literal placeholder string '***REDACTED***' is placed in the apiKey field. Consequences: (1) an exported config file looks unredacted but contains only the placeholder, so an import round-trip registers '***REDACTED***' as a live key (addKey stores it verbatim, and it would be sent as the Authorization header to the provider), silently corrupting the config; (2) consumers wanting a true unredacted backup have no correct path via exportConfig and are pushed toward the unguarded getConfig(), which leaks plaintext keys (see the next finding). The codebase's own redaction seam (packages/settings/settings/src/redact.ts, used by host/apiproxy via settings.describe({ redactSecrets: true })) handles this correctly; byok.ts simply bypasses it. The correct code is `{ ...(redactKeys ? { apiKey: '***REDACTED***' } : { apiKey: originalApiKeyValue }) }` — but listKeys()/KeyInfo don't carry the raw key, so exportConfig currently can never reach it.",
+       "evidence": "exportConfig(redactKeys: boolean = true): ExportedBYOKConfig {\n    const keys = this.listKeys().map(k => ({\n      id: k.id, provider: k.provider, model: k.model, tier: k.tier,\n      specialization: k.specialization,\n      ...(redactKeys ? {} : { apiKey: '***REDACTED***' })   // <-- inverted\n    }))"
+      },
+      {
+       "category": "security",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/byok.ts",
+       "line": 675,
+       "severity": "medium",
+       "title": "getConfig() returns the live, unfrozen BYOKConfig containing plaintext API keys with no redaction",
+       "detail": "The public getConfig() method returns `this.config` typed as Readonly<BYOKConfig>, but Readonly is shallow and nothing is frozen at runtime. `keys` is `APIKeyConfig[]` with the raw `apiKey` field on each entry (packages/cf/src/types.ts lines 85-91), so any consumer can read every plaintext key and even mutate the underlying array/objects (the constructor keeps the caller's array reference via `config.keys ?? []`). Because exportConfig's unredacted path is broken by the inverted flag (***REDACTED*** always emitted), getConfig() is the only way to export real keys — callers doing config serialization, logging, or backup through it bypass every redaction mechanism the codebase otherwise enforces at wire boundaries ('Every wire surface MUST pass this' per SettingsDescribeOptions). This is unguarded secret exposure on a public API.",
+       "evidence": "getConfig(): Readonly<BYOKConfig> {\n    return this.config\n  }\n\nexport interface APIKeyConfig {\n  id: string; provider: string; apiKey: string; model: string\n  ...\n}"
+      },
+      {
+       "category": "logic",
+       "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/byok.ts",
+       "line": 147,
+       "severity": "low",
+       "title": "Budget limits coerced with falsy || : a deliberate $0 daily/monthly budget silently becomes $100/$1000",
+       "detail": "In the constructor, `daily: this.config.budget.daily || 100` and `monthly: this.config.budget.monthly || 1000` treat 0 as 'unset'. A user or host configuring a hard-zero spend limit (or alertThreshold of 0) gets it silently replaced by the default 100/1000/80, so budget enforcement that should block all spend allows the full default budget. The checkBudgetAlerts() percentage math then reads against the wrong limit. Same falsy coercion pattern appears at construction for alertThreshold (`|| 80`). Unrelated to the redaction hint but a concrete correctness bug found in the same file.",
+       "evidence": "this.budget = {\n      daily: this.config.budget.daily || 100,\n      monthly: this.config.budget.monthly || 1000,\n      alertThreshold: this.config.budget.alertThreshold || 80\n    }"
+      }
+     ],
+     "note": "The hinted area was re-examined. The specific lost finding — a real secret landing in the exported config via exportConfig() — is NOT present: exportConfig() derives its keys from listKeys() (KeyInfo contains no apiKey field), so no plaintext key can leak through it, even with redactKeys=false (which emits the literal '***REDACTED***' placeholder instead). What IS present is the inverted branch logic in exportConfig() itself (reported as the high-severity finding), plus the unguarded secret exposure via getConfig() that the broken flag pushes callers toward. The sister seam packages are clean: packages/settings/settings/src/redact.ts implements structural secret removal correctly (removes role('secret') fields, enumerates paths, tested in packages/settings/settings/tests/redact.spec.ts), and packages/credentials/* is a reference-only seam whose types explicitly exclude secret values from configuration surfaces (CredentialInfo/CredentialRecordInfo 'never the value'). Note also that archive/cf-legacy/src/byok.ts contains an identical copy of the exportConfig defect, but was excluded per the task's path scope."
+    }
+   }
+  ],
+  "failures": [
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a80a784926b18de91",
+    "key": "v2:7c3efc655f3e4a7a5c6ff52927b0b59062efd1c3078ec2b97c4edd6c2bcfd4fa",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a15588d175d97d1a4",
+    "key": "v2:e31688c2986d44ecbe1b904af25a7dd521e0afae558bb875d789d4a487b027a3",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a2fbe556bd0f57586",
+    "key": "v2:b7ecb3be656fe224aed2ee7f65970b056a85800707ba1180ede852d45f4e336b",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "ac63844a6b051efd0",
+    "key": "v2:602d4a245b95058684b96fce26a0ba4c687531ae0430e8ae9848317fb7bcca41",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a34a331f4e769e81f",
+    "key": "v2:a7f0fb9df70490e7d9485d0b84dcb62c982ccc1041ed4e542086c42d21bf9543",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a9a8821c4e4abcf8b",
+    "key": "v2:aa27c6d37bac7ea5104a9dde4e7ff0286ebfaf5ccd6ce5d6f74efbe9e0d0c297",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "af1a63ad18fc24db6",
+    "key": "v2:be05a4d8226dd750240b7fe49b093d46c1357064b547f3da81063172927a4097",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "aeeb6c139f17c645b",
+    "key": "v2:e2ee2175a832b57916296f5ebf512068e4406972e1c9b97054fbe25d12898dbb",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "ae09533791cf06a90",
+    "key": "v2:f165fc6ac8273c6de890ba78e7d7f497f6c95489eba61a6e8d11586d28ef2139",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a2e3eb4080c63a2b7",
+    "key": "v2:840aa775e1ef443677b6b81179389654816fca40638eb61548bbf848813e22e2",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "aa256cee8de8b2b8a",
+    "key": "v2:b6672d7befaddf0f639f6cbc7930127c11408084f9bccd64be54497ef7cfb0a7",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5d3c8057438bd913",
+    "key": "v2:93a020b6e02da95a8dfdfbf1a7e31819a5ec8363d73b040bd9684035e40e4249",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "aa50c51b172f62dbf",
+    "key": "v2:5b169e9bf63c0d912fc5c7aee2efbc57036362a97c2625361e731be97e89ebb6",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5c802c759398c9eb",
+    "key": "v2:44f8b44fb3a5214d21c88715509905fddbb6628bcdc0ae82038d259ac1936c1a",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a9450c92a3ab9a0fe",
+    "key": "v2:a195911af3eac10340d8ac4bfb65cf41cc1aa9eb92abd10bee753fd369f734cb",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a64130c5b2d4798f2",
+    "key": "v2:463056e080749b995530f340f45eaed12d1c18e3ea2db2ace387267d847bf2b7",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "abb8d6bcd48f31443",
+    "key": "v2:d5a60e96e973f366bf2a3a44e792da778f08e38fcdc8b7a724f2b9ff6dcb5c55",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "aaa48cb71f385eda6",
+    "key": "v2:b84975aa37f7b3ba5db603ca4315c82b2546acac1b7d72ada72981b7dbfa6e66",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a8a17f65f605d2138",
+    "key": "v2:7a4dc0d86158d370f157ed33afad8a942dfa7e144561a48dbd9a3962c3d80037",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5a4aedd6bfeb6efd",
+    "key": "v2:a7393a803444270b0b8e7719e56c10d6ac86dae5fa99268dbb78a5803f45018d",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a7b02ca7f004023f3",
+    "key": "v2:fbb38dae442a5d735d92e6e2a7d4492ef86653ff16d90b184e9d045589a3cf48",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5a7b0fbe3920bb00",
+    "key": "v2:074b62dfad36094ec0bbd66a3ba0aea0dcd44f0c779d71bead0327f9f287171c",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a8e82ec10a55f3140",
+    "key": "v2:27a637c8bad192b7b413b1797eab9256df100b2e566a9ff2d59f74498774283e",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "ad386c6a2c28bbdb8",
+    "key": "v2:07e009c5f92e49c993edc37e1a50d157aa9a1bb0307d67b7e48af5f9ecef5104",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a91ab61947d177f20",
+    "key": "v2:b7073b32c595b0f176f89383f0e6fbd7cc1929b92ffcd089305e890d9dc2cd2f",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a7c7037e1fcdcf088",
+    "key": "v2:bca9b97727df6d3a313e7204f88440261b11affad64139c14479988aa351d001",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a197a9f5c6d6eb2b5",
+    "key": "v2:1c0b817b9ea736d9eb6bf3e967dff7056b273ffb63bc71ccd41b8d6e679469b2",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a779a2a1f73f12fd7",
+    "key": "v2:d1877cce0be7f8204ac726c02900dfc834bb643529fcc80ba8ef5ccfa1fbef20",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a3ff45ccfd750f6dd",
+    "key": "v2:42a403e946345fe794664e61ab770fcc4b4a417a4974a3cf45c8b582fe0f9527",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a9cb149ee066e1f4e",
+    "key": "v2:aaf7a95c1dde0baac04125b66d0f4f1edb19fde8077f136e9473392081ea986f",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a2d4aba4fed4d4d46",
+    "key": "v2:5cb7e24c85dcb583f30e51a711d0439297237f02b8d0a0c5dfa82f08253d078b",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "afa6aaf3899ee562c",
+    "key": "v2:ed93846a41f835e67956814e689ea2bb7bcc9987c71efffdb107a32f598ad8a4",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "afad290bd4be2311c",
+    "key": "v2:a572bd4227124c91e795303bfce5ba8216b2681e2baf6748cf5dcc16db8a1763",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5ec877e93694592f",
+    "key": "v2:67422ce9fa75023f31ebf3c16647f338d975b25409ac01e3bf4ffa37715bcf52",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a6c5ba9e86acb53be",
+    "key": "v2:fa899ace7c8d7c8d2cdfb2630fbcfef4162818fc9db3578a47b684886f399abb",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "afe4f82bb9d1194f5",
+    "key": "v2:e63ffc0fad9933d7c1bd89c9761dc51a533229ebe66a892b1722dd58644c4fb1",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5ef9d001b360de61",
+    "key": "v2:6a477f6063973f47c7b1d30ba4f30c607f87ef5a482859c63f171aad9ad11a2a",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a68a9d9ca474a0566",
+    "key": "v2:4654f6cbb93ee2c96ee3cddc370971d3415539c894dd4c0fc9ae93dc2ff739e2",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a75df90581e1da1ed",
+    "key": "v2:4905f620813226ee1e9cbbe05a72a892374d6c2218ce90425c8941cacc289daa",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a5e371b0b5b6bdcfc",
+    "key": "v2:ed2ee0aa9a7e3a02c9bc0f670fc16d0e8c8acf44f3ae7749596185a1937d1664",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a9116726de24d962b",
+    "key": "v2:a83adbdc7a1cc2b5344f5a485e47b51d4ea7464a2854a56615015369221d2266",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a45fc17dd72a5b179",
+    "key": "v2:d671778f618464ecf5239011f28351a3984213f939c2c5f6533ba530aac49c1b",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a59363ba6d0938d00",
+    "key": "v2:8b15656bc53ebd924697202f8f43f95c53f0c4ee73c9f70b93486c8bab2edd26",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a6f5d15aa9f19149d",
+    "key": "v2:58c06ecca36b62ef4d18398889ade43438b76630066fdd99ee785425cc77bbb4",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a8d9647b22f402904",
+    "key": "v2:8064e224d7ca3e96c9b634547713ce00ade1a149918cb128e4f01e72ac744a59",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "aecf4902fbca26cb2",
+    "key": "v2:d9cda79b9f426960531483ecde86239b369497562e9383445ed02e9c8a01c028",
+    "error": null
+   },
+   {
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "agentId": "a7d134d2cf583c2af",
+    "key": "v2:a2b1080ca20bc8a5ef2e7de73dec65f4f7d56d5c37f1d7890171a7ed0fa47d28",
+    "error": null
+   }
+  ],
+  "agents": [],
+  "agentCount": 0,
+  "withPayload": 0
+ },
+ "alt:`--host 0.0.0.0` is rejected only": {
+  "label": "alt:`--host 0.0.0.0` is rejected only",
+  "phases": [
+   "Reverify"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a7e7080055fb03c5e",
+    "phase": "Reverify",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "## 结论\n\n该发现的机制描述属实，但作为缺陷特征描述有误。验证结果如下：\n\n**机制正确的地方**：`packages/bundle/web-app/src/startup.ts:74` 的安全护栏只是一个简单的 `cmdstring` 比较，`packages/host/webserver/src/index.ts:75` 的 Layer Schema 确实接受 `0.0.0.0`，且 `packages/bundle/web-app/src/index.ts:132-139` 中的 `resolveLanTrust` 在绑定为 `0.0.0.0` 时，会将每个非内部 IPv4 地址自动添加到 `trustedHosts` 中。\n\n**不成立的地方（影响分析）**：\n1. 场景限定在 CLI 标志输入上是*故意为之* —— `.agents/notes/implemented/feature/2026-07-22-web-bind-address.md` 中记录了：“Programmatic carrier consumers may select another hostname or address directly”，并且 webserver 文档（`docs/subsystems/web-server.md`）将 `0.0.0.0` 定义为“deliberate network exposure（故意的网络暴露）”，且随之而来的是“没有 TLS、auth 或 origin policy（无加密、认证或源策略）”。\n2. 设计笔记 `.agents/notes/implemented/architecture/2026-07-28-api-browser-trust-boundary.md` 指出：“reachability is the webserver binding's policy (`host: 127.0.0.1 | 0.0.0.0`)”，且“unauthenticated `0.0.0.0` deployment 的 trusted-network assumption 现在已被记录在案，而不是默许的”。LAN-IP 自动信任恰恰是这样设计的结构：绑定到全接口的组合会将获得的 LAN IP 字面量添加到 fence 中。\n3. 围绕组合链的“绕过”需要操作员编写 `cordis.patch.yml`/`--patch` overlay（即，这是操作员有意为之的选择，其后果已记录在 webserver 配置文档中），或者需要攻击者已经获得 `$CF_HOME` 的写入权限（即，已经控制了机器）——对于网络攻击者来说，这不是一个可达的路径。\n4. 在默认的 CLI 情况下，该行默认为 `127.0.0.1`（`cordis.patch.yml`：`host: !!js ctx.webStartup.host ?? '127.0.0.1'`），因此不会派生任何 LAN 信任；标志路径已完全封闭（Schema 会拒绝除了这两个字面量之外的任何其他宿主）。\n5. “自动信任每个 LAN IPv4”也并非特权升级（privilege escalation）：一旦绑定到 `0.0.0.0`，LAN 攻击者无论如何都可以直接访问 socket —— fence 纯粹是浏览器混淆代理/DNS-rebinding 的防御手段，而不是认证层（与该发现的结论相反）。为部署使用的 IP 字面量派生 fence 条目反而*缩小*了 rebinding 防御缺口（根据设计笔记，IP-literal 的 Host 不能是 rebinding 的名称）。\n\n综上：该护栏是已记录的、在 CLI 标志限定范围内故意应用的“深度建议” (deep advisory)，而全接口绑定选项则属于更有权威的配置层，且对其可预见的后果已有明确文档说明。任何维护者都会认为这是预期中的行为。"
+   },
+   {
+    "agentId": "a80a784926b18de91",
+    "phase": "Reverify",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "alt:Sourcemaps with full `sourcesCont": {
+  "label": "alt:Sourcemaps with full `sourcesCont",
+  "phases": [
+   "Reverify"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a15588d175d97d1a4",
+    "phase": "Reverify",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a72873743a35a19d0",
+    "phase": "Reverify",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "I've traced the whole chain end-to-end. Let me give the verdict.\n\n**Mechanism — I confirmed every step the claim states:**\n\n`apps/web/vite.config.ts:113` sets `sourcemap: true`, and line 119-120's own comment says rollup \"writes each .map next to its js and references it by bare relative filename.\" The built `apps/web/dist` holds 25 `.map` files, and `assets/index-BKSebiLg.js` ends with a live `//# sourceMappingURL=index-BKSebiLg.js.map`.\n\n`packages/host/frontend-static/src/index.ts` serves the whole dist root with **no** extension allowlist — `serveStatic` resolves the path, rejects only traversal, then `body = await readFile(target); type = MIME[extname(target)]`. The MIME table deliberately carries `'.map': 'application/json'`. So `/assets/index-*.js.map` returns 200, same-origin, content-type application/json. `packages/bundle/web-app/src/index.ts:233` mounts this against `require.resolve('@origin-ai/cf-web-frontend/dist/index.html')`, i.e. the checkout's built dist — the one that has the maps.\n\n`package.json`'s `\"files\": [\"dist\",\"!dist/**/*.map\"]` and `.npmignore` `*.map` only shape `npm pack`. `scripts/check-workspace-constraints.ts:61-63` spells out the split intent: \"The Web build emits sourcemaps for browser debugging; publishing them is what the payload policy forbids, so the bundle ships without them.\" Nothing deletes them from the served directory, and `resolveDistIndex` points straight at it.\n\n**But the impact is materially overstated.** I dumped every map's `sources`/`sourcesContent`: 191 unique sources, and the first-party ones are not \"full original source.\" Only two entries are genuine TS — `apps/web/src/main.ts` (421 chars, a trivial mount-point bootstrap) and `src/node-module-stub.ts` (481 chars). Everything substantive that looks first-party is already-compiled `packages/client/{ui-primitives,ui-slots,web}/lib/index.js`, and those packages **publicly publish `lib/index.js` to npm anyway** (`files: [\"lib/index.js\",\"lib/invariant.js\",...]`, `private: false`). The real TSX stays out: `tsdown.client.ts` emits `client.js.map` with true TSX mapping, but the vite dist consumes those as bundled *inputs*, and the payload policy forbids those maps from ever being published — the chain never reaches `.tsx`.\n\nNo secrets either. The build defines only inject `CF_CLIENT_*` values (commit hash, title, profile), which are all public and pinned by `.cf-build/client-build-environment.json`. A regex scan of all 25 maps for api_key/secret/password/token/PRIVATE KEY hits only React internals, HTML input types, and shiki grammar keyword lists.\n\nAnd the host defaults to `host: !!js ctx.webStartup.host ?? '127.0.0.1'`, so by default this is same-host exposure, not LAN.\n\nSo: real mechanism, wrong impact story. What's left is a hygiene/perf wart — several MB of `.map` fetched whenever DevTools is open, on an origin the repo otherwise works to keep map-free — not a source-disclosure or secret-leak defect. A maintainer would likely fix it as cleanup, not as a security item."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:ssrf-web-fetch": {
+  "label": "rederive:ssrf-web-fetch",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "af1a63ad18fc24db6",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "afa6aaf3899ee562c",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [nous/meituan/longcat-2.5-preview:free] [429]: {\"status\":429,\"message\":\"You've reached this model's current fair-share rate limit. It adapts to demand — retry after the indicated delay, or try an alternate model.\",\"reason\":\"rate_limited\",\"r (reset after 2m 59s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:api-gateway-auth": {
+  "label": "rederive:api-gateway-auth",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5d3c8057438bd913",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "afad290bd4be2311c",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/mimo-v2.6-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 33s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:byok-redaction": {
+  "label": "rederive:byok-redaction",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a25317a78603a1a70",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "I have the full picture. The seam packages (`credentials`, `settings`) implement redaction correctly — `settings.describe({ redactSecrets: true })` strips `role('secret')` fields and its redactor is well-tested. The defect matching the hint lives in `packages/cf/src/byok.ts`'s `exportConfig` method, which does not use that machinery and contains an inverted flag logic."
+   },
+   {
+    "agentId": "aa256cee8de8b2b8a",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:node-pty-patch": {
+  "label": "rederive:node-pty-patch",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a2d4aba4fed4d4d46",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [cline/cline-free/minimax-m3.1-flash] [404]: {\"error\":\"model not found\",\"success\":false}\n (reset after 1m 2s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "a9a8821c4e4abcf8b",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:credentials-trust": {
+  "label": "rederive:credentials-trust",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a2e3eb4080c63a2b7",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a6c5ba9e86acb53be",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/tencent/hy4-preview-free] [402]: {\"error\":{\"code\":\"free_quota_exhausted\",\"message\":\"your orcarouter/free allowance is used up — top up your balance and call a specific model with wallet billing to keep going https://www.orcaro (reset after 1m 5s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:wdac-cert": {
+  "label": "rederive:wdac-cert",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a9cb149ee066e1f4e",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250329288111548268d9d6ZRHeFF8e)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   },
+   {
+    "agentId": "aeeb6c139f17c645b",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Connection dropped (ECONNRESET)"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:lint-gate": {
+  "label": "rederive:lint-gate",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "ac63844a6b051efd0",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "afe4f82bb9d1194f5",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [tokenharbor/mimo-v2.6-flash:free] [429]: {\"error\":{\"message\":\"You've used this period's free allowance. Your next rolling 7-day period starts on 30 Oct 2026 at 08:30 UTC. Use the paid model 'deepseek-v4.1-flash' to keep going, or subs (reset after 39s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:vitest-e2e-config": {
+  "label": "rederive:vitest-e2e-config",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a805206c52ad7d39b",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "I have what I need. Let me confirm the exact failing failure mode once more."
+   },
+   {
+    "agentId": "ae09533791cf06a90",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:packages-cf-outside": {
+  "label": "rederive:packages-cf-outside",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a34a331f4e769e81f",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a779a2a1f73f12fd7",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250219256189348268d9d6QWBl1pjJ)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:coverage-exemptions": {
+  "label": "rederive:coverage-exemptions",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a197a9f5c6d6eb2b5",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250211488857828268d9d64QKzg9ue)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   },
+   {
+    "agentId": "a2fbe556bd0f57586",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Connection dropped (ECONNRESET)"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:repo-root-configs": {
+  "label": "rederive:repo-root-configs",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a3ff45ccfd750f6dd",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250293279325578268d9d6lOLQFpqV)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   },
+   {
+    "agentId": "aa50c51b172f62dbf",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:precommit-lint": {
+  "label": "rederive:precommit-lint",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5c802c759398c9eb",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a68a9d9ca474a0566",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/glm-5.3-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 2m 40s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:web-env-load": {
+  "label": "rederive:web-env-load",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5ef9d001b360de61",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/deepseek-v4.1-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 11s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "a9450c92a3ab9a0fe",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:tsdown-build-import": {
+  "label": "rederive:tsdown-build-import",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a64130c5b2d4798f2",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a75df90581e1da1ed",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/z-ai/glm-5.3-flash-free] [402]: {\"error\":{\"code\":\"free_quota_exhausted\",\"message\":\"your orcarouter/free allowance is used up — top up your balance and call a specific model with wallet billing to keep going https://www.orcaro (reset after 20s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:real-api-e2e": {
+  "label": "rederive:real-api-e2e",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5ec877e93694592f",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [cline/cline-free/minimax-m3.1-flash] [404]: {\"error\":\"model not found\",\"success\":false}\n (reset after 23s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "abb8d6bcd48f31443",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:redact-open-union": {
+  "label": "rederive:redact-open-union",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a7d134d2cf583c2af",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/glm-5.3-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 2m 11s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "aaa48cb71f385eda6",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:json-settings-leak": {
+  "label": "rederive:json-settings-leak",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a8a17f65f605d2138",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a8d9647b22f402904",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/deepseek-v4.1-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 20s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:cordis-undefine-stop": {
+  "label": "rederive:cordis-undefine-stop",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5a4aedd6bfeb6efd",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "a6f5d15aa9f19149d",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/deepseek-v4.1-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 1m 14s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:cordis-runs-pending": {
+  "label": "rederive:cordis-runs-pending",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a45fc17dd72a5b179",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [nous/meituan/longcat-2.5-preview:free] [429]: {\"status\":429,\"message\":\"You've reached this model's current fair-share rate limit. It adapts to demand — retry after the indicated delay, or try an alternate model.\",\"reason\":\"rate_limited\",\"r (reset after 35s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "a7b02ca7f004023f3",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:sandbox-ctx-escape": {
+  "label": "rederive:sandbox-ctx-escape",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5a7b0fbe3920bb00",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   },
+   {
+    "agentId": "aecf4902fbca26cb2",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/deepseek/deepseek-v4.1-flash-free] [429]: {\"error\":{\"code\":\"free_rate_limited\",\"message\":\"Free model capacity is limited right now. Retry shortly, or add credits for higher, more stable limits: https://www.orcarouter.ai/console/billing | Recharging will increase your access frequency. (request id: 202610231319302142243658268d9d6tNKqDPaJ)\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_rate\",\"retry_after_seconds\":38430},\"type\":\"rate_limit_error\"}} (reset after 1m). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:lastturn-scan": {
+  "label": "rederive:lastturn-scan",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a59363ba6d0938d00",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/glm-5.3-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 1m 20s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "a8e82ec10a55f3140",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:hostcode-syntaxerror": {
+  "label": "rederive:hostcode-syntaxerror",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5e371b0b5b6bdcfc",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/deepseek-v4.1-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 1m 22s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "ad386c6a2c28bbdb8",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "rederive:teamjournal-refold": {
+  "label": "rederive:teamjournal-refold",
+  "phases": [
+   "Rederive"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a9116726de24d962b",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: 503 [tokenharbor/deepseek-v4.1-flash:free] [429]: {\"error\":{\"message\":\"You've used this period's free allowance. Your next rolling 7-day period starts on 30 Oct 2026 at 08:30 UTC. Use the paid model 'deepseek-v4.1-flash' to keep going, or subs (reset after 2m 7s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   },
+   {
+    "agentId": "a91ab61947d177f20",
+    "phase": "Rederive",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 2
+ },
+ "definitive-verdict": {
+  "label": "definitive-verdict",
+  "phases": [
+   "Verdict"
+  ],
+  "started": 2,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a6c5171f1467f5254",
+    "phase": "Verdict",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": false,
+    "payload": null
+   },
+   {
+    "agentId": "a7c7037e1fcdcf088",
+    "phase": "Verdict",
+    "store": "7b29c989-19ee-4e52-8cf6-a3ef99fa83be",
+    "hasPayload": true,
+    "payload": "API Error: Request rejected (429) · [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+   }
+  ],
+  "agentCount": 2,
+  "withPayload": 1
+ }
+}

@@ -1,0 +1,1273 @@
+# Fusion — Full Alternative to the Transformer
+
+> **Status:** FINAL — audited and corrected.
+> The user speaks casual Hinglish; this plan is in English per their explicit instruction.
+> This file is the **single source of truth** for the sprint — memory holds only the Hinglish preference (§13).
+>
+> **Audit:** §16 records the adversarial review (4 independent dimensions). Two verdicts were refuted and produced material corrections — the sweep inventory (§2.1) and the internal consistency (§16). The plan now names **21 model-layer sites plus the KAT layer**, and every remaining gap is listed rather than hidden.
+> **Out of scope by the user's instruction:** ECC consolidation of the three parallel continual-learning stacks (§4.8a) — do not merge them.
+
+---
+
+## Context
+
+### The problem
+
+Every frontier model today is a **transformer**, and the whole game inside it is **attention**: every word compared against every other word. Two failure modes follow, and both are **architecture-level, not bugs**:
+
+1. **Context rot** — the bigger the context window, the more the model degrades. Chroma (2025) tested 18 top models with an identical Q&A and only growing surrounding text; accuracy fell as text grew. Anthropic researchers retested in 2026: only slightly better.
+2. **Lost in the Middle** — Stanford / U. Washington: information at the top or bottom of a large prompt is caught; the same information in the **middle** drops accuracy by up to **30%**.
+
+Neither is fixable by an update. **As long as it is a transformer, the problem exists.** Labs stopped trying to fix attention and *flipped the problem* into "context engineering" — RAG, chunking, recursive language models. **None solve it; they only manage it.** RAG can actively make things worse: wrong-chunk retrieval, **distractor accumulation** (10 chunks pulled, 1 has the answer, the rest is noise that dilutes attention), semantic fragmentation, hallucination, wasted tokens.
+
+The "10 million token" marketing is also misleading. Needle-in-a-haystack requires no reasoning at all. In practice a model behaves normally to roughly **2 lakh (200k)** of a claimed **10 lakh (1M)** window.
+
+### The intended outcome
+
+**Fusion** is a complete alternative to the transformer — a new attention core plus the harness that makes a *small, bad* model behave like a large one on long-horizon agentic tasks.
+
+The user's definition of the system:
+
+> **"It predicts next token, but — according to the context, and never forgets anything."**
+
+Plus: it takes decisions **according to the context**, and it **learns from its environment**.
+
+### The two anchor facts
+
+- **Astra (GPT-6)** scored **99.9% on ARC-AGI-3** — but the same model in a **provider-neutral setup scored 62.7%**. The capability is not in the weights; it lives in the **harness and the adapter**. On the ARC-AGI-3 community leaderboard the pattern holds across vendors: `*-provider-adapter` entries hit **99.99%** while the identical model without the adapter sits at **3–35%**. (An earlier claim of "~66-67% without" was thought wrong, then the transcript's **62.7%** reconciled it — the user was right.)
+- **Yann LeCun: LLMs are not the future; world models are.** A full world-model implementation **already exists** in this codebase (§7C).
+
+### Hard technical goal
+
+> Use `code-fusion` so that a **bad dense Qwen-3.8-27B** scores **90%+ on Terminal-Bench-4.0-style benchmarks**.
+
+---
+
+## 1. Naming — must appear in docs (all accepted spellings)
+
+### The equation
+
+```
+Fusion  =  CodeFusion  +  TransFormers-Fusion
+```
+
+### Accepted name variants — ALL are valid
+
+The user gave these explicitly and said the plan must follow them:
+
+| Component | Canonical | Also accepted (spellings / casing) |
+|---|---|---|
+| **The whole project** | **Fusion** | — |
+| **Harness side** | **CodeFusion** | `code-fusion` |
+| **Engine side** | **TransFormers-Fusion** | `Transformers-Fusion` · `TransFormersFusion` · `transformers-fusion` · **TransCender** · **transcender** · **Transcender** |
+
+> Verbatim: *"Fusion = CodeFusion / code-fusion + TransFormers-Fusion / transformers-fusion / TransCender / transcender / Transcender."*
+
+**Rule for docs and code:** pick **one canonical form per surface** and use it consistently there, but recognise **every** variant above as referring to the same thing. Recommended per surface:
+
+| Surface | Use |
+|---|---|
+| Directory on disk | `code-fusion/`, `transformers-fusion/` (already the case) |
+| Prose / product name | **CodeFusion**, **TransFormers-Fusion** |
+| GitHub remote (already set) | `origin-labs-ai/code-fusion`, `origin-labs-ai/transformers-fusion` |
+| The legacy / nickname for the engine | **TransCender** — *"is also / formerly known as"* |
+
+### 1.1 Complete alias registry — ALL names the user has given
+
+Saved verbatim so nothing is ever lost to a spelling difference again.
+
+**Projects**
+
+| Thing | Every alias accepted |
+|---|---|
+| The whole project | **Fusion** · `fusion` · FUSION |
+| The harness | **CodeFusion** · `code-fusion` · `cf` · `@origin-ai/cf` |
+| The engine | **TransFormers-Fusion** · `Transformers-Fusion` · **TransFormersFusion** · `transformers-fusion` · **TransCender** · `transcender` · **Transcender** |
+| The combination | **Fusion = CodeFusion + TransFormers-Fusion** |
+
+**Models**
+
+| Thing | Aliases |
+|---|---|
+| The 4B trainee | **`innova-x-1.1-4b`** |
+| The 27B benchmark model | **Qwen-3.8-27B** · "the bad 27B dense Qwen-3.8-27B" · `qwen-3.8-27b` |
+| The ARC-AGI-3 reference model | **Astra** · **GPT-6** · ChatGPT · (once typed **"Askta"** by mistake — corrected to **Astra**) |
+
+**Neurons**
+
+| Thing | Aliases |
+|---|---|
+| The hybrid neuron | **Enhanced Artificial Intelligence Neurons** · **EAIN** · "dono capabilities waale neurons" · "best performer dono me, but digital" |
+
+**Benchmarks**
+
+| Benchmark | Aliases |
+|---|---|
+| **CS-Bench-1.0** | Common Sense Bench 1.0 · "CS matlab Common Sense Bench" |
+| **CS-Bench-1.1** | Common Sense Bench 1.1 · the "top 100 / maan lo" set |
+| **D&CC-Bench-1.0** | Decision and Context Check Bench 1.0 |
+| **MQC-Bench-1.0** | Model Quality Check Bench 1.0 |
+
+**Mechanisms**
+
+| Thing | Aliases |
+|---|---|
+| The attention formula | `QKᵀG(GS)` · `QK^TG(GS)` · "5 letters: Q, K, T, V & G" · TransCender formula (superseded — see §2.1) |
+| **The generation mechanism** | `NCM` · `Next Concept Modeling` · `Next-Concept Modeling` · arXiv `2610.14162` · "coarse-to-fine generation" · "level-by-level decoding" |
+| The adapter | "the provider-adapter" · "usi adapter ka use" · Astra's adapter |
+| The training target | "Terminal-Bench-4.0 jaise benchmarks" |
+
+**Machine-readable form** (for scripts, docs, and grep):
+
+```
+fusion        = code-fusion | cf                 → CodeFusion
+fusion        = transformers-fusion | transcender → TransFormers-Fusion / TransCender
+model.train   = innova-x-1.1-4b                   @ 1.5 BPW
+model.bench   = qwen-3.8-27b
+bench         = CS-Bench-1.0 | CS-Bench-1.1 | D&CC-Bench-1.0 | MQC-Bench-1.0
+neuron        = EAIN  (Enhanced Artificial Intelligence Neurons)
+formula       = softmax(QKᵀ · G(GS) / √d_k) · V
+generation    = NCM (Next-Concept Modeling, arXiv 2610.14162)
+```
+
+### 1.2 Roles
+
+| | Role |
+|---|---|
+| `transformers-fusion` | The **engine** — the new architecture. |
+| `code-fusion` | The **harness** — *"bas harness hai"*. |
+| **Together** | **Fusion.** The engine comes together **only when both are ready**. |
+
+**TransCender carries no architectural baggage** — it is a name only. The stale comment at `include/quant/transformer.h:116-118` referencing a superseded *"Cender/ formula (Phase 19-23, owner-gated)"* plan must be rewritten (§2.1); nothing else in the plan inherits from it.
+
+---
+
+## 2. THE SWEEP — replace every traditional-transformer file with Fusion code
+
+> **This is the central implementation task.**
+>
+> The user, verbatim:
+>
+> *"Bahut se files hai poore codebase me jo transformers pe base hai, traditional transformers par and hamaare implementation ka kuchh hai hi nahi usme. Tumhe kya karna hai ki wo poore files ka code ko fusion ke code se replace karoge, tabhi wo transformers-fusion se model train karega instead of traditional transformers."*
+
+**Scope:** the codebase contains many files built on the traditional transformer which contain **none of our implementation**. Every one of those must have its code **replaced with Fusion's code**. Only then will models train on `transformers-fusion` rather than on a traditional transformer.
+
+This is a **wholesale replacement sweep**, not a patch to `Attention::forward`.
+
+**A complete inventory of these files is a Phase-0 deliverable** — the workflow `fusion-full-explore` produces it (categories **CORE / SUPPORTING / DEAD**, per-directory counts, and how many separate transformer implementations exist: `src/model`, `engines/trainer/dense`, `engines/trainer/moe`, `engines/trainer/multimodal/*`). Nothing in this sweep starts before that inventory is complete **and** the 100% research gate (§11 Phase 0) has passed.
+
+### Rules for the sweep
+
+**⚠️ THE OLD PLAN IS SUPERSEDED — DO NOT FOLLOW IT.**
+The header comment at `include/quant/transformer.h:116-118` reads:
+
+> *"attention-variant layer classes REMOVED ... Standard Attention + TransformerBlock remain the only sequence mixers until the **Cender/ formula (Phase 19-23, owner-gated)** proves parity."*
+
+**That is a previous plan and it is dead.** Do not implement Phase 19-23 as written there. The user's instruction, verbatim:
+
+> *"iske hisaab se nahi karna hai, ye uraana plan hai. Poora ka poora hamaare new plan and architecture ke hisaab se banega. ... TransCender bas formerly/also known as waala naam ho gaya."*
+
+Everything below is built to **our** plan and **our** architecture. **TransCender is only a name** — "is also / formerly known as" (§1) — it carries no other baggage. The existing comment must be **rewritten** to point at this plan, not inherited.
+
+- **CORE** files → traditional-transformer logic replaced with Fusion's `QKᵀG(GS)` + routing implementation.
+- **SUPPORTING** files → reused as-is.
+- **DEAD** files → either **wired in** or **removed**.
+- **NO DEAD CODE ANYWHERE.** Standing rule, verbatim:
+  > *"Dead code nahi bachna chahiye poore project me."*
+
+  **Zero dead code may remain anywhere in either project.** Every dead, unreachable, unwired or vestigial path is either removed or actually used — nothing is left behind as a comment saying it is out of scope. The `AttentionResidual` comment (*"dead but out of Wave-6 scope"*, `transformer.cpp:684`) is exactly the pattern this rule forbids. Project-wide, not just the sweep.
+- Preserve `scale = 1/√head_dim` (`transformer.cpp:357`) and the existing NaN / div-by-zero guards — those are correctness fixes, not traditional-transformer assumptions.
+- **Definition of done:** after the sweep, a model trains through the **Fusion path only**. Verified by V8 in §14.
+
+### 2.1 Sweep inventory — CORRECTED after adversarial verification (4/4 reviewers)
+
+**The first inventory was REFUTED. It undercounted and mis-anchored.** The corrected count is **8-10 distinct transformer stacks**, not 5. Two structural problems were found:
+
+> *"The plan conflates three different line-number bases with no indication: **.cpp definition lines, .h class-declaration lines, and section-comment banner lines.** Every 'WRONG' above traces to that. Any executor following the plan literally will patch the wrong lines in at least eight places."*
+
+**Therefore: this table names FILES and SYMBOLS, not line numbers.** Line anchors are given only where a verifier confirmed them exactly. A **line-anchor cleanup pass is a Phase-0 deliverable** (the plan is a working document, so its citations must be correct before execution starts).
+
+#### 2.1a The stacks
+
+| # | File | What it is |
+|---|---|---|
+| **1** | `src/model/transformer.cpp` | **The anchor.** `Attention::forward` (295), `TransformerBlock::forward` (605), `Embedding` (38), `Linear` (69), `RMSNorm` (119), `RotaryEmbedding::apply` (213), `FFN` (542). 686 lines. **DEAD `AttentionResidual`** — class at 629, body to ~671, "dead but out of Wave-6 scope" comment at 684. |
+| **2** | `src/model/model.cpp` | `DenseModel::forward` (102) — the training path. `collect_named_tensors` is a **static at 138** (not 137) and hardcodes the on-disk schema (`layers.N.attention.q_proj.weight`, `ffn.gate_proj.weight`, `tok_embeddings.weight`, `lm_head.weight`). |
+| **3** | `src/model/moe_model.cpp` | `MoEBlock` (ctor 18, forward 33) = RMSNorm + `Attention` + RMSNorm + `SparseMoE`. `MoEModel` ctor at **119** (not 47), forward 180. Presets `config_48T` 242, `config_1T` 258, `config_100B` 274 — the Qwen-27B / 48T targets. |
+| **4** | `src/model/hybrid_block.cpp` + `include/quant/hybrid_block.h` | `HybridBlock` members: `RMSNorm attention_norm` (h:11), `RMSNorm ffn_norm` (h:12), `FFN ffn` (h:13), `Attention attn` (h:17). **`HybridAttnKind` has exactly one enumerator `STD`** (`include/quant/hybrid_scheduler.h:9`); `build_hybrid_schedule` returns all-STD (`src/model/hybrid_scheduler.cpp:13`). **This is the routing seam.** |
+| **4b** | `src/model/hybrid_moe_model.cpp` + `include/quant/hybrid_moe_model.h` | **`HybridMoeBlock` / `HybridMoeModel` are NOT in `hybrid_block.cpp`** — separate files. Block ctor 5, forward 17; model ctor 48, forward 58. |
+| **5** | `src/model/moe_variants.cpp` (1382 lines) + `include/quant/moe_variants.h` | **27** classes in the header, **25** `MoEOutput::*::forward` definitions. `AttentionMoE` class at **h:520** (the header; the .cpp definition of `AttentionMoE::forward` is 1093). **Corrected characterisation:** `AttentionMoE` has `q_proj`/`k_proj` -> `mul_op` Q*K -> `softmax_with_topk`, but **no value projection, no causal mask, no RoPE**, and the top-k is over the **expert** axis, not the sequence. It is **attention-shaped routing, not attention** — a candidate for *replacement*, but not a fourth attention implementation. |
+| **6** | `src/model/mommoe_block.cpp` (585 lines) + `include/quant/mommoe_block.h` | **Missed entirely.** A **second independent `CrossModalAttention`** (h:130) with its own raw `q_proj_`/`k_proj_`/`v_proj_`/`o_proj_` Tensors (h:154, ctor cpp:202, forward cpp:219). `MoMBlock::forward` 363 runs self-attention then cross-modal attention; `MoMMoE::forward` 456. |
+| **7** | `src/model/native_quant_moe.cpp` | **Missed entirely.** `NativeQUANTMoEModel::forward` 126 with its own `attention_norm` / `attention.forward` / `ffn_norm` / `ffn.forward` layer loop (142-146). |
+| **8** | `src/adapters/tools/qwen35_engine.cpp` (888 lines) | **Missed entirely — a THIRD complete engine.** A self-contained **Qwen3.5 decoder**: own `rmsnorm()` 46; HF `self_attn.q_proj/k_proj/v_proj/o_proj` weight loading at 170-176 and 467-569; `q_norm`/`k_norm` 178-180; **RoPE with theta 1e7** at 504; full-attention single-token step 467-571; **prefill attention pass 573-790**; `final_norm` 790. Invisible to the first inventory. |
+| **9** | `src/multimodal/multimodal_cross_attn.cpp` (1043 lines) | `CrossAttentionBlock` — Impl 365, ctor 367, class decl `include/quant/multimodal_cross_attn.h:182`. `forward_self_attn` 414, `forward` 422. `VisionTransformer::forward` 160, `PatchEmbedding::forward` 48, `AudioTransformer::forward` 299, `Conv1DExtractor::forward` 247, `MultimodalCrossAttention::forward` 926. The static is **`softmax_inplace` at 19** — there is **no `softmax_core`** anywhere in the repo. |
+| **10** | `src/multimodal/multimodal.cpp` (1335 lines) | **Missed entirely.** `CrossModalAttention::forward` 20 (scaled dot-product cross-attention, `inv_sqrt_d` 60, softmax 73-87), `Perceiver::forward` 1061 (query-based cross-attention), and **five** `math::softmax`-routed MoE models: `VisionMoE` 1111, `AudioMoE` 1144, `VisionTextMoE` 1178, `AudioTextMoE` 1231, `AllModalityMoE` 1282. |
+| **11** | `src/multimodal/multimodal_fusion.cpp` (358 lines) | **Missed entirely.** `CrossAttentionFusion` — ctor 38 with `q_proj`/`k_proj`/`v_proj`/`out_proj` and `scale = 1/sqrt(hidden)` 41; `forward` 43 (K-transpose 57-61, gemm 65, mask 73-83, row softmax 85-96, `out_proj` 99). `MultimodalFusion` 105. |
+| **12** | `engines/trainer/multimodal/dense/vision.cpp` + `vision.h` | `PatchEmbedder::forward` 198, `softmax_rows` 55, `layernorm` **75** (36 is `init_matrix`), `VisionEncoder::forward_features` 296, `forward` 317. ViT is **12 layers / 12 heads** (`vision.h:15-16`). |
+| **13** | `engines/trainer/multimodal/dense/projection.cpp` + `projection.h` | `QueryProjector` — class decl `projection.h:36`, **ctor 103** (93 is inside `ModalityAdapter::param_count`), `forward` 126. `wq_`/`wk_`/`wv_`/`wo_` built at 119-122. **A Q-Former cross-attention head misnamed "projection".** |
+| **14** | `engines/trainer/multimodal/dense/fusion_layers.cpp` + `fusion_layers.h` | **Missed entirely.** A **second `CrossAttentionBlock`** under a colliding name — `quant::multimodal_dense::CrossAttentionBlock` (`fusion_layers.h:33`), distinct from `quant::CrossAttentionBlock`. `Tensor wq_`/`wk_`/`wv_`/`wo_`, forward `fusion_layers.cpp:85`, scale `1/sqrt(D)`. |
+| **15** | `src/inference/inference_paging.cpp` | **Missed entirely.** `PagedAttention::forward` 68 — a **fully implemented vLLM-style tiled online softmax** with `scale 1/sqrt(D)` over paged K/V blocks. `ContinuousBatching::build_attention_mask` 129 builds a causal mask. |
+| **16** | `src/inference/inference_kv.cpp` | **Missed entirely.** `flash_decoding` 141 — another tiled online-softmax attention. |
+| **17** | `src/model/moe_enhance.cpp` + `include/quant/moe_enhance.h` | `SwitchV2Router` (cpp 292 / h 53), `DynamicExpertPool` (cpp 503 / h 82). |
+| **18** | `src/model/expert_parallel.cpp` | `CapacityAwareRouter` 1399, `LoadBalanceMetrics` 1345, `RedistributionPlan` 1465. **Not** in `moe_advanced_support.cpp` (which is 1414 lines, so 1465 could not be there). |
+| **19** | `src/model/moe_advanced_support.cpp` (1414 lines) | `import_weights` only. The file's own header says "all 25" but it defines **26**. **Corrected count.** |
+| **20** | `src/model/moe_core.cpp` | `ExpertFFN::forward` 78, `softmax_with_topk` 98, `moe_dispatch_batched` 214, `create_moe_variant` 446. Shared by every MoE model. |
+| **21** | `engines/trainer/moe/routers.cpp` | **Missed entirely** — a **genuine second router stack**. The first inventory did not cover `engines/trainer/moe/` at all. |
+| — | `engines/trainer/dense/` (80+ files) | **Verified: NO transformer stack.** It is callbacks / checkpoint / optim / loss / curriculum / EMA / LoRA / distill / distributed plumbing. **Supporting, not CORE.** |
+
+#### 2.1b THE BIGGEST GAP — the sweep is incomplete without the kernel layer
+
+This is the finding that would have made the whole project fail its own definition of done:
+
+> *"The plan never states what happens to the softmax/attention **KAT layers (math, kernel, backend, code_gen)**. If the sweep only rewrites `src/model/`, **every GPU backend, the AVX/AVX512 kernels, the JIT code generator and the flash-attention kernel still compute traditional `softmax(QK^T/sqrt(D))V`**, so the 'definition of done — a model trains through the Fusion path only' **cannot be reached** by the inventory as written."*
+
+**Therefore the sweep must include the compute layers, not just the model layer.** The KAT stack — `src/math/`, `src/kernel/`, `src/backend/`, `src/code_gen/` — implements the actual `softmax(QK^T/sqrt(D))V`. If the formula changes, **these change too**, or the model layer computes a Fusion formula that the kernels do not implement.
+
+##### 2.1b.1 KAT-layer inventory — MAPPED (read from disk)
+
+**The single most important function in the project is `ScaledDotProductAttentionFunction::forward`.** That is the training path's actual attention. Everything else is an inference variant of the same formula.
+
+| Layer | File | What it computes | Status |
+|---|---|---|---|
+| **TRAINING** | `src/model/autograd_functions.cpp:17` — `ScaledDotProductAttentionFunction::forward` | `scale = 1.0f/std::sqrt((float)D_)` at **:25**; score loop with `sum * scale` at **:56**; **`softmax_forward_avx2(wd + row, sd + row, S_full_)` at :67**; backward at **:107** with its own `scale` at **:125** and `sum * scale` at **:178**, **:196** | 🔴 **CORE — the #1 change site.** Both forward **and** backward must learn `G`/`S`, or training will not match inference. |
+| **JIT codegen** | `src/trainer/code_gen.cpp:219` — `attention_flash` | **Emits the literal formula as generated C++**: `float scale = 1.0f / sqrtf((float)head_dim);` at **:229**; max-subtracted softmax at **:262–267** (`expf(scores[j] - max_score)`, then `/= (sum + 1e-10f)`); also `generate_softmax` at **:406** and the `attention_basic` template at **:1107** | 🔴 **CORE.** The generator *writes* the traditional attention into every JIT-compiled kernel. It also caps the score array at `seq_len > 2048 ? 2048 : seq_len` (**:236**) — a hard **2048-token ceiling in generated code**, which collides directly with our 4M target. |
+| **Flash kernel** | `src/kernel/flash_attention.cpp` | `scale = 1.0f/std::sqrt((float)D)` at **:50** (with an INF/NaN guard at **:45–51**); tiled online softmax with max-subtraction at **:109–166** | 🔴 **CORE** — the fast path for `S_full > 64`. |
+| **Scalar/AVX math** | `src/math/math.cpp` | `softmax(const Tensor&, Tensor&, int axis)` at **:232**; `vec_softmax_stable` at **:373**; `vec_softmax_stable_avx2` at **:556** — which **just forwards to the scalar version** (`:556` → `vec_softmax_stable(dst, src, n)`), i.e. an **AVX2-named function with no AVX2 implementation** — a §2 dead-code violation in its own right | 🔴 **CORE** + 🟡 **DEAD** (the AVX2 wrapper) |
+| **SIMD math** | `src/math/simd_math.cpp` | `rms_norm_scalar` :47, `rms_norm_avx2` :61, `rms_norm_avx512` :101 | 🟢 **SUPPORTING** — but the RoPE AVX2 stride bug (§10M) lives in this file |
+| **SIMD math (vector)** | `src/math/math_avx2.cpp`, `math_avx2_tiled.cpp`, `math_avx2_vec.cpp`, `math_avx512.cpp` | AVX2/AVX512 math variants | 🟢 **SUPPORTING** (unless any computes attention — Phase 0 must confirm) |
+| **GPU backends** | `src/backend/` — **18 of 20 `.cpp` files** implement `softmax` | `backend.cpp`, `gpu_compute.cpp`, and **cann, cuda, full, hexagon, hip, metal, musa, opencl, openvino, rpc, sycl, virtgpu, vulkan, webgpu, zdnn** | 🔴 **CORE — the widest blast radius.** Each backend implements the same formula independently. A Fusion formula needs a **single canonical implementation** with every backend delegating to it, or 18 divergent copies. |
+| **Other kernels** | `src/kernel/{kernel_gemm,kernel_production,kernel_q12,kernel_q24,kernel_q3,kernel_q6,kernel_quant4,kernel_quant8,kernel_tl,int8_quant}.cpp` | Quantization and GEMM kernels | 🟢 **SUPPORTING** — none is attention. |
+
+**What this changes about the design.** The Fusion formula must be expressible in **four** places that currently duplicate it:
+`ScaledDotProductAttentionFunction` (training) · `code_gen.cpp` (JIT-emitted C++) · `flash_attention.cpp` (fast inference) · **18 GPU backends** (device inference).
+
+**Phase-0 design requirement (added):** decide how `G` and `S` reach the hardware —
+- **(a)** a **fused Fusion kernel** (new SIMD/CUDA path) and the existing paths delegate to it, or
+- **(b)** a formulation that keeps the existing kernel contract — i.e. `G`/`S` are computed **outside** the attention inner loop and passed in as tensors, so `softmax(QKᵀ/√d)V` becomes `softmax(QKᵀ·G/√d)V` with the same kernel shape, or
+- **(c)** a **separate Fusion path** for training and inference, leaving the traditional kernels for legacy checkpoints only.
+
+**(b) is the cheapest to land** and keeps the 18 backends valid, but it may not achieve the O(n) common case §3.2 requires. **This is a Phase-0 decision, and it must be made before any kernel work starts.**
+
+**The 2048 ceiling is a second, separate blocker.** `code_gen.cpp:236` sizes the generated score buffer at `min(seq_len, 2048)`. A 4M-token context cannot be served by a generator that caps at 2048. Any design must either **remove the cap** (streaming/tiled softmax in generated code) or **stop using the JIT path** for long sequences.
+
+#### 2.1c Breakage surface the first inventory missed
+
+> *"6 test TUs reference `Attention` or `flash_attention` — `test_transformer`, `test_wave6_model_feats`, `test_protected`, `test_inference_opt`, `test_multimodal`, `test_trainer_moe_multimodal` — none of which the plan accounts for as breakage surface."*
+
+Also **not yet audited**, flagged for Phase 0: `include/quant/*.h` for further declared-but-unimplemented attention variants; `src/server/`, `src/gle/`, `src/core/telemetry.cpp`, `inferno/`, `scripts/` (spot-grepped — no attention or softmax found); the `tests/` tree in full; and the sibling `code-fusion` project.
+
+#### 2.1d A live dead-code violation, confirmed
+
+`include/quant/inference_opt.h` **declares** `PagedAttention` (17), `MultiQueryAttention` (278), `GroupedQueryAttention` (296), `SlidingWindowAttention` (316) and `ALiBi` (333) — and `src/inference/inference_serve.cpp:5-8` documents that **MQA/GQA/SWA/ALiBi have zero definitions anywhere**. These are **dead declarations**, which §2's zero-dead-code rule already forbids. Either implement them (in Fusion form) or delete them.
+
+#### 2.1e The rule that follows
+
+- If it builds a **Q/K/V/O product** or a **softmax over it** -> **CORE**, replace.
+- If it is a **norm, embedding, FFN, tokenizer or loss** -> check whether a replaced mixer uses it; if it contains its own softmax/attention -> **CORE**.
+- If it has **zero call sites tree-wide** -> **DEAD**, wire in or delete.
+- If it is in the **KAT layer** and implements `softmax(QK^T/sqrt(D))V` -> **CORE** — because §3 changes that formula.
+- `HybridAttnKind` currently having only `STD` is the **intended seam** for routing — built to *our* §5 design, **not** to the superseded Phase 19-23 plan.
+
+## 3. The new attention core
+
+### 3.1 Baseline (exists today)
+
+```
+Attention(Q, K, V) = softmax( QKᵀ / √d_k ) · V
+```
+
+`Q, K, V` keep their **Google/traditional definitions exactly**. The change is additive.
+
+### 3.2 Fusion attention
+
+```
+Attention(Q, K, V, G, S) = softmax( QKᵀ · G(GS) / √d_k ) · V
+```
+
+Five letters: **Q, K, T, V, G** — with **S** the argument that makes `G` work.
+
+**`G` — Gate.** A learned, **length-invariant relevance gate** that decides, per token, how much loop depth to spend and which slice of state to consult. Three jobs, one per failure mode:
+
+| Failure | What `G` must do |
+|---|---|
+| **Context rot** | Keep the attention mass carried by a relevant token **constant as `n` grows**, instead of the standard `1/n` dilution. |
+| **Lost in the middle** | Make attention **position-independent** — a fact in the middle gets the same opportunity as one at the top. |
+| **O(n²) cost** | Compute against the index `S`, not the full sequence, so the common case is **O(n)**. |
+
+**`S` — Structure.** The compact, indexable, **never-discarded** representation of everything seen, backed by **`.idx`**.
+
+| Requirement | What `S` must do |
+|---|---|
+| **"Never forgets anything"** | Nothing is evicted or compacted away — it moves **into the index**, not out of existence. |
+| **Window doubling** | The active window grows (4M → 8M → 16M) because the cost of carrying full history lives in `S`, not in the attention matrix. |
+
+> **This is the load-bearing design.** `G`/`S` must be **researched before implementation** — a hard gate (§11 Phase 0).
+
+### 3.3 Where it goes in the code
+
+`transformers-fusion/src/model/transformer.cpp:295` — `Attention::forward`.
+
+- Q/K/V projections **303–305**; reshape `{B,S,H,D}` **307–309**
+- RoPE on q,k **316–317**, **335–337**; KV cache append / `get_all` **337–341**
+- YARN mult pre-scale with NaN guard **347–353**
+- **`scale = 1/√head_dim`, div-by-zero guarded: 357–358** ← the `÷√d_k` to keep
+- GQA expansion **362–382**
+- Long path `flash_attention_forward` when `S_full > 64` **385–394**
+- Short path builds the `n×n` score matrix directly **401+**
+- Config in `include/quant/transformer.h`: `head_dim=64`, `rope_theta=10000`, **`max_seq_len=2048`**, `RoPEScalingMode`, YARN params (**17–38**), FP8 path (**74–94**)
+
+**Insertion points:** the scale at **357**, the score build at **386–394 / 401+**. The position-dependent causal mask at **386–392** is exactly the Lost-in-the-Middle term.
+
+**A dead `AttentionResidual` exists at `transformer.cpp:629`** (comment **684**) — resurrect or remove, never leave.
+
+---
+
+## 3b. NCM — Next-Concept Modeling (the generation mechanism)
+
+> Added by the user with a third transcript (§15.3): *"Isko bhi plan me add karne ka, ispe bhi research hoyega."*
+> The user's framing: **"tokens predict karne me speed badhegi"** — NCM speeds up token prediction.
+
+### 3b.1 What it actually is (VERIFIED — arXiv `2610.14162`, published 2026-10-09)
+
+**"Next-Concept Modeling: Fast, Parallel Coarse-to-Fine Text Generation"** — Hermann Kumbong, Ishan S. Khare, Iddah Mlauzi, Andrew Woen, Charles Ding, E. Kelly Buchanan, Simran Arora, Azalia Mirhoseini, **Christopher Ré** (Stanford Hazy Research).
+
+| Field | Value |
+|---|---|
+| **arXiv** | `2610.14162v1` |
+| **Published** | 2026-10-09 |
+| **Categories** | cs.CL (primary), cs.AI, cs.LG |
+
+**The problem NCM attacks:** autoregressive generation writes one token at a time and each step waits for the previous one. Diffusion models allow parallel sampling but **lose quality at fewer steps, reprocess the whole sequence every step, and need many dataset passes.**
+
+**NCM = a two-stage, coarse-to-fine framework:**
+1. A **multiscale residual VQ-VAE** encodes text into a **hierarchy of discrete codes** (the "tokenizer").
+2. A **transformer generator** produces **one level at a time**, predicting **all codes within that level in parallel**, conditioned on earlier levels.
+
+It **still uses a transformer** — it changes *what* the transformer predicts (discrete codes, not words) and *the order* (coarse → fine levels, not left → right tokens). It does **not** replace transformers.
+
+### 3b.2 Reported results (from the paper, as verified above)
+
+| Benchmark | Result |
+|---|---|
+| **XSum summarization** | ROUGE-L **parity** with the best DLM baseline, **31× faster** |
+| **LM1B** | **Better** generative perplexity than the strongest DLM baseline, **21× faster** |
+| **OpenWebText** | **Competitive** with the strongest DLM baseline, **10× faster** |
+| **Sudoku** | Outperforms **both autoregressive and diffusion baselines** across all difficulty levels, with **fewer function evaluations** |
+
+**Critical caveat — the 31× is not "faster than ChatGPT":** it is NCM vs a **diffusion** baseline (Aurora LM) on XSum, 1,024 sequences, batch 16, single H100 SXMGPU. It does **not** establish NCM beats standard autoregressive models on every workload.
+
+### 3b.3 Why this belongs in Fusion — five specific points
+
+1. **It is exactly the system definition the user gave.** *"It predicts next token, but — according to the context"* (§Context). AR predicts the next word left-to-right with no view of the whole answer. NCM **first sketches the shape of the whole answer**, then fills detail in passes — i.e. it **decides according to the whole context before committing**. This is the generation-side embodiment of the same idea as `G`/`S`.
+
+2. **It composes with the architecture; it does not conflict with it.** Loop transformers change **depth**; `G`/`S` change **what gets attended to and for how long**; NCM changes **what is predicted and in what order**. Three orthogonal axes. NCM's level-parallel decoding also **reduces sequential steps**, which multiplies with the loop-exit policy (§5) for total speedup.
+
+3. **Coarse levels are a natural consumer of `S`.** A coarse level is a low-resolution sketch of the whole sequence — which is precisely what an index-addressed `S` (§8) can supply cheaply, O(n), without dense attention over 4M tokens. The sketch lives in the index; the fine levels resolve it.
+
+4. **Discrete code hierarchy is quantization-friendly.** NCM already predicts **discrete codes**. Our target is **1.5 BPW** (§9b.1). A generator operating over discrete levels interacts with quantized weights far more favourably than a floating-token AR head — and MQC-Bench-1.0 (§9) should measure this directly.
+
+5. **It serves the speed target for benchmarks.** Our hard goal is **90%+ on Terminal-Bench-4.0-style benchmarks** with a *bad* 27B model (§Context). Agentic benchmarks are tool-loop latency-bound; fewer sequential generation steps per decision is a direct lever on that number, and D&CC-Bench-1.0 specifically requires **live, immediate decisions** (§7 target 7).
+
+### 3b.4 Open questions the research phase must answer
+
+The transcript is explicit that NCM is a research system, not a drop-in. These become **Phase-0 research items**:
+
+- **Scale.** The paper's generators go to **725M parameters** in scaling experiments. Our models are **4B** and **27B**. Scaling improved quality in the paper's experiments, but behaviour at these sizes is **untested**.
+- **Reconstruction fidelity.** *"If details are lost in the representation, the generator can't reliably restore them later… especially important for **names, numbers, and other exact details**."* This is **fatal** for our PDF test (§7 target 5: exact line and page number) — reconstruction loss breaks V5.
+- **Task-specific configs vs general-purpose.** NCM's output format is **structured and bounded**; the experiments use task-specific configurations. A general assistant must answer *"one sentence, then a page, then a longer report in the same system."* How NCM handles open-ended, variable-length output is unanswered.
+- **Structured tasks are its strength** — Sudoku shows a hierarchy of representations helps **globally consistent** answers. That maps to our "decides according to the context" requirement, but the transcript cautions a controlled benchmark does not imply broad reasoning gains.
+- **Checkpoints.** Published NCM checkpoints exist on HuggingFace for **XSUM, WMT14 (De→En), Sudoku, TinyStories, LM1B**; **OpenWebText is pending**. There is **no general-purpose NCM chat assistant** — it must be integrated into our engine, not downloaded.
+
+### 3b.5 Implementation shape (Phase 6 addition — see §11)
+
+NCM needs two stages, matching the paper:
+
+1. **Multiscale residual VQ-VAE tokenizer** — trains to encode text into the discrete code hierarchy and decode back. **Freeze it after stage 1.**
+2. **Transformer generator** — trained with the tokenizer **frozen** to predict the levels in order, all codes of a level in parallel, conditioned on earlier levels.
+
+**Where it lands in our engine:** `DenseModel::forward` (`model.cpp:102`) is the training path and the token head is `lm_head`. NCM changes the head from "next-token logits" to "per-level discrete-code logits" and changes the generation loop from left-to-right to level-by-level. **This is a second sweep, downstream of the `QKᵀG(GS)` sweep** — the attention core can be built first and NCM layered onto it.
+
+**An important scoping decision for Phase 0:** NCM can be adopted **incrementally** — the tokenizer + generator can first be trained **on top of** the Fusion attention core as a separate objective, or fused into one training run. The incremental path is far lower risk and should be the default.
+
+---
+
+## 4. Neurons — Req 1
+
+### 4.1 The requirement
+
+The user, verbatim:
+
+> *"Humans ke paas bhi hote hai aur AI ke bhi hote. To dono ke alag-alag capabilities hote hain, mujhe dono capabilities waale neurons banane hai aur unhi pe hamaare AI models train honge, capabilities dono ke and best performer dono me, but digital."*
+
+Clarified by the user:
+
+> *"Honge ye bhi AI ke hi neurons but ye Enhanced Artificial Intellegence Neurons honge jo dono ka capability hold karte hai aur dono ka power ho inme and benchmarks me bhi haraa de un dono ko."*
+
+**Build Enhanced Artificial Intelligence Neurons — EAIN.**
+
+- They **are still AI neurons** — not a biological simulation. They are the AI unit, **upgraded**.
+- They **hold the capabilities of both** human neurons and AI neurons.
+- They carry **the power of both**.
+- Models are trained **on these neurons**.
+- **They must beat BOTH — humans AND ordinary AI — on benchmarks.**
+
+### 4.1a The benchmark bar
+
+This is a hard, measurable target, and it raises the stakes of §14:
+
+| Must beat | Where it shows up |
+|---|---|
+| **Ordinary AI** | CS-Bench, D&CC-Bench, MQC-Bench — EAIN-trained models must outperform conventional-neuron models. |
+| **Humans** | CS-Bench-1.1 is built so that it can **confuse humans** — the top-100 / *"maan lo"* questions. EAIN models must score **above** the human baseline. |
+
+**"Defeat both"** means reporting an explicit three-way comparison — **EAIN-trained model vs human baseline vs ordinary-AI baseline** — on every benchmark, not just an absolute score. Human baselines must be **captured for the same question sets**, so the comparison is real rather than asserted. This is added as **V15** in §14.
+
+> Note the coupling: humans are the *bar* for CS-Bench-1.1 (§9), so EAIN beating humans there is the single clearest demonstration that common sense has been delivered (§9, "Why common sense is the real bar").
+
+### 4.2 Why the distinction matters (from Transcript 2)
+
+We use the **same vocabulary** for both — *neurons, memory, reasoning, understanding, hallucination* — and unconsciously assume AI is like a human brain. **It is not.**
+
+| | **AI neuron** | **Human / biological neuron** |
+|---|---|---|
+| **Nature** | A **mathematical function** — takes numbers, passes an output | An **insanely complex living cell** |
+| **Mechanism** | Matrix multiply, activation, gradient update | **Electrical signals, chemicals, timing**, interactions with **thousands** of other neurons |
+| **Learning rule** | **Backpropagation** — loss computed, billions of **parameters** ("knobs") nudged microscopically over unimaginable data, plus **RLHF** | Plasticity, neuromodulation, experience-driven permanent change |
+| **Adaptation speed** | Frozen after training; adapts only via context or fine-tuning | **Continuously updates** — you exist in reality and reality continuously changes you |
+
+**EAIN takes the AI neuron as its base and adds the right-hand column's capabilities as digital mechanisms** — it does not become a biological cell.
+
+**Brain complexity is not confined to neurons.** The open questions listed, none with complete answers:
+
+- How is **memory** formed?
+- How do we **permanently change** from a single experience?
+- How do different parts of the brain **synchronize**?
+- How do **chemicals** alter **attention** and **learning**?
+
+**The target is the union of both columns — as a digital AI construct.**
+
+### 4.3 Design framing
+
+Take the best of each side:
+
+- **From the AI side** — the properties that make current models work: the mathematical unit, gradient-trainability, and the full existing learning stack, which must be **honoured, not discarded**: statistical representation learning, next-token prediction, **backpropagation**, **loss**, **parameters**, **RLHF**.
+- **From the human side** — the properties AI lacks: continuous self-update from environment, experience-driven permanent change, chemical/modulatory gating of attention, cross-region synchronization, and temporal dynamics (**timing** matters, not just magnitude).
+
+**The digital constraint is not a limitation — it is the point.** We are not simulating biology; we are taking biology's *capabilities* and expressing them in a construct that trains with backpropagation on digital hardware.
+
+### 4.4 What it must connect to
+
+- **The `J` jump (Einstein, 1952).** The user stated Fusion **can** make this jump; showing how is on us. Einstein's letter to Maurice drew a **three-step loop**: observe the real world → collect data → **the jump** to a new rule, denoted **"J"**. AI cannot make it because it lacks real-world physics — falling, hanging upside down, the feel of a lift. **There is no fixed algorithm from real-world observation to a new idea.** A continuously-updating, environment-learning, biologically-informed neuron is meant to close exactly this gap.
+- **The World Model** (§7C) — already implemented. This is where environment learning lives.
+- **Continuous self-update as a first-class property** — *"apne aap ko continuously update karna human intelligence ki ek major property hai."*
+- **RSI — Recursive Self-Improvement.** Named by the user as **the genuine threat**, distinct from fear-mongering. Structurally the same capability: a system improving itself without human intervention.
+- **Feelings as encoded representations** — happy/sad/awkward are mathematical relationships in the network; a question activates those patterns.
+- **AGI definition discipline** — *"Ek model agar mera computer use karne lag jaye to main usko AGI nahi bolunga."* Before real AGI, **~10 fake AGIs will come and die.**
+- **Predictions are not facts** — Hinton's 2016 radiologist prediction failed (there are more radiologists now). And **LeCun: LLMs are not the future; world models are.**
+
+### 4.5 Status — RESOLVED by direct audit (no longer open)
+
+A full-workspace audit was run (category **neurons**). **Verdict: zero. Nothing exists.**
+
+> *"There is NO neuron implementation of any kind anywhere in the workspace. No bio-inspired unit, no spiking neuron, no LIF, no dendrite, synapse, soma, axon, tau, refractory, STDP, or neuromodulator code. **This is a net-new build.**"*
+
+**How the audit was run:** `rg --no-ignore --hidden` — because `code-fusion/.rgignore` and a large `.gitignore` chain **silently hide matches**, so an ordinary grep reports a **false clean** here. Anyone re-checking must repeat with `--no-ignore`.
+
+**Categories, cleanly separated:**
+- **(a) Real neuron implementation — NONE.** No file, class, struct, or function.
+- **(b) Generic NN vocabulary misread as neuron-like** — all verified as false positives:
+  `NeuralArchitectureSearch` (`include/quant/agi.h:378`, a generic NAS over `struct Architecture { int layers; int hidden; float score; }`) · Exa's `'neural'` search mode (`packages/web/web-search-exa/src/types.ts:13`) · `leaky_relu` — **a ReLU variant, NOT leaky-integrate-and-fire** (`engines/trainer/dense/init.h:23,26`; this is the most dangerous trap for any automated coverage check) · `consolidate()` — memory dedup by cosine > 0.95 (`src/agi/agi_extended.cpp:507`, `world_model.cpp:630`), not sleep-like consolidation · `has_vnni` = "Vector Neural Network Instructions" (an Intel INT8 GEMM ISA flag) · ANN prose in `bench/bench_poc_benchmark.cpp` · `NPU` — a **hardware target**, with comments explicitly noting NPU work is *not* really running.
+- **(c) Nothing** — everything else.
+
+### 4.6 What already exists to build ON (module-level, verified)
+
+The workspace is **rich in module-level analogues** of exactly the mechanisms a neuron needs — but has **no unit-level implementation** of any of them.
+
+| Block | Path | Why it matters |
+|---|---|---|
+| **ECC / Elastic Weight Consolidation** | `include/quant/continual_engine.h:90-101` (`ECCState { fisher_diagonal, anchor_weights }`, `update_fisher`, `update_anchor`, `regularize`). Also `fisher_importance` at **35** (not 34), `update_importance(decay_rate)` at **67**, `importance_resample` at **56** (not 54-55). | **Per-parameter importance** = the canonical synaptic-consolidation primitive. The single most directly reusable piece. **There are three parallel continual-learning stacks — see §4.8a; they are NOT to be consolidated.** |
+| **Fisher-weighted importance decay** | `include/quant/continual_engine.h:35, 56, 67` | A working importance-decay mechanism. |
+| **Stability / Plasticity controller** | `include/quant/inferno_integration.h:152-197` — `StabilityPlasticityParams {forgetting_weight, current_lr_factor, stability_lr_factor, plasticity_lr_factor, forgetting_threshold}`; `inferno_hook_stability_plasticity` | **CORRECTED — this is DEAD, not wired.** The hook has **zero call sites** workspace-wide. The rule actually used is a *different, simpler* implementation at `src/adapters/src/continual_trainer.cpp:152-159` with a hardcoded `0.1f` threshold and a `[0.01, 10.0]` clamp — **and that class is never instantiated either.** Treat as **declared-but-dead**: the real controller must be written fresh. |
+| **Reward + prediction error + curiosity** | `include/quant/reward.h:18-56` (`RewardModel`, `reward_loss`, `compute_abstention_reward`, `importance_factor = 8.0`) · `include/quant/agi.h:366-374` (`CuriosityDrivenExplorer::intrinsic_reward`) · `include/quant/world_model.h:94-99, 114, 79-80` (`avg_prediction_error`, `predict_with_uncertainty` at **114**, epistemic/aleatoric split at **79-80**) | Supplies the **dopamine analogue** and a novelty/curiosity signal for **local credit assignment without a global backward pass**. **Caveat:** `importance_factor_ = 8.0f` is **never consumed** in `src/trainer/reward.cpp` — it is a dead field. |
+| **`StateMemoryEntry`** | `include/quant/world_model.h:86-91` (`importance_weight`, `access_count`, `last_accessed`) in a bounded deque, max 10000, plus `update_importance_weights()`, `consolidate_memory()` | The **closest existing per-unit state container** and the natural host surface for a hybrid neuron. |
+| **MoE router / gating** | `include/quant/moe_enhance.h:13` | The gating primitive — the natural home of a "which unit fires" decision. |
+| **AGI subsystem** | `src/agi/` — agi.cpp 44.2K, agi_extended.cpp 34.0K, agi_flywheel.cpp 102.9K, agi_guardrails.cpp 11.2K, meta_cognition.cpp 30.7K, multi_agent.cpp 27.3K, self_eval.cpp 31.5K, world_model.cpp 25.0K; `include/quant/agi.h` 19.3K | Substantial scaffolding with host classes: `SelfMonitor`, `MemorySystem`, `PlanningEngine`, `ToolUse`, `EvaluationHarness`, `Flywheel`, `CapabilityAmplifier`, `CuriosityDrivenExplorer`, `HPOptimizer`, `ContinuousLearner`, `KnowledgeDistillation`. Real — the missing part is the neuron itself, **not** a place to put it. |
+
+### 4.7 The exact gap — unit-level, not module-level
+
+This is the sharpest finding and it defines the whole Phase-4 design:
+
+**Present (wrong granularity):**
+- plasticity → a scalar LR factor over a whole trainer (`inferno_integration.h:164`, `continual_trainer.cpp:152`)
+- importance → a per-parameter Fisher diagonal (`continual_engine.h:86-100`) or a per-memory-entry weight (`world_model.h:87-91`) — **never a per-unit weight trace**
+- decay → `update_importance(decay_rate)` over replay samples (`continual_engine.h:54`)
+- reward / prediction error → `RewardModel`, `WorldModelStats` — real and usable
+- gating → MoE router
+
+**Absent entirely:**
+- any notion of **TIME inside a unit** — no `tau`, no time constant, no timestep
+- any **threshold** or spike
+- any **refractory period**
+- any **per-unit local update rule**
+- any **soma-like state integration**
+
+**Conclusion:** EAIN is a **NEW unit type** whose per-unit state sits **on top of these existing signals**. It cannot be assembled by renaming or re-exposing what is there.
+
+### 4.8 Two constraints to honour
+
+1. **`install_test/` is a build OUTPUT, not a source tree — never hand-edit it.** The first plan said neuron work "must land in both trees or the copy drifts." **That premise was wrong.** `install_test/` is a `cmake --install` **output** (`CMakeLists.txt:600`), contains only `bin/` + `include/`, has **no CMakeLists of its own**, and is **100% untracked** (`git ls-files install_test` = 0). **Drift has already occurred** — 126 shared names, 32 differ; `inferno_*` was renamed to `sops_*`. The correct instruction is: **regenerate it from the build, or delete it** — never mirror changes into it by hand.
+2. **Must live in `transformers-fusion`.** `code-fusion/` holds **no** neural substrate — no reward/prediction-error/gating machinery, no analogue at all. It is the harness. The neuron is engine-side.
+
+### 4.8a Three parallel ECC/continual implementations — **NO consolidation**
+
+> **The user rejected this:** *"Kya ECC consolidations? Koi ECC ka skill add nahi karna, wo mera puraana decision tha add karne ka!"*
+>
+> **Adding an ECC consolidation is explicitly out of scope. Do not merge, consolidate or unify the three continual-learning stacks.** The three implementations stay as they are.
+
+| # | Where | What |
+|---|---|---|
+| **1** | `src/trainer/continual_engine.cpp` + `include/quant/continual_engine.h` | `ContinualEngine` + `ECCState` — the full Fisher/anchor implementation |
+| **2** | `src/adapters/src/continual_trainer.cpp:152-159` | A hand-rolled `fisher_`/`anchor_` pair with the stability-plasticity rule and a `[0.01, 10.0]` clamp. Never instantiated. |
+| **3** | `src/trainer/trainer_core.cpp:1153` | `Trainer::enable_continual` — the third entry point. |
+
+**Consequence for Phase 4:** EAIN is built **on top of** this existing machinery as-is. Which of the three it sits on is an implementation detail to settle during design — **not** a consolidation project. §4.6's "reuse what exists" instruction stands unchanged.
+
+### 4.9 Scope warning — implement only what is actually implementable
+
+The audit also flagged a hazard in the requirement's own framing. The transcript it derives from explicitly states the biological side is **not fully understood** — *"we ourselves still don't have a complete answer"* to how memory forms, how one experience permanently changes the brain, how regions synchronize, how chemicals alter attention and learning.
+
+**Therefore there is no complete spec to implement against.** Anyone building this must scope it to the implementable subset rather than implying the biological half can be faithfully reproduced:
+
+> **Implementable subset** = per-unit importance/decay + thresholded activation + local plasticity driven by reward prediction error + offline consolidation.
+
+That is what Phase 4 designs. Not a biological simulation.
+
+### 4.10 Sequence — and it was explicitly confirmed by the user
+
+> *"ham karenge naa isko. Banayenge. Pehle planning fir research fir baaki phases and sab baari-baari se ban jaayenge."*
+
+**Planning → research → implementation, one phase at a time.** That is exactly the Phase 0 gate in §11: nothing is implemented until planning and research are complete.
+
+---
+
+## 5. Architecture: hybrid **adaptive routing**, not a static split
+
+**An early misunderstanding, now corrected.** "Half loop, half traditional" does **not** mean some layers are one thing and some another, fixed. The user's clarification, verbatim:
+
+> *"Ya to teeno ka hybrid theek hoga ya kuchh aisa karna hoga ki layers re-arrange ho sake, jahaa jaroorat ho loop waale ki wahaa sab traditional waale bhi loop me transform ho jaaye."*
+
+On what "transform" means:
+
+> *"traditional pe chalta rahega to loop me kaam karne lagega saath me learned gated bhi hoga"*
+
+So the mechanism is **both**:
+
+- **Layer re-arrangement** — a layer running in traditional mode **must also be able to work in loop mode**. Not two disjoint populations; every layer is capable of either and switches as needed.
+- **A learned gate** decides when.
+
+Design intent: **the hardest work is handled by loop reasoning**, and a direct benefit is **saved compute cost** — the cheap path stays cheap, depth is spent only where it pays.
+
+### Hard constraint — RESEARCH BEFORE IMPLEMENT
+
+> *"Bahut jaroori hai, internet pe research iske liye karna jaroori hai, bina research ke implement mat kar dena."*
+
+**Nothing about routing or `G`/`S` may be implemented before research is 100% complete.** A gate, not a guideline.
+
+### Research grounding (verified — these papers exist)
+
+`WebSearch` is non-functional in this environment. Findings came via the **arXiv API**, which works. DuckDuckGo HTML is bot-gated; Google hits a consent wall.
+
+| Paper | arXiv | Relevance |
+|---|---|---|
+| **Looped Transformers for Length Generalization** | 2409.15647 | Adaptive step counts → **unseen input lengths**. Attacks the 4M/doubling target. |
+| **LT2: Linear-Time Looped Transformers** | 2605.20670 | Linear/sparse attention **inside** loops; *iterative memory refinement*. A converted **1.4B beat industry 4B models**. Validates small-model-big-behaviour. |
+| **Looped Transformers with Source-Centered State Evolution** | 2607.27656 | A learned **anchor** that is "a one-step fixed point by construction", with **exact anchor invariance** — closest published analogue to **"never forgets"**. Informs `S`. |
+| **SpiralFormer: Multi-Resolution Recursion** | 2602.11698 | Recurrence over **compressed multi-resolution sequences**. Informs how `S` holds a 3000-page PDF. |
+| **T-LoopFormer: Token-Level Elastic-Depth** | 2609.15160 | Per-token iteration counts + **recursion-wise KV cache**. |
+| **FlashLoop** | 2609.29812 | Token-sparse updates, **KV-residual quantization** — relevant to **MQC-Bench** at 1.5 BPW. |
+| **Adaptive Depth in Looped Transformers** | 2607.20519 | Post-hoc confidence readouts **match or beat** learned gates. Practical loop-exit guidance. |
+| **TaH2 (Improving Test-Time Scaling)** | 2609.35748 | Extra iterations **only to tokens that benefit**. |
+| **LoopSpec** | 2609.17184 | Self-speculative decoding — up to **6.83×** speedup. |
+| **TTT: Learning to (Learn at Test Time)** | 2407.04620 | The hidden state **is itself a model**; unlike Mamba it **keeps improving past 16k**. Strongest conceptual match for `S`. |
+| **Huginn (recurrent-depth)** | 2502.05171 | Prelude / core-loop / coda split, latent test-time compute. |
+
+**Unverified — do not cite:** **"ALSTA"** returned **zero hits**. An earlier pass also mis-assigned arXiv **2407.04620** to ALSTA; that ID is **TTT**.
+
+**Synthesis for design:** `S` should be a **test-time-learning state** (TTT) that is **anchor-invariant** (SCSE), carried at **multi-resolution** (SpiralFormer), reachable by **linear/sparse attention** (LT2). `G` decides per token how much loop depth and which slice of `S`.
+
+---
+
+## 6. Confirmed decisions
+
+| # | Decision | Answer |
+|---|---|---|
+| 1 | **Routing mechanism** | **Layer re-arrangement + learned gate.** Traditional-mode layers must also work in loop mode. **Research first — mandatory gate.** |
+| 2 | **Base window** | **Every model, smallest to largest, base = 4M.** The *trainer* may extend it — via code, architecture, or config; that is the trainer's choice. **On every fill, double:** 4M → 8M → 16M → … always ×2. |
+| 3 | **Rebrand** | **Clean break.** Both `@origin-ai/xhe` and `.dsh` shut down, no aliases; `.dsh` auto-migrate runs **once**. Priority within the sequence is mine (§11). |
+| 4 | **Dead code** | **Zero, project-wide.** Wired-in or removed — no exceptions. |
+| 5 | **Research gate** | 100% research must precede any implementation. |
+
+---
+
+## 7. Proof targets — pass/fail gates
+
+1. **4M tokens native context** — base for every model without exception.
+2. **No compaction.** When the window fills, context does **not** compress — it **extends**.
+3. **Doubling on every fill:** 4M → **8M** → 16M → … always ×2.
+4. **Max output limit: 2M tokens.**
+5. **The PDF test.** A **300-page** PDF and a **3000-page** PDF — the model does not forget. For any single word it states **immediately** where it is: **which line, which page number**.
+6. **Permanence.** Prove it never forgets. Checked on the **4B model**, **retrained as many times as needed** until results match expectations **exactly**.
+7. **Live decisions + environment learning** — verified on D&CC-Bench (§9).
+
+---
+
+## 8. `.idx` index and lazy context loading
+
+- `.idx` indexes exist so that **lazy loading works on the context**.
+- Indexes may be built from **`.jsonl` / `.json`** sources.
+- The index lets us match **all requirements and constraints** and return the result from the model.
+- Must verify the model **can make decisions at all** — and specifically that it takes **live, immediate decisions**.
+
+### 8.1 The index infrastructure already exists in CodeFusion — extend it, don't rebuild it
+
+Three existing pieces are the natural hosts for `.idx`:
+
+| Existing | What it does | How `.idx` uses it |
+|---|---|---|
+| **`packages/session-query/session-query-sqlite`** | The SQLite-backed **full-text** session index — `session-query` searches durable history | The `.idx` for **context** is the same shape: a searchable, lazily-consulted index over session content. `session-query`'s `blockText()` currently **excludes reasoning** (`extraction.ts:70-73`) — §10P(h) — so extending the indexed content to include reasoning is the same change. |
+| **`packages/session/session-persistence-sqlite`** | SQLite durable persistence backend | The **durable store** for `.idx` rows — same read/write pattern, same `session/flush` barrier semantics. |
+| **`packages/context/file-reference-local`** | A **bounded, per-agent, lazily-built, invalidated-on-mutation** workspace index (`WorkspaceFileSearch`; `maxResults` 20, `maxEntries` 10000, excluded dirs `.git`/`node_modules`; invalidated by tool-result events; released on agent disposal) | **This is the exact shape the `.idx` needs** — bounded, lazily built, invalidated when the environment changes, freed with the owner. The `.idx` is the same pattern applied to *context* instead of *files*. |
+
+**The design is therefore:** `.idx` = a per-session, bounded, lazily-built index over context, with the same invalidation and disposal semantics as `WorkspaceFileSearch`, backed by `session-query-sqlite`'s FTS machinery, and persisted through `session-persistence-sqlite`.
+
+**Three constraints carry over from `file-reference-local` and must be honoured:**
+- **Bounded advisory index** — *"very large workspaces may omit paths after `maxEntries`"*. A bounded `.idx` must **never silently drop content the model later needs** — anything evicted must go to `S`, not vanish (§3.2, §7 target 2). This is precisely the difference between an index and a compaction.
+- **Invalidation on tool-result events** — the index must be invalidated when the environment mutates.
+- **No ignore-file semantics** — the local provider has no `.gitignore` support; the `.idx` builder must decide its own inclusion rules.
+
+### 8.2 Where the `.idx` is *read* — the lazy-load call site
+
+The engine side already has the right shape: `Attention::forward` reads the KV cache via `cache.get_all(layer_idx)` (`transformer.cpp:338`), and the long path is `flash_attention_forward` for `S_full > 64` (**:385–394**).
+
+**The Fusion design:** `S` (the never-discarded structure, §3.2) is the `.idx`. Attention consults `S` for anything outside the active window, and the active window itself is what doubles. Because `S` is index-addressed rather than densely attended, the common case stays O(n) — which is what makes a 4M window survivable at all.
+
+**This is why the `.idx` is not an optimisation but a correctness requirement:** without it, "never forgets anything" is impossible, because a dense 4M-token attention matrix is both infeasible to compute and exactly the context-rot failure we are removing.
+
+---
+
+## 9. Benchmarks
+
+All carry **100 tasks** — **MQC-Bench excepted**. CS 1.0 and 1.1 are **both hard**; same *type* of question, **not the same questions**, **zero reuse**.
+
+| Benchmark | Full name | Size | Purpose |
+|---|---|---|---|
+| **CS-Bench-1.0** | Common Sense Bench 1.0 | 100 | Common sense. |
+| **CS-Bench-1.1** | Common Sense Bench 1.1 | 100 | **Much harder** — must be able to **confuse humans**. Top-100 / *"maan lo"* style: *"suppose this happened — what would you do?"*, harvested from the internet. **Zero overlap with 1.0.** |
+| **D&CC-Bench-1.0** | Decision and Context Check Bench 1.0 | 100 | Model decides **live**, and is **learning from the environment**. Environment learning is an explicit checked point. |
+| **MQC-Bench-1.0** | Model Quality Check Bench 1.0 | — | **Runs last.** Quality after **quantization**. Reports **score / 100** and percentage. |
+
+**Why common sense is the real bar:** *the most powerful thing in a human is common sense; only when AI has it is it worthy of being called AGI.*
+
+**Environment learning:** the model learns from its environment the way a human learns by living with a family and behaving accordingly. **This is what the World Model (§10C) is for.**
+
+---
+
+## 9b. Models to train
+
+| Property | Value |
+|---|---|---|
+| Name | **`innova-x-1.1-4b`** |
+| Size | 4B |
+| **Bit-per-weight** | **1.5 BPW** |
+| When | **After the whole engine is complete** |
+| Post-training | Everything evaluated, **including a common-sense test** |
+| Retraining | As many times as needed until results match **exactly** |
+| Also used | dense **Qwen-3.8-27B** for benchmarks |
+
+### 9b.1 The 1.5 BPW path already exists — use it, don't invent it
+
+`include/quant/types.h:197` `format_bpw(Format f)` is the **wire truth** (measured canonical spend at `n%256==0`), and `format_nominal_bpw` (**:236**) is the **name-implied** label. `format_wire_bpw` (**:265**) simply returns `format_bpw`.
+
+**Formats that are exactly 1.5 wire BPW today:**
+
+| Format | wire BPW | line |
+|---|---|---|
+| `Format::Q_1_5` | **1.5f** | `types.h:222` |
+| `Format::Q_G_1_5` | **1.5f** | `types.h:223` |
+
+**The tier rule is still in flux.** `Format::Q_1_K_L` / `Q_1_K_M` / `Q_1_K_H` all return **1.0f** (`types.h:200`), while `review-tracking/DEFECTS.md` rule **G-2** states *"Ternary in `Q_1_K_H` at **1.50 BPW**"*. The L/M/H K-tier rework is **uncommitted in-flight work** (`src/codec/quant_format.cpp` and `src/codec/block_codec.cpp` are modified but uncommitted). So:
+
+- **Phase 0 must resolve the tier rule first** — it is a live, half-landed change, and §10M's DEFECTS.md is the spec.
+- Per **G-1** (`Q_1` = binary, exact 1.0 BPW) and **G-2** (ternary in `Q_1_K_H` at 1.50 BPW), the **1.5 BPW target lands on `Q_1_K_H`**, not on `Q_1_5`.
+- **G-5: ZERO BPW violations project-wide** — any new format used for `innova-x-1.1-4b` must be exact on the wire, and the name must match the wire (`E2a` recorded 27 name-vs-wire gaps — the "rename-the-ruler" mechanism).
+- `importance_factor_ = 8.0f` in `src/trainer/reward.cpp` is **never consumed** (§4.6) — dead, and it sits in the reward path, so it must go before EAIN builds on it.
+
+**MQC-Bench-1.0 measures quality after quantization** — so this section is the measurement target for that benchmark, and the `Q_1_K_H` rule must be settled before MQC can report a number.
+
+---
+
+## 10. Confirmed codebase facts (read from disk)
+
+Observed, not assumed.
+
+**A. The attention core is `transformers-fusion/src/model/transformer.cpp:295`.** Detailed in §3.3.
+
+**B. A *dead* `AttentionResidual` at `transformer.cpp:629`** — comment at **684**: *"(AttentionResidual below is dead but out of Wave-6 scope; see ledger gap.)"*. Under §2's dead-code rule this must be **wired in or removed**.
+
+**C. The World Model is in the ENGINE.** `transformers-fusion/include/quant/world_model.h`, `namespace quant::agi`: `WorldState`, `Transition`, `PredictionResult`, `CounterfactualResult`, `MPCPlan`, `UncertaintyEstimate`, and `class WorldModel` with `predict`, `simulate_trajectory`, `beam_search_plan`, `model_predictive_control`, `counterfactual_analysis`, `store_state`, `retrieve_most_relevant`, `consolidate_memory`. Limits `max_transition_buffer=100000`, `max_state_memory=10000`. **Already implemented** — not greenfield. Also `src/agi/world_model.cpp`, `agi_extended.cpp`, `agi_flywheel.cpp`.
+
+**D. The CodeFusion rebrand is ~90% ALREADY DONE — the plan must not overstate it.**
+- `@origin-ai/xhe` in exactly **one file**: `packages/core/agent-loop/src/runtime-context.ts:1`
+- pnpm→npm **already committed**: `packageManager: "npm@12.0.2"`, CI uses `npm ci`, commit `ef4f4428`. **No `pnpm-workspace.yaml`, no `pnpm-lock.yaml`.**
+- **"You are an AI agent powered by CodeFusion."** already at `packages/core/system-prompt/src/index.ts:361`, pinned by **15 test references**
+- `.dsh` in **9 files** — but 4 are `examples/acp-agent/tests/snapshots/*.jsonl` recorded fixtures (**must not be edited**). Real work: `apps/cli/src/profile-boot.ts`, `packages/util/home-paths/*`, `scripts/install-lefthook.spec.ts`, `packages/subprocess/subprocess/tests/service.spec.ts`
+
+**E. DeepSeek branding is LARGE: 7,836 occurrences / 2,217 files.** Includes an entire package `packages/llm/llm-deepseek/` (`adapter.ts`, `translate.ts`, `types.ts`, `serialize.ts`, `README.md`, 2 test files), `.github/workflows/e2e.yml` (16), `docs/user/guide/providers.md` (6), `website/.vitepress/config.ts` (2), `examples/package.json` (6), `archive/cf-legacy/src/{mad.ts,byok.ts}` (12). **Rule: keep functionality, remove branding.** Rename target decided in design.
+
+**F. Thinking preservation is essentially UNIMPLEMENTED** — a single hit in `packages/llm/llm-pi-ai/README.md`. Genuine build task.
+
+**G. There is NO provider-adapter harness.** Grep across `packages/` found nothing. Must be **built from scratch** — and it is the thing that produces the 99.99% vs 3–35% gap, so it is high-value.
+
+**H. New `engines/trainer/dense/` — 80+ files, untracked.** `callbacks`, `checkpoint`, `curriculum`, `data_augment`, `distill`, `distributed`, `ema`, `flops`, `grad_utils`, `hooks`, `init`, `lora`, `losses`, `metrics_dense`, `regularizers`, `rl_align`. **In-progress — do not clobber.** Also `engines/trainer/moe/` and `engines/trainer/multimodal/{dense,moe}`.
+
+**I. No window-extension logic exists.** RoPE scaling (None/linear/NTK/YARN) with `rope_scaling_factor` for "4× context" is present, but **no doubling, no extension**. The 4M target is **greenfield**.
+
+**J. Benchmark infra.** `code-fusion/` has **zero** benchmark harness — all benches in §9 are greenfield. The **snapshot/replay pattern** (`packages/test-support/acp-snapshot`, `CF_SNAPSHOT=replay|record|refresh`) is the convention to follow. `transformers-fusion/` has 13 C++ **performance** micro-benchmarks (`bench/`), not quality evals; `tools/evaluate.cpp` + `include/quant/eval.h` is the closest evaluation tool.
+
+**K. Docs.** `code-fusion/` docs system is **mature** (word budgets, bilingual EN+ZH pairing, `verify-*` gates, Agent Notes) — see `docs/AGENTS.md`. `transformers-fusion/` docs were **deleted wholesale** (commit `9c0e480`, 232 files): README, `docs/`, CHANGELOG all gone. **Start from zero; use `code-fusion/` as the template.**
+
+**L. Uncommitted work is large.** `code-fusion/`: **307 modified files** (npm-migration churn), 9 untracked. `transformers-fusion/`: 12 modified, **84 untracked** (L/M/H refactor + new dense trainer). **Commit hygiene is a prerequisite before architecture work** — §11 Phase 1.
+
+**M. Open defects (`review-tracking/DEFECTS.md`)** — 6 confirmed critical:
+`packages/cf/src/mad/utils/advanced-memory.ts:427` infinite synchronous spin · `god-runtime.ts:3679` **`Math.random()` as a verification gate** · `src/trainer/ddp.cpp:154` DDP all-reduce silent no-op · `scripts/cross_platform_check.sh:95` vacuous determinism gate · `cmake/compiler.cmake:40` **`-march=native` ships SIGILL-prone binaries** · `src/agi/agi_flywheel.cpp` **compiles/executes LLM-generated C++ with no isolation** — correct anchors: `sandbox_compile_and_test` :1867, compile via `std::system` :1912 (cmd built :1907/:1909), execute via `run_with_timeout` :1434-1493, model-generated code entering at :2388-2405.
+Plus 19 high, incl. `god-runtime.ts:5264` fabricated readiness gate, `serve.cpp:118` binds `INADDR_ANY` with auth disabled, `tools/quant_server.cpp:150` same, `simd_math.cpp:266` RoPE AVX2 **16-byte OOB write**. Plus sections B/C/E on quantization honesty (`Operation Clean`, rules G-1…G-6).
+
+**N. `fusion-full-explore` inventory** — complete: §2.1 (sweep), §4.5–4.10 (neurons), §10O–10W (CodeFusion architecture + hard constraints + interception hooks).
+
+---
+
+### 10O. CodeFusion architecture — explored directly
+
+`docs/architecture.md` read in full. This is the shape the harness work must fit.
+
+**The framework is Cordis.** Plugins contribute **services, typed events, and reversible effects** to a shared context. *Every* part of the product is a plugin — the model adapter, the tool registry, the session log, and the **agent loop itself** — so every part is replaceable from configuration.
+
+> *"There is no privileged core to patch: you extend cf by mounting a plugin beside the others, and registrations are effects that unwind when their plugin unloads."*
+
+**Composition.** A running `cf` is a plugin tree built at boot from ordered layers. A **profile** is a named composition (templates: `web`, `headless`) listing its **bundles**; a **bundle** is a distribution format for Cordis config rows and the code they mount. `cf-base` is the first layer of every profile — model adapters, tools, persistence, sandbox and approval policy, settings, credentials, telemetry. Each declares itself in `package.json` under a `cf` field (`cf.profile`, `cf.bundle`). Layers apply in order: profile bundles → profile `cordis.patch.yml` → home-level → `--patch` overlay. **Any row can be replaced by a patch**, and `cf --profile web --dump-config` prints the tree the machine actually boots.
+
+**Seams — the three-role rule.** A seam needs a **Service Definition** (interface), a **Service Provider** (implementation), and a **Consumer** (typically a model-facing tool). One role alone is not a seam. This is why one provider swap changes the whole product: filesystem and subprocess providers share one execution world, so pointing them at a remote sandbox moves Bash, PTY and LSP with them, with no provider forks.
+
+**Turn flow (verbatim from the doc):**
+
+```text
+turn/start
+  claim next-step input plus one queued message
+  assemble prompt sections + tool schemas
+  -> agent/pre-step                   reject | enter(messages)
+     reject, or a first enter rewritten empty -> close the turn with no step
+     step/start
+     append entered messages as user/message
+     derive model history from the log
+     agent/request -> llm/stream -> assistant/chunk* -> assistant/message
+     tool/call* -> tools/pre-execute -> tools/execute -> tools/post-execute -> tool/result*
+     step/end
+     tools owe another request, or next-step input arrived -> claim -> next step
+  -> agent/turn-stopping
+turn/end
+```
+
+`turn/*`, `step/*`, `user/message`, `assistant/*` and `tool/*` are **durable session events**; the rest are live extension points. `agent/pre-step`, `agent/request`, `llm/stream` and the three `tools/*` events are **waterfalls** — listeners must call `next()` to delegate.
+
+**Session log — the invariant that governs everything we add.**
+
+> *"The session log is the source of the context the model sees. `deriveMessages()` projects model history from it... **Model-visible means logged.** Anything that reaches a model request must be reconstructable from the log, and a runtime invariant asserts it. This is why a new model-visible input requires a new session event: extend `SessionEventMap` and render from the log."*
+
+**Implication for this project:** any neuron state, world-model state, `S` index reference, or reasoning that we want the model to see **must become a session event**. Adding learned state = extend `SessionEventMap` + declaration merge (precedent: `packages/compaction/compaction/src/types.ts:9-69`), declared in `packages/core/session/src/known-event-types.ts:1-68`. The log is append-only with **no update verb**, so state is **last-write-wins-by-new-event**.
+
+**Where new behavior goes** (the doc's own table, relevant rows):
+
+| Goal | Mechanism |
+|---|---|
+| Add a model provider | register its adapter on `ctx.llm` |
+| Add a model-facing capability | register on `ctx.tools`; schema joins prompt assembly |
+| Intercept a request, tool, or turn | `agent/*` or `tools/*` event; `agent/turn-stopping` stops a turn |
+| Add model-facing context | `agent.inject()` → lands in the next admitted request |
+| **Add durable session state** | **extend `SessionEventMap`; render and replay from the log** |
+| Manage a same-session objective | `ctx.goals` |
+
+**Provider-adapter surfaces.** `packages/llm/` holds exactly **5** packages: `llm` (the seam + `LlmRuntime` + content/stream vocabulary), `llm-deepseek`, `llm-pi-ai`, `llm-retry` (retry policy, not an adapter), `token-meter` (measurement). Only **two production provider adapters** exist: `llm-deepseek` and `llm-pi-ai`. A test-only replay adapter lives **outside** that directory at `packages/test-support/llm-replay` (`@origin-ai/cf-llm-replay`).
+
+| Adapter | Protocol | Reasoning carry |
+|---|---|---|
+| `llm-pi-ai` | pi-ai normalized multi-provider (`openai-completions`, `openai-responses`, `azure-openai-responses`, `anthropic-messages`, `bedrock-converse-stream`, + hand-declared OpenAI-compatible gateways). Map: `src/context.ts` `toPiContext`/`textOnlyContext` → `Context {systemPrompt, messages, tools}`; `src/stream.ts` `toStreamChunks` maps `thinking_start`/`thinking_delta`/`thinking_end` → `block-start`/`reasoning-delta`/`block-end` (**:148, :151, :154**). | **Signature-preserving replay** — `src/replay.ts` projects into a versioned `ReplayEnvelope` with per-block `thinkingSignature`, `redacted`, `thoughtSignature` plus response-level `api`/`provider`/`model`/`responseId`/`stopReason`. `toPiReplayState` 64-103, `foreignAssistant` 144-176, `replayedAssistant` 178-221, `toPiAssistant` 237-249. The block-**count** check is at **:183**; `:207` is the type-mismatch default. `replayedAssistant` recombines text + signatures on a later request; falls back to `foreignAssistant` on validation failure with `INVALID_REPLAY_STATE`. |
+| `llm-deepseek` | Direct DeepSeek chat-completions, raw `fetch` + SSE via `eventsource-parser`, no third-party lib. Map: `src/serialize.ts` (harness `Message[]` → `WireMessage[]`), `src/translate.ts` (SSE deltas → StreamChunks). | **`reasoning_content` passback** — `serializeAssistant` (`serialize.ts:198-231`) joins every `type==='reasoning'` block's text and emits `reasoning_content` on **every** reasoning-carrying turn, not only tool-call turns. Inbound: `translate.ts:132`. Text-only. |
+
+**Correction to an earlier premise — the greps, stated precisely:**
+
+| Term | First-party hits | Where |
+|---|---|---|
+| `thinking-preservation` | **0** | — |
+| `arc-agi` / `arc agi` | **0** | — |
+| `scratchpad` | **1** | `code-fusion/apps/web/tests/snapshots/permission-policy-context/session.jsonl` — a snapshot fixture string (*"Route file-backed scratchpads to filesystem-context, handoff summaries to context-compression…"*) |
+| `extended_thinking` | **0** first-party; **3** in `node_modules/@earendil-works/pi-ai/dist/models.d.ts.map`, `models.js`, `models.js.map` (third-party vendored dep) |
+| `99.9` | **25** across 10 first-party files | |
+| `99.9%` | **4** files | `.agents/notes/implemented/feature/2026-08-19-high-cache-hit-decimal-display.md:38`, `packages/client/ui-conversation/tests/chat-stats.client.spec.tsx:217`, `skills/design/horizontal-craft/anti-ai-slop.md:55`, `skills/design/horizontal-craft/data-integrity.md:141` — all incidental (a high-cache-hit display, a stats test, prose). **None refers to ARC-AGI.** |
+
+**So the accurate claim is:** the *ARC-AGI-3 pattern* has no referent in this codebase — `arc-agi` is zero, and the `99.9%` hits are incidental. It is an **external target we are building toward**, not something to extend. The earlier sentence "and so do `arc-agi` / `99.9%`" was **false for `99.9%`** and is corrected here.
+
+---
+
+### 10P. Thinking preservation — precise exists / partial / absent matrix
+
+**This is the single most valuable build in the harness.**
+
+**IMPLEMENTED:**
+- **(a)** Durable storage of `ReasoningBlock { type:'reasoning'; text }` in the append-only log (`packages/llm/llm/src/types.ts:60-62`, registered in `ContentBlockMap` `:99-104`; `reasoning-delta` is a StreamChunk variant `:315`).
+- **(b)** **Verbatim replay of reasoning in every request while un-compacted** — `session.deriveMessages()` on every step; `deriveEventMessage` returns `event.data.message` unfiltered (`packages/core/session/src/surface.ts:83-107`); `agent.ts:341, 392-407`.
+- **(c)** DeepSeek `reasoning_content` passback.
+- **(d)** pi-ai per-block thinking/tool signatures in `replayState`.
+- **(e)** Reasoning effort negotiation + UI (`ReasoningRow.tsx`, `TrajectoryTable.tsx:750-753`, `usage.reasoning` counts).
+
+**PARTIAL:**
+- **(f)** Replay state is **stripped across adapter instances / providers / models** — `LlmRuntime.forAdapter()` (`packages/llm/llm/src/index.ts:877-894`) drops `source.replayState` whenever the historical `provider` route isn't currently owned by the same adapter instance. Changing adapter/provider/model degrades that message to foreign conversion: **signatures dropped, reasoning text retained.**
+- **(g)** Replay metadata is **block-count-coupled** — if `envelope.blocks.length !== message.content.length` or a type mismatches, `BlockAssembler` discards the **whole** envelope and `replayedAssistant` throws `INVALID_REPLAY_STATE` for the **whole message** (`assembler.ts:136-146`, throw at `:118`; `replay.ts:183` (block-count check)). **Any block-level edit (prune, truncate, user edit, UI rewrite) invalidates signature replay.**
+- **(h)** Cross-session snapshots and the search index **exclude reasoning** — `session-reference/README.md:13` (*"excludes Shadowed pre-compaction events, tools, reasoning"*), and `session-query/.../extraction.ts:70-73` `blockText()` returns `[]` for `case 'reasoning'` — **durably stored but unfindable**.
+
+**ABSENT — the gap to build:**
+- **(i)** **Reasoning in compaction checkpoints.** The summarizer projects to text-only via `summaryText()` (`compaction-basic/src/summarizer.ts:217-224`: `blocks.filter(b => b.type === 'text')`), and `README.md:16` states it: *"Only returned text enters the checkpoint, excluding reasoning and tool calls..."* A reasoning-only summarizer output is an **error** (`summarizer.ts:168-171`). Reasoning does reach the summarizer as *input* (`region.ts:498-515` `buildSummarizationInput` → `deriveEventMessage`) — **only the output is text-restricted.**
+  **Mechanism correction:** `summaryText()` filters purely on **`block.type === 'text'`** — a **type** test with **no role involved**. The earlier plan said reasoning is dropped *"because the checkpoint lands as user-role text"* — **the role is not the reason.** Both conclusions (reasoning excluded; checkpoint is a `user/message`) remain independently true.
+- **(j)** Reasoning indexed for retrieval (see h).
+- **(k)** Any effort/summary/quality feedback loop — `reasoningEffort` is static config (`agent.ts:58, 437-453`; `call-config.ts:18-53`; rejects unsupported ids with `UNSUPPORTED_REASONING_EFFORT` **before** I/O). **No feedback loop adjusts effort from outcomes.**
+- **(l)** Any world model or environment learning in the harness (see §10Q).
+
+**The self-defeating loop worth noting:** reasoning is **priced** — `estimateContent` case `'reasoning'` charges `ceil(text.length/4) + 4` (`token-meter/src/estimate.ts:30-33 (constants at :13 and :20)`) — so reasoning-heavy turns are what *trigger* compaction, and **their own reasoning is destroyed first**.
+
+**Highest-value single build:** intercept `compaction-basic/src/summarizer.ts:217-224` (and `region.ts:462-463`) so reasoning is retained alongside the text checkpoint, respecting the block-count-alignment constraint at `assembler.ts:136-146` — and/or add reasoning to `ctx.sessionQuery` (`extraction.ts:70-73`) so durable reasoning becomes retrievable. **Neither exists today.**
+
+---
+
+### 10Q. Compaction strategy (implemented) and what it destroys
+
+**Head-anchored range selection** (`compaction-basic/src/region.ts:98-134` `selectCompactableRange`): walks the priced surface backwards accumulating tokens until `retainTokens` (= `floor(window * 0.16)`, `config.ts:20, :23`), backs off to a tool-pairing-balanced cut, and returns everything **older** than that retained tail as compactable. **Pressure threshold default `floor(window * 0.8)`**; overflow recovery bypasses retention entirely and attempts one maximal balanced head reduction.
+
+| Layer | Behaviour |
+|---|---|
+| **Durable log** | **Nothing destroyed.** `cf-session` is append-only ("the append-only source of truth"); `surface` `replace` only rewrites the model-visible projection and cites `sourceEventSeqs` back to originals. **No delete / truncate / GC / rewrite API exists on Session.** |
+| **Model view** | Everything older than the 16% retained tail is replaced by one text checkpoint. |
+| **Recovery** | **None.** Later compactions re-summarize from the *surface*, not the log — `prepareCompaction` builds input from `selection.shadowedSeqs` (`region.ts:339, :355`), and a prior checkpoint has already shadowed them. **There is no path that reads the pre-compaction log back into a request.** After N compactions, prior reasoning is unrecoverable **for the model**. |
+| **Outside compaction** | Only tool output: `packages/spill/` replaces oversized tool results with a bounded preview + locator; `compaction-tool-result-pruner` head/tail-slices only `type==='text'` blocks in `tool/result` and passes non-text (including reasoning) through untouched. **Neither touches assistant reasoning.** |
+
+**Also false earlier:** `packages/context/` and `packages/compaction/` were described as *"unrelated capability families with no shared code"*. **That is wrong.** `packages/context/session-reference` **depends on `@origin-ai/cf-compaction`** (package.json peer + devDependencies) and imports it directly: `packages/context/session-reference/src/projection.ts:3` → `import { isCompactCheckpointSource } from '@origin-ai/cf-compaction'`, used at `projection.ts:41`. This is consistent with the plan's own §10P(h) finding that session-reference recognises `cf-compaction` source markers.
+
+**What `packages/context/` actually is:** six context injectors — `agent-instructions` (AGENTS.md chain injection), `file-reference` + `file-reference-local` (@path grammar + local fuzzy index), `session-reference` (cross-session snapshots, reasoning-excluded), `time-context` (zoned timestamp), `tmux-context` (pane layout). **None of them participates in compaction or reasoning retention** — but `session-reference` is *aware* of compaction checkpoints.
+
+---
+
+### 10R. World model / environment learning in the harness — ABSENT
+
+- **World model: `code-fusion` has NONE.** It exists only in the C++ engine (`transformers-fusion/include/quant/world_model.h`, `src/agi/world_model.cpp`, wired at `CMakeLists.txt:314`, used by `tests/test_wave7_missing.cpp:31-66`, `tests/test_agi_safety.cpp:129`). **No bridge** — `native/` is landlock-run only, `python/` is SDK only.
+- **The harness has no learning loop.** The only environment feedback channel is tool results flowing into history (`agent.ts:414-421` `executeToolCalls` → `tool/result` → surface → next request). **Nothing updates weights, prompts, policies or routing from outcomes.** Skill/instruction "learning" is human-authored files discovered from disk, not learned.
+- **The nearest JS analogue is dead code.** `@origin-ai/cf-mad` (`packages/cf`) — `ModelRouter.reportOutcome(modelId, {success, quality, actualLatency})` maintains running averages in an in-memory `performanceCache`, and `calculateRoutingScore` uses `historicalPerf = perf ? perf.successRate * perf.qualityScore : 0.5` (`god-runtime.ts:2317-2354`; `updatePerformanceCache` starts at **2425**, its running-average body at 2441-2450; `reportOutcome` 2453-2457). **But it is NOT in the npm workspace** — root `workspaces` is `packages/*/*`, which does **not** match the single-level `packages/cf`; `node_modules/@origin-ai/cf` is a **stale symlink**; it appears in no bundle composition. And `AdaptiveRoutingConfig.learningRate` (`types.ts:1222`) has **exactly one occurrence in the entire repo — its declaration — and is never consumed**. Nothing persists `performanceCache`. (Caveat: `packages/cf/package.json` does carry a `"cf": {"skill": true, …}` field — a **skill** declaration, not a bundle/profile mount.)
+- **`packages/mad/` is seven unmounted stubs**, 1833 lines total, each a single 170-452 line `src/index.ts` whose own header says *"Minimal typed stubs"* / *"sqlite/vector index stubs"*. None contains learn/reward/weight logic. **Do not count these as an existing memory or world-model layer.**
+
+**What must be added** (from the audit, with file anchors):
+1. **A reward/success signal source and a place to score it** — compaction and `token-meter` measure *cost*, `ctx.telemetry` only records.
+2. **A world-model capability family following the seam pattern** — 3 packages + a `ctx` key + a `packages/bundle/base/cordis.patch.yml` mount, per `docs/capability-seams.md` and `packages/compaction/README.md:5-8`.
+3. **Durable learned state** — a new event type in `packages/core/session/src/known-event-types.ts:1-68` plus an `SessionEventMap` declaration merge (precedent: `packages/compaction/compaction/src/types.ts:9-69`). Append-only log, no update verb → last-write-wins-by-new-event.
+4. **An applier** — the only in-tree candidate is the unmounted MAD `ModelRouter`, which itself needs workspace wiring and persistence.
+5. **Optionally a native bridge** if the C++ `quant::agi::WorldModel` is to be reused rather than reimplemented — **this is preferable**, since §7C shows a full world model already exists engine-side.
+
+---
+
+### 10S. Hard constraints discovered in `cf-session` (implementation-critical)
+
+Read from `packages/core/session/README.md`. These will silently break work that ignores them.
+
+**1. New event types can make sessions REFUSE to load.**
+
+> *"`ignorable?: true` — marks an event a reader may safely skip when it does not recognize the type; **absent means required, so an unknown-type event refuses session reconstruction**."*
+
+Any event we add — neuron state, world-model state, `.idx` references — **must be marked `ignorable: true`, or every existing reader must be updated in the same change.** Otherwise a session written by the new build **will not open** under an older reader. This applies to both persistence backends and to `fork()`/replay paths.
+
+**2. `SESSION_FORMAT_VERSION` is pinned at `0`.**
+
+> *"`SESSION_FORMAT_VERSION` stays pinned at `0` — pre-release, no broad compatibility implied: `Session` accepts only current seed shapes, and a backend refuses any other version naming the direction... **Unknown event types refuse the same way unless marked `ignorable` in the envelope.**"*
+
+There is **no upgrade path shipped** for older formats. So this is either pre-release-compatible (we may change shape freely, knowing we break old logs) or we must introduce versioning deliberately — **a decision Phase 3 must make explicitly**, not stumble into.
+
+**3. The compaction checkpoint is a `user/message` replacement — not an assistant message.**
+
+> *"`cf-compaction-basic` appends a `user/message` replacement for summary checkpoints, while `cf-compaction-tool-result-pruner` appends a content-only `tool/result` replacement."*
+
+This matters for the thinking-preservation build (§10P). The checkpoint lands as **user-role text**, which is exactly why reasoning (assistant-role blocks) is dropped by `summaryText()`. Retaining reasoning means the checkpoint must be able to carry **assistant-role content inside a `user/message` replacement**, or a new checkpoint event type is needed — **and new event types hit constraint #1.**
+
+**4. `replace` invalidates the KV cache — which directly opposes our no-compaction goal.**
+
+> *"A `replace` operation invalidates reuse **from the first shadowed message** even though the underlying event log stays append-only."*
+> *"A `replace` surface operation removes the shadowed entries from future inputs **without deleting their raw log records**."*
+
+Two things follow:
+- Data is **never lost in the log** — only hidden from the model. So "never forgets" is partly already true at the log layer; the failure is in the *model view*.
+- **Every compaction throws away reusable prefix.** Our §7 targets (no compaction, window doubles) are not just a performance goal — they are a **KV-cache-preserving** design. The existing strategy does the exact opposite.
+
+**5. `SessionEventMap` is the sanctioned extension point — precedent exists.**
+
+> *"Merge-extensible via `SessionEventMap` — a plugin declaration-merges its own types (the compaction seam's `compaction/*`, bounded recovery's non-surface `llm/retry`, the hook bridges' `hook/*`); merged members appear in the same catalog. A plugin owns the relational invariant for its merged events."*
+
+So adding events is **supported and patterned** — the risk is constraints #1 and #2, not the extension mechanism.
+
+**6. Human transcript vs model view are deliberately different.**
+
+> *"A human transcript must project append-origin events rather than `session.surface`, because landed replacements shadow history the reader already saw; model-facing consumers continue to read `session.surface`."*
+
+Keep this split: it means a human can always see what the model no longer can — useful for verifying "the model forgot, but the data was there".
+
+---
+
+### 10T. Compaction internals — read from `compaction-basic/README.md` (critical for Phase 3)
+
+The most important discovery: **the summarizer is a separate LLM call that deliberately replays the conversation prefix to reuse the provider's warm KV cache.**
+
+> *"a direct one-shot `ctx.llm.stream()` call that **replays the conversation prefix to reuse the provider's KV cache** (interceptable at `llm/stream`)"*
+> *"The call replays the conversation's own system prompt, tools, and shadowed-region messages verbatim, including image references, and appends the compaction instruction as the final user message, so it **reuses the provider's warm prefix cache instead of invalidating it**."*
+
+**Consequence for our §7 goal.** Compaction is not merely lossy — it is **actively expensive** and structurally opposed to the no-compaction/doubling target:
+
+| Effect | Where |
+|---|---|
+| **Every checkpoint invalidates KV reuse from the first replaced token** | *"Each checkpoint invalidates reuse from the first replaced history token; the unchanged request prefix before that range remains reusable."* |
+| **Compaction itself costs a full extra LLM call** | *"This is a separate model call: the replayed conversation prefix plus the fixed instruction as input, with `maxTokens`-capped output. **Convergence retries can pay this cost more than once.**"* |
+| **Reasoning is priced and then destroyed** | §10P — reasoning triggers compaction, then `summaryText()` drops it |
+| **Routing the summarizer elsewhere forgoes the cache benefit** | *"Routing the summarizer to a different provider/model, or compacting a non-head range, forgoes this reuse."* |
+
+**So each compaction cycle is: pay one extra model call → lose most prefix cache → drop all reasoning → keep only prose.** Our design replaces this whole mechanism with window extension.
+
+**The protected hook — our insertion point, and it is designed for this:**
+
+> *"The protected `summarize()` method is the sole subclass hook. A template- or remote-summarizer subclass can override it while pressure, retention, cited source events, shrink validation, and shadowed-token accounting stay on `ctx.tokenMeter`."*
+
+A subclass is the **sanctioned** way to change summarization — **not** a fork of `compaction-basic`. The hook returns `{ summary, rawOutput?, llmStreamCall?, provider, model, maxTokens?, usage? }`.
+
+**The checkpoint framing (must preserve):**
+
+Preamble the model receives on the next request:
+
+```markdown
+This is an automatically generated checkpoint condensing an earlier span of the conversation to free up context. Treat the captured context as established background and build on it without restating it. Continue the task directly from the messages that follow, without acknowledging this checkpoint.
+```
+
+…followed by `<compacted-summary>`, the summary, `</compacted-summary>`. The raw summary also lives on the `compaction/summary` event, and **later automatic cycles merge the prior checkpoint** (the instruction explicitly says: if a `<compacted-summary>` block exists, preserve still-true facts, drop stale ones, merge newer information).
+
+**Existing limits we must respect or explicitly supersede:**
+
+- **`compactRegion` requires an open turn** — a manual call on a fully-closed session throws.
+- **Summarization failure preserves the latest durable surface** — the auto path warns and proceeds with full over-budget history.
+- **Summarization truncation at `maxTokens`** — hidden reasoning tokens can consume the cap.
+- **An indivisible non-tool unit can still exceed the budget.**
+- **Overflow recovery cannot shrink system/tools/prefix**, split an indivisible node, or repair a tool unit whose non-prunable remainder still exceeds the window.
+
+**Also notable:** the injection of the compaction instruction as the final user message means the summarizer sees the conversation **including reasoning** — only the *output* is text-restricted (§10P). So a custom subclass can emit reasoning-aware checkpoints **without changing what the summarizer is shown**.
+
+---
+
+### 10U. CodeFusion's own agent protocol — the honesty standard this work must meet
+
+Read from `AGENTS.md` (root). It is a **binding contract** on how claims in this project are made, and it applies to every phase below.
+
+**Required claim format** — every assertion carries role, round, task, analysis, claims with confidence, evidence IDs with hashes, assumptions, recommendation, confidence:
+
+```markdown
+**[ROLE]** [Agent Name]
+**Round**: [Current Round Number]
+**Task**: [Brief task reference]
+**Claims**:
+- Claim 1: [statement] (Confidence: X%)
+**Evidence**:
+- [Evidence ID]: [Description] (Hash: xxx)
+**Assumptions**:
+**Recommendation**:
+**Confidence**: [0-100%]
+```
+
+**The prohibitions — these are exactly the failure modes this plan's audits were built to catch:**
+
+> ❌ **Never fabricate sources or tool outputs** · **Never claim to have seen evidence you haven't** · **Never express certainty without proof** · Never hide uncertainty behind confident language
+
+**Verification gates before accepting any claim:** for code claims — reproducible steps, a test case, runs without errors, edge cases considered. For analysis claims — data sources cited, methodology explained, counter-arguments addressed, confidence stated. For design claims — trade-offs documented, alternatives considered, risks identified, scalability analysed.
+
+**Production-readiness checklist** (the definition of "complete"): no critical TODOs · **no FIXMEs or HACKs in production code** · tests pass including regression · security review complete · performance acceptable · documentation updated · user workflow tested.
+
+> This aligns exactly with §2's zero-dead-code rule — *"No FIXMEs or HACKs in production code"* is the same requirement stated in this repo's own words.
+
+**Anti-patterns named:** echo chamber, hero complex, analysis paralysis, scope creep, **silent failure**. The [DEFECTS.md §10M](file:///c:/Users/thaku/Workspaces/fusion/review-tracking/DEFECTS.md) findings (fabricated readiness gates, `Math.random()` as a verifier, hardcoded victory claims in benches) are **direct violations of this document** — which is why fixing them is Phase 1 of the plan, not cleanup deferred to the end.
+
+**Branding defects to fix while rebranding (§10D):** `AGENTS.md:18` says *"Also Known As: CodeFusion, CodeFusion"* (the same name twice, presumably a find-replace scar), `:20` *"Fork Origin: CodeFusion"*, and `:376` *"Fork of CodeFusion"*. Also the scope is stated as `@origin-ai/cf` (`:19`) — consistent with the target — but the package manager note in §10D stands.
+
+---
+
+### 10V. Where compaction is intercepted — the exact hooks for §7
+
+Read from `docs/subsystems/compaction.md`, `packages/llm/llm/README.md`, `docs/subsystems/llm-streaming.md`.
+
+**The seam is small and well-defined.** Compaction is **one optional capability, not part of the agent-loop spine** — so it can be disabled, replaced, or extended without touching the core loop.
+
+**The three triggers and entry points:**
+
+| Entry | Where it fires |
+|---|---|
+| `compactIfNeeded(agent, trigger, signal)` | `trigger: 'pressure'` at serial **`agent/pre-step`** (before request derivation) |
+| | `trigger: 'context-overflow'` on **`agent/request-error`** (canonical provider overflow) |
+| `compactNow(agent, signal)` | idle-session maintenance between turns |
+| `compactRegion(...)` | explicit inclusive surface range — **requires an open turn** |
+
+`CompactionTrigger = 'pressure' | 'context-overflow'`. **Our design must make both triggers fire less often, then eventually never** — by extending instead of compacting.
+
+**The event vocabulary — and the key structural fact:**
+
+Compaction extends `SessionEventMap` with **three event types**, all **log-only**: `compaction/start {turn}`, `compaction/summary {summary, rawOutput?, llmStreamCall?, shadowedRange, shadowedSeqs, shadowedTokenCount, provider, model, maxTokens?, usage?}`, `compaction/end {turn, error?}`.
+
+> *"`SurfaceEventType` is deliberately NOT extended (only message-producing events reach the model), so the summary itself rides on a separate `user/message` with `surfaceOp: { op: 'replace', start, end }` — **the only surface mutation performed by summary compaction**."*
+
+The lock brackets the **whole** operation: start → summarize → `compaction/summary` → `user/message` replace → end. A crash mid-operation becomes a detectable orphaned `compaction/start`, not a false `compaction/end`.
+
+**Implication:** if window extension replaces compaction, we **stop emitting `surfaceOp: replace`** entirely. The `user/message` replacement is the *single* surface mutation — remove it and the log stays purely append-only in the model view, which is what §7's "never forgets" wants.
+
+**Sanctioned extension points (do not fork):**
+
+| Goal | Use |
+|---|---|
+| Change what a summary contains (e.g. **retain reasoning**) | Subclass `BasicCompactionEngine` and override the **protected `summarize()`** — the sole subclass hook. Pressure, retention, cited source events, shrink validation and shadowed-token accounting stay on `ctx.tokenMeter`. |
+| Change compaction policy/thresholds | Config: `thresholdRatio` (default **0.8**), `retainRatio` (default **0.16**), `retainTokens`, `modelPolicies`, `auto` |
+| Intercept the summarize call itself | The waterfall event **`llm/stream`** — *"Intercept/wrap every streaming model call for caching, logging, or routing"* |
+| Add a new compaction/summary event field | `declare module '@origin-ai/cf-session/types'` declaration merge (same pattern as `compaction/*` itself) |
+| Recognise a checkpoint | `compactCheckpointSource()` / `isCompactCheckpointSource()` from `@origin-ai/cf-compaction/checkpoint` |
+
+**Critical primitive for §7 — `CONTEXT_WINDOW_EXCEEDED_CODE`:**
+
+> *"the provider-neutral code both DeepSeek adapters use when a request exceeds the model context window, regardless of thrown-HTTP versus in-band finish delivery. `isContextWindowExceededError(detail)` is their shared conservative classifier."*
+
+Today this error **triggers compaction recovery**. Under our design it must instead trigger **window extension**. This is the single most important behavioral swap in Phase 3:
+
+```
+TODAY:   provider says CONTEXT_WINDOW_EXCEEDED  → agent/request-error → compact → retry
+TARGET:  provider says CONTEXT_WINDOW_EXCEEDED  → extend window ×2   → retry, same history
+```
+
+**Block-type extensibility constraint** (matters if reasoning or neuron state becomes a new block):
+
+> *"New core blocks must land with **adapter, UI, and compaction** support."* · *"A new modality belongs in the merge-extensible map only when its **adapter, UI, compaction, and durable replay paths honor it**."* · *"**`BlockAssembler` handles core block kinds only** — a plugin-added block type whose stream is never closed by `block-end` makes `blocks()` throw."*
+
+So adding a content block is **not** a local change — four paths must be updated together, and getting `block-end` wrong **throws**.
+
+**Also relevant:** `GenerateOptions.purpose` already classifies auxiliary calls (compaction, session-title) so adapters can apply purpose-specific transport policy — the DeepSeek adapter sends `x-cf-compact: 1`. Any new auxiliary call (e.g. an index build, an `.idx` write) should use `purpose` rather than invent a channel.
+
+---
+
+### 10W. Consolidated — what exists vs what we must build
+
+| Capability | Engine (`transformers-fusion`) | Harness (`code-fusion`) |
+|---|---|---|
+| **World model** | ✅ **Full** — `WorldModel`, `Transition`, MPC, beam search, counterfactual, uncertainty | ❌ **None** — no bridge either |
+| **Environment learning** | ✅ Reward / prediction-error / curiosity / plasticity (module-level) | ❌ **None** — tool results into history only |
+| **Provider adapter** | n/a | ✅ Two (`llm-deepseek`, `llm-pi-ai`) — but **no provider-adapter harness of the ARC-AGI-3 kind** |
+| **Thinking preservation** | n/a | 🟡 **Across turns ✅ / across compaction ❌** (§10P) |
+| **Traditional transformer code** | ❌ **5+ full implementations** — the sweep (§2.1) | n/a |
+| **Neurons (EAIN)** | ❌ **Zero** — net-new (§4.5) | ❌ **None** |
+| **`.idx` lazy context** | ❌ **None** | ❌ **None** |
+| **Window doubling** | ❌ **None** (`max_seq_len = 2048`) | ❌ Compaction instead (§10Q) |
+| **Benchmarks** | 🟡 13 C++ *performance* benches | ❌ **Zero** eval harness |
+
+---
+
+## 11. Execution phases
+
+Research gate first, then unblock the smallest things, then the big build.
+
+### Phase 0 — Research (BLOCKING GATE)
+**No implementation of routing, `G`/`S`, EAIN, or the sweep may begin until this completes.**
+
+- **Discard the superseded plan.** Rewrite the comment at `include/quant/transformer.h:116-118` that still points at *"Cender/ formula (Phase 19-23, owner-gated)"* — that plan is dead; ours is authoritative (§2.1).
+- **Produce the KAT-layer inventory** (§2.1b) — the shape is now mapped: `ScaledDotProductAttentionFunction::forward` (training), `code_gen.cpp::attention_flash` (JIT-emitted C++), `src/kernel/flash_attention.cpp`, `src/math/math.cpp::softmax`, and **18 of 20 GPU backends**. **The remaining Phase-0 work is the *decision*, not the inventory:**
+  - **How do `G` and `S` reach the hardware?** (a) a fused Fusion kernel with all paths delegating to it, (b) compute `G`/`S` outside the inner loop and pass them in, keeping the kernel contract, or (c) a separate Fusion path for train + inference, leaving the traditional kernels for legacy checkpoints. **(b) is cheapest to land; (c) is cleanest.** This is the single most important architectural decision in the project and it must be made **before any kernel work starts.**
+  - **The 2048-token ceiling in generated code** (`code_gen.cpp:236`) must be removed or bypassed — a 4M context cannot be served by a generator that caps at 2048.
+  - Confirm the `src/math/math_avx2*.cpp` and `math_avx512.cpp` files compute no attention.
+- **Fix the plan's own line anchors.** The adversarial review found the first inventory conflated `.cpp` definition lines, `.h` class-declaration lines and section-banner lines, and left several wrong citations. A cleanup pass is required because the plan is a working document.
+- Deep-read the §5 papers; produce a written design note for `G` and `S`.
+- Resolve: whether transformed layers use **shared weights** (one set, both modes) or **separate weights that switch** — this sets the parameter count.
+- Decide the **loop-exit policy** (learned gate vs post-hoc confidence readout — §5 evidence favours the latter being competitive).
+- Design **EAIN** scoped to the implementable subset only (§4.9): per-unit importance/decay + thresholded activation + local plasticity driven by reward prediction error + offline consolidation.
+- **Decide which existing continual-learning stack EAIN sits on** (§4.8a): three parallel stacks exist and are unreconciled. **This is a design choice, not a consolidation project** — the user explicitly rejected unifying them.
+- **Settle the 1.5 BPW tier rule** (§9b.1) — `Q_1_K_H` at exactly 1.50 wire BPW per G-2, with zero violations per G-5. The L/M/H K-tier rework is uncommitted in-flight work; the spec is `review-tracking/DEFECTS.md`.
+- **Research NCM** (§3b) — read arXiv `2610.14162` in full. The paper's own open questions are ours: **scale beyond 725M**, **reconstruction fidelity for names/numbers** (fatal for the PDF test), **general-purpose variable-length output** vs task-specific configs, and whether the checkpoints (XSUM, WMT14, Sudoku, TinyStories, LM1B; OpenWebText pending) are useful as a starting point. **Decide incremental adoption vs fused training** (§3b.5).
+- Decide **where the harness talks to the engine** — the C++ `quant::agi::WorldModel` is complete but has **no bridge** (§10R). Native bridge vs reimplementation is a real fork; **default to reusing the C++ one**.
+- Deliverable: a design note in `transformers-fusion/` (which has no docs system — create one modelled on `code-fusion/docs/AGENTS.md`, respecting its tier taxonomy, word budgets, and one-physical-line-per-paragraph rule).
+
+### Phase 1 — Stabilise (fast, unblocks everything)
+- Commit or explicitly park the **307 modified** `code-fusion/` files and **84 untracked** `transformers-fusion/` files. Do not start architecture on a dirty tree.
+- Fix the **6 confirmed critical defects** (§10M), ordered by risk: `agi_flywheel.cpp (sandbox_compile_and_test :1867, std::system :1912)` (unsandboxed LLM-generated C++) → `serve.cpp:118` / `quant_server.cpp:150` (`INADDR_ANY`, auth off) → `Math.random()` verification gate → DDP no-op → `-march=native` → vacuous determinism gate.
+- **Dead-code purge project-wide** (§2 rule) — including the known instances: `AttentionResidual` (zero call sites), `HybridAttnKind` all-STD stub, the **dead `inferno_hook_stability_plasticity`** and its unwired replacement (§4.6), the **dead `importance_factor_ = 8.0f`** field in `src/trainer/reward.cpp`, the **dead `learningRate`** in the unmounted MAD router, the seven `packages/mad/*` stubs (either wire or delete — **wire, since §10R needs a router applier**), and the **dead MQA/GQA/SWA/ALiBi declarations** in `include/quant/inference_opt.h` (§2.1d).
+- **Resolve the three ECC/continual stacks** (§4.8a) into one — this is a Phase-1 cleanup that unblocks Phase 4. **REMOVED — the user rejected ECC consolidation; the three stacks stay as they are.**
+- Wire `packages/cf` into the npm workspace (`workspaces` is `packages/*/*`, which does not match `packages/cf`) or drop it — the stale `node_modules/@origin-ai/cf` symlink must not survive.
+- Rebrand cleanup (§10D): the single `origin-ai/xhe` reference, `.dsh` → `.cf` with one-shot auto-migrate, DeepSeek branding pass (§10E) — **functionality preserved**. Also fix the `AGENTS.md` branding scars: `:18` *"Also Known As: CodeFusion, CodeFusion"*, `:20` *"Fork Origin: CodeFusion"*, `:376` *"Fork of CodeFusion"* (§10U).
+- **Regenerate or delete `install_test/`** — it is a `cmake --install` output, 100% untracked, already drifted (126 shared names, 32 differ). Never hand-edit it (§4.8).
+
+### Phase 2 — Architecture (the engine)
+
+**The sweep across ALL of §2.1 — 21 model-layer sites PLUS the KAT layer.**
+
+- **21 model-layer sites** (§2.1a rows 1-21). Beyond the anchor and the obvious MoE family, the ones most easily missed are: `hybrid_moe_model.cpp` (separate from `hybrid_block.cpp`), `mommoe_block.cpp` (a second independent `CrossModalAttention`), `native_quant_moe.cpp` (its own attention/FFN layer loop), **`adapters/tools/qwen35_engine.cpp` (a complete third Qwen3.5 decoder engine)**, `multimodal/multimodal.cpp` (five softmax-routed MoE models + `Perceiver`), `multimodal/multimodal_fusion.cpp` (`CrossAttentionFusion`), `multimodal/dense/fusion_layers.cpp` (a **second** `CrossAttentionBlock` under a colliding name), and **`src/inference/{inference_paging,inference_kv}.cpp`** (a fully implemented vLLM-style tiled `PagedAttention` and `flash_decoding`).
+- **PLUS the KAT layer** (§2.1b) — `src/math/`, `src/kernel/`, `src/backend/`, `src/code_gen/`. **Without this, the "definition of done" is unreachable**: those layers implement the literal `softmax(QKᵀ/√D)V`. The four duplication sites to fix: `ScaledDotProductAttentionFunction::forward` (`src/model/autograd_functions.cpp:17`, **forward and backward**), `code_gen.cpp::attention_flash` (:219, **plus the 2048-token score-buffer cap at :236**), `src/kernel/flash_attention.cpp` (:50), and **18 GPU backends** in `src/backend/`.
+- **Header first, carefully**: `include/quant/transformer.h` is the interface contract — replacing it breaks 30+ files at once. Change the header and the `Attention` class together, then fix dependents in one pass. Also `include/quant/hybrid_scheduler.h` (`HybridAttnKind` — the routing seam) and `include/quant/moe_variants.h` (27 classes).
+- **Preserve the on-disk schema.** `collect_named_tensors` (`model.cpp:138`) hardcodes `layers.N.attention.q_proj.weight` etc. Renaming weights breaks every existing checkpoint — **keep the tensor names, change the computation.**
+- Implement `QK^T G(GS)` at `transformer.cpp:295`, keeping `scale = 1/√d_k` (357) intact.
+- Implement **adaptive routing** (layer re-arrangement + learned gate) — the natural slot is `HybridAttnKind` / `build_hybrid_schedule`, built to **our** §5 design.
+- Wire or remove the dead `AttentionResidual` (`transformer.cpp:629`).
+- Resolve the dead declarations in `include/quant/inference_opt.h` — `MultiQueryAttention` (278), `GroupedQueryAttention` (296), `SlidingWindowAttention` (316), `ALiBi` (333) have **zero definitions** (§2.1d). Implement them in Fusion form or delete them.
+- Build `.idx` lazy context loading (§8).
+- Build window extension + doubling (§7) — greenfield (§10I).
+- **Breakage surface**: 6 test TUs reference `Attention`/`flash_attention` — `test_transformer`, `test_wave6_model_feats`, `test_protected`, `test_inference_opt`, `test_multimodal`, `test_trainer_moe_multimodal`. They must be updated, not left broken.
+
+### Phase 3 — Harness (CodeFusion) — build to the Cordis seam pattern
+
+Every addition below follows §10O: **Service Definition + Provider + Consumer**, registered on a `ctx` key, mounted via a bundle patch, and made model-visible by extending `SessionEventMap`.
+
+**The single most important behavioural swap (§10V):**
+
+```
+TODAY:   CONTEXT_WINDOW_EXCEEDED → agent/request-error → compact → retry
+TARGET:  CONTEXT_WINDOW_EXCEEDED → extend window ×2    → retry, same history
+```
+
+1. **Window extension replaces compaction.** Intercept the two compaction triggers — `agent/pre-step` (`'pressure'`) and `agent/request-error` (`'context-overflow'`) — and route them to window extension instead. Stop emitting the `surfaceOp: { op: 'replace' }` `user/message` that is the **only** surface mutation summary compaction performs (§10V). Do **not** fork `compaction-basic`; disable or no-op the seam, since it is *one optional capability, not part of the agent-loop spine*.
+2. **Provider-adapter harness** (§10G) — registered on `ctx.llm`, beside the two existing adapters.
+3. **Thinking preservation across compaction** — highest-value single build (§10P). If extension is not yet complete and compaction still runs, subclass `BasicCompactionEngine` and override the **protected `summarize()`** (the sanctioned hook) so reasoning survives the checkpoint — respecting block-count alignment at `assembler.ts:136-146`. Also unblock retrieval: `session-query/.../extraction.ts:70-73`.
+4. **World-model capability family** (§10R) — 3 packages + `ctx` key + `packages/bundle/base/cordis.patch.yml` mount, bridging to the existing C++ `quant::agi::WorldModel`.
+5. **Durable learned state** — new event type in `known-event-types.ts:1-68` + `SessionEventMap` declaration merge (precedent `packages/compaction/compaction/src/types.ts:9-69`). **Must be marked `ignorable: true`** or old readers will refuse to reconstruct (§10S). Decide `SESSION_FORMAT_VERSION` deliberately — it is pinned at `0` and there is no upgrade path (§10S).
+6. **Outcome feedback loop** — wire the dormant `ModelRouter.reportOutcome` + `calculateRoutingScore` so `learningRate` is actually consumed, and persist `performanceCache`.
+7. **Respect the block-type rule** — if reasoning or neuron state becomes a content block, **adapter, UI, compaction and durable replay paths must all honour it in one change**, and `block-end` must be emitted or `BlockAssembler.blocks()` throws (§10V).
+8. **Build the `.idx`** (§8.1) — extend `session-query-sqlite`'s FTS machinery over context, with the bounded/lazy/invalidated/disposed semantics of `file-reference-local`'s `WorkspaceFileSearch`, persisted through `session-persistence-sqlite`. Evicted content goes to `S`, never vanishes (§8.1).
+
+### Phase 4 — Neurons (EAIN)
+- Design **Enhanced Artificial Intelligence Neurons** (§4) on top of the Phase-0 research, hosted in the existing AGI machinery (`src/agi/`, `include/quant/agi.h`).
+- Reuse what exists rather than reinventing: ECC/Fisher consolidation, the stability-plasticity controller, `RewardModel` + prediction error, `StateMemoryEntry`, the MoE router as the "which unit fires" decision (§4.6).
+- Build the **new unit-level layer** that is missing: per-unit time constant, threshold, refractory, local update rule, soma integration (§4.7).
+- **Land in `include/quant/` only** — `install_test/` is a build output and is regenerated, never hand-edited (§4.8).
+- Wire so models **train on these neurons** (V13). Benchmarks must show EAIN **defeating both humans and ordinary AI** (V15).
+
+### Phase 5 — Benchmarks
+- CS-Bench-1.0, CS-Bench-1.1, D&CC-Bench-1.0, MQC-Bench-1.0 (§9) — all greenfield. Follow the `cf-acp-snapshot` replay convention (§10J).
+- **Add a benchmark gate to CI.** `code-fusion/scripts/run-gates.ts` is the existing CI gate runner (`ci-primary`, `ci-static`, `ci-coverage`, `ci-snapshot`, `ci-artifacts`, `ci-consumers`, `ci-windows-*`, `node-compat`, `check-all`, `hygiene`, `doc-sync`) — **no benchmark gate exists.** The new benchmarks need one, or they will rot like everything else the repo has no gate for.
+- **Human baselines for CS-Bench** must be collected on the **identical question sets** — that is what makes V15 a real comparison rather than an assertion. The CS-1.1 questions are internet-harvested *"maan lo aisa ho gaya to kya karoge"* items, so a human response set is collectable.
+- **MQC-Bench** needs the 1.5 BPW tier rule settled first (§9b.1) — otherwise it cannot report a number.
+
+### Phase 6 — Training
+- **Settle the 1.5 BPW tier rule first** (§9b.1) — `Q_1_K_H` per G-2, with **zero wire violations** (G-5). This is a live half-landed change, not something to start training against.
+- Train **`innova-x-1.1-4b`** at **1.5 BPW** after the engine is complete. Retrain until results match exactly.
+- Run all benchmarks on it and on **Qwen-3.8-27B**; target **90%+** on Terminal-Bench-4.0-style tasks.
+
+### Phase 6b — NCM (Next-Concept Modeling) — §3b
+
+**Adopt incrementally, not as a rewrite.** The Fusion attention core (Phase 2) must be working first; NCM is layered onto it.
+
+1. **Stage 1 — multiscale residual VQ-VAE tokenizer.** Train it to encode text into the discrete code hierarchy and decode back. **Freeze it.** Success criterion: reconstruction preserves **names, numbers and exact details** — because V5's PDF test needs exact line and page numbers, and §3b.4 flags reconstruction loss as fatal.
+2. **Stage 2 — transformer generator**, trained with the tokenizer frozen, predicting levels in order with all codes of a level in parallel.
+3. **Wire into `DenseModel::forward`** (`model.cpp:102`) — replace the next-token `lm_head` objective with per-level discrete-code logits, and replace the left-to-right generation loop with level-by-level decoding.
+4. **First target: scale validity.** The paper's generators reach **725M params**; ours are **4B and 27B** (§3b.4). Prove quality holds at our size before relying on it.
+5. **Measure against the 31× caveat** — benchmark NCM **against our own autoregressive baseline on the same hardware, batch size and quality checks**, not against the paper's diffusion comparison.
+
+### Phase 7 — Docs, release, cleanup
+- Naming docs (§1) — `transformers-fusion/` docs start from zero (§10K).
+- Release notes, final memory cleanup (§13).
+
+---
+
+## 12. Standing responsibilities
+
+Whole-project optimization · git commits and pushes · documentation · release notes · **GitHub CI fixes**.
+
+CI notes: `code-fusion/` has 18 workflows on self-hosted pools (`cf-ubuntu-24-04-*core`, `cf-windows-2025-*core`) with Wine, bubblewrap, Playwright; `transformers-fusion/` has 4, with `-march=native` on Linux and known VS-generator fragility. Local scripts hardcode VS 2026 at `C:\Program Files\Microsoft Visual Studio\18\Community\`, and `tools/run_all_tests.ps1` expects a `build\tests\Release\` path that single-config Ninja builds do not produce.
+
+---
+
+## 13. Memory cleanup — DONE (moved, not deleted)
+
+Per the user's instruction, memory was **emptied into a `temp/` folder at the workspace root** — nothing was deleted.
+
+**Destination:** `C:\Users\thaku\temp\`
+
+| Moved out of memory | Still in memory |
+|---|---|
+| `fusion-full-brief.md`<br>`fusion-transcript-1-context-rot.md`<br>`fusion-transcript-2-neurons-j-rsi.md`<br>`fusion-pending-work-neurons-astra.md`<br>`fusion-sprint-role.md`<br>`fusion-ci-fixes.md`<br>`check-before-launching-workflow.md`<br>`fusion-review-then-fix.md` | `user-prefers-hinglish.md` |
+
+**`MEMORY.md` index trimmed to the single Hinglish line.**
+
+This resolves the earlier caveat about losing the word-for-word transcript translations — **they are preserved, in `temp/`**, and this plan remains the single source of truth for the sprint itself.
+
+---
+
+## 14. Verification
+
+Each target is pass/fail, checked by running real code — not by inspection.
+
+| # | Target | How it is verified |
+|---|---|---|
+| **V1** | 4M native context | Load a 4M-token corpus; assert no truncation, no compaction, stable output quality at the far end. |
+| **V2** | No compaction on fill | Fill to 4M; assert the context is **extended**, not compressed — check memory and output identity. |
+| **V3** | Doubling | Fill → assert 8M; fill → assert 16M. Repeat; each fill must exactly double. |
+| **V4** | 2M output limit | Generate to the cap; assert clean stop at 2M tokens. |
+| **V5** | PDF test | 300-page and 3000-page PDFs. For N random words, assert exact **line + page number**. Headline demo. |
+| **V6** | Never forgets | Long-run recall suite on `innova-x-1.1-4b`; retrain until it passes exactly. |
+| **V7** | Live decisions + env learning | D&CC-Bench-1.0 — decisions taken live, plus measurable adaptation to environment. |
+| **V8** | Sweep definition-of-done | A model trains through the **Fusion path only** — assert no traditional-attention code is reachable in a training run. |
+| **V9** | Zero dead code | Static analysis / coverage: every symbol reachable, or deleted. Assert across **both** projects. |
+| **V10** | Attention correctness | Unit tests at `transformer.cpp:295` proving `G`/`S` **reduce to the standard formula when disabled** — must be a strict superset of today's behaviour. |
+| **V11** | Context-rot regression | Replicate the Chroma protocol (fixed Q&A, growing surrounding text); accuracy must stay **flat** where transformers decay. |
+| **V12** | Lost-in-the-Middle regression | Place the answer top / middle / bottom; assert **no middle penalty**. |
+| **V13** | Neurons actually used | Assert training runs through the neuron abstraction — not a bypass path. |
+| **V14** | Benchmarks | CS-Bench-1.0/1.1, D&CC-Bench-1.0 (100 tasks each), MQC-Bench-1.0 — report **score/100** and percentage. |
+| **V15** | EAIN beats **both** (§4.1a) | On every benchmark, report a **three-way comparison**: EAIN-trained model vs **human baseline** vs **ordinary-AI baseline**. Pass requires EAIN to exceed **both**. Human baselines must be collected on the identical question sets. |
+| **V16** | Compaction is gone (§10V) | Assert a `CONTEXT_WINDOW_EXCEEDED` path **extends the window ×2 and retries with the same history** instead of compacting. Assert **no `surfaceOp: { op: 'replace' }`** `user/message` is emitted across a session that exceeds one full window, and **no `compaction/*` event** is appended. Assert the **reasoning block count is preserved end-to-end**. |
+| **V17** | Zero dead code, re-checked after the sweep | Re-run V9 once Phase 2 completes — the sweep creates dead paths by definition, and every one must be resolved before Phase 2 closes. |
+| **V18** | KAT layer actually computes the Fusion formula (§2.1b) | Grep the whole tree for the literal `softmax(QKᵀ/√D)V` construction in `src/math/`, `src/kernel/`, `src/backend/`, `src/code_gen/`. **Assert zero occurrences in any path a training run can reach** — including the 18 GPU backends and the JIT-emitted C++ in `code_gen.cpp`. |
+| **V19** | Forward/backward parity | The Fusion attention must have a **correct backward pass** — `ScaledDotProductAttentionFunction::backward` (`autograd_functions.cpp:107`) is a separate implementation of the same math. Assert a **finite-difference gradient check** against the forward: if `G`/`S` appear in forward, they must appear in backward, or training silently diverges. |
+| **V20** | The 2048 generated-code cap is gone | `code_gen.cpp:236` sizes the generated score buffer at `min(seq_len, 2048)`. Assert a generated kernel **at 4M context** either streams/tiled-softmaxes or the JIT path is not used. |
+| **V21** | `.idx` is lazy and lossless (§8.1) | Assert: (a) a 4M-token context is **not** densely attended — the index is consulted for out-of-window content; (b) **content evicted from the active window is still retrievable** through `.idx`; (c) the index is invalidated on tool-result mutation and released on agent disposal, matching `file-reference-local` semantics. |
+| **V22** | 1.5 BPW is exact on the wire (§9b.1) | Assert `format_wire_bpw(Q_1_K_H) == 1.50` exactly, and that the **name matches the wire** (G-5, zero BPW violations). Assert no name-vs-wire gap across the registry. |
+| **V23** | NCM reconstruction fidelity (§3b.4) | Round-trip text through the multiscale VQ-VAE tokenizer: assert **names, numbers and exact strings survive reconstruction byte-for-byte** — on a corpus containing filenames, error strings, page/line references and numeric values. This gates V5 (the PDF test): if the hierarchy loses detail, the generator cannot restore it. |
+| **V24** | NCM actually speeds up generation (§3b) | Benchmark NCM **vs our own autoregressive baseline on identical hardware, batch size and quality checks** (not vs the paper's diffusion baseline). Report **wall-clock per unit quality**, plus function-evaluation counts. A "speedup" measured against a different baseline does not count. |
+| **V25** | NCM scales past 725M (§3b.4) | The paper's generators reach 725M params; ours are 4B/27B. Assert quality holds at target size on the same benchmarks before NCM is used for any headline result. |
+
+**Infrastructure to reuse:** CTest via `add_quant_test_full` in `transformers-fusion/tests/CMakeLists.txt`; Vitest suites and the `CF_SNAPSHOT=replay` pattern in `code-fusion/`.
+
+---
+
+## 15. Source transcripts (preserve verbatim)
+
+Full English translations exist for both — **the user demanded neither be forgotten, not one word**:
+
+- **Transcript 1 — Context Rot:** 300-page PDF, context window as short-term memory, Chroma 18-model study, Lost-in-the-Middle, needle-in-a-haystack as a scam, 10-lakh-vs-2-lakh, attention as root cause, context engineering, RAG failure modes, recursive language model, Altman's "perfect context of your whole life".
+- **Transcript 2 — Neurons / J / RSI:** Kattappa-Baahubali reasoning comparison, Einstein's three-step loop and the **"J" jump**, Google DeepMind 2026 paper, continuous self-update, **RSI**, Ilya's "It's time to scale SSI", human vs AI neuron, the Musk party, backpropagation / loss / parameters / RLHF, feelings as patterns, Hinton vs LeCun, **62.7% provider-neutral Astra**, ARC-AGI-3 mechanics, predictions aren't facts, genuine threat vs fear-mongering, AGI definition discipline.
+
+**Location:** both are preserved in `C:\Users\thaku\temp\` (moved there from the memory directory at the user's instruction — nothing was deleted), alongside `fusion-full-brief.md` and the other sprint notes.
+
+---
+
+## 16. Plan audit trail
+
+The plan was verified by an adversarial review of 4 independent dimensions (workflow `wf_90a9828b-01d`, 4/4 agents). Two verdicts were **refuted** and produced material corrections, which are folded in above.
+
+| Dimension | Verdict | What changed |
+|---|---|---|
+| **sweep-inventory** | 🔴 **REFUTED** | §2.1 rewritten. 5 → **21 model-layer sites**; the **KAT layer** added as a blocking deliverable (§2.1b); 6 test TUs added as breakage surface; dead MQA/GQA/SWA/ALiBi declarations surfaced; `.cpp` vs `.h` vs banner line-base confusion called out. |
+| **neurons** | 🟡 **holds with corrections** | Stability-plasticity hook is **dead, not wired** (§4.6); `install_test/` is a **build output, never hand-edit** (§4.8); three parallel continual stacks noted, **not** to be consolidated (§4.8a); ~15 line anchors corrected. |
+| **harness** | 🟡 **holds with corrections** | `99.9%` is **not** zero — 4 incidental hits (§10O); `packages/context/` **does** depend on `cf-compaction` (§10Q); `summaryText()` filters by **type, not role** (§10P); ~10 citation anchors corrected; `llm-replay` lives outside `packages/llm/`. |
+| **scope-coherence** | 🔴 **REFUTED** | Header claim "Status: COMPLETE PLAN" was premature — the alias registry and the superseded-plan marking passed, but the sweep and the internal consistency did not. Both are now fixed. |
+
+### Known remaining gaps (carried into Phase 0, not hidden)
+
+- The **KAT-layer inventory** does not exist yet — it is the single largest unknown and the gate on V8.
+- `include/quant/*.h` may declare further **unimplemented attention variants** beyond the four found in `inference_opt.h`.
+- **Not yet audited:** `src/server/`, `src/gle/`, `src/core/telemetry.cpp`, `inferno/`, `scripts/`, the `tests/` tree in full, and the sibling `code-fusion` project.
+- The **line-anchor cleanup pass** is still outstanding — §2.1a and §10 carry only verifier-confirmed anchors.
+- **External ground truth is absent** for 62.7% / 99.9% / 99.99% / 3–35% — these come from the user's transcript and the leaderboard they pasted. They are internally consistent but not independently confirmed.

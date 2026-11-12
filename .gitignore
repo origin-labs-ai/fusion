@@ -1,0 +1,19 @@
+# Dependency and generated trees - never authored.
+.venv/
+**/node_modules/
+graphify-out/
+.graphify-stale-artifacts/
+**/cf-old/
+
+# Session/runtime state - changes every session, never knowledge content.
+.mimosa/
+
+# Heavy scratch. Verifier scripts and notes (.py/.md) stay tracked.
+.rea-tmp/
+.plan/.extract-tmp/
+.plan/.rea-tmp/*
+!.plan/.rea-tmp/*.py
+!.plan/.rea-tmp/*.md
+
+# Nested repos are submodules; their internals are not tracked from here.
+# (gitlinks for code/ and transformers/ ARE recorded - do not ignore them.)

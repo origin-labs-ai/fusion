@@ -1,0 +1,163 @@
+{
+ "": {
+  "label": "",
+  "phases": [],
+  "started": 0,
+  "result_events": 0,
+  "failed_events": 5,
+  "other_events": {
+   "launched": 1
+  },
+  "results": [],
+  "failures": [
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "a8e1a698dc12b824d",
+    "key": "v2:fdc7b5088b33cfbf72262c3f5b1531297fa0043075d907e9fdfccad02e50dd10",
+    "error": null
+   },
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "a5d64c21cdb3c573f",
+    "key": "v2:ef8ec8e0d62579f60f3fe48c9b89feaa1625eaae57b2f61d5250116cc20fb422",
+    "error": null
+   },
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "ad269dc3f50420818",
+    "key": "v2:db15e588f36bfe338eba40d196f696dd4966e73762c97b637d50969dbf87fd46",
+    "error": null
+   },
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "a283fa2369b653b81",
+    "key": "v2:27ab6def628913641497b0d5d1ad15f075422f5b681cada72407a8a59e9b46c9",
+    "error": null
+   },
+   {
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "agentId": "a4b9e63f8cfc5c21d",
+    "key": "v2:e7fe7ca77ee2982ac62a797addee8324cbc8ec281407aa2cf8ce9f803de1d343",
+    "error": null
+   }
+  ],
+  "agents": [],
+  "agentCount": 0,
+  "withPayload": 0
+ },
+ "astra-gpt6": {
+  "label": "astra-gpt6",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a283fa2369b653b81",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/deepseek/deepseek-v4.1-flash-free] [429]: {\"error\":{\"code\":\"free_rate_limited\",\"message\":\"Free model capacity is limited right now. Retry shortly, or add credits for higher, more stable limits: https://www.orcarouter.ai/console/billing (reset after 18s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "ncm-paper": {
+  "label": "ncm-paper",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a8e1a698dc12b824d",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "API Error: 400 [400]: {\"error\":{\"message\":\"This prompt is longer than the free tier allows for a single request. Shorten it, or add credits to use this model without the free-tier cap: https://www.orcarouter.ai/console/billing (request id: 202610231250223664258328268d9d6sJKDXNjG)\",\"type\":\"invalid_request_error\",\"param\":\"\",\"code\":\"free_rate_limited\",\"metadata\":{\"buy_credits_url\":\"https://www.orcarouter.ai/console/billing\",\"reason\":\"err_free_prompt_cap\",\"retryable\":false}}}"
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "eain-neurons": {
+  "label": "eain-neurons",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a5d64c21cdb3c573f",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "API Error: 503 [openai-compatible-chat-769752da-585f-4b85-89a7-201215b9e6e8/deepseek/deepseek-v4.1-flash-free] [402]: {\"error\":{\"code\":\"free_quota_exhausted\",\"message\":\"your orcarouter/free allowance is used up — top up your balance and call a specific model with wallet billing to keep going https://www.orcaro (reset after 52s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "g-gs-attention": {
+  "label": "g-gs-attention",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "ad269dc3f50420818",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "API Error: 503 [tokenharbor/mimo-v2.6-flash:free] [429]: {\"error\":{\"message\":\"You've used this period's free allowance. Your next rolling 7-day period starts on 30 Oct 2026 at 08:30 UTC. Use the paid model 'deepseek-v4.1-flash' to keep going, or subs (reset after 3m 35s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ },
+ "loop-worldmodel": {
+  "label": "loop-worldmodel",
+  "phases": [
+   "Research"
+  ],
+  "started": 1,
+  "result_events": 0,
+  "failed_events": 0,
+  "other_events": {},
+  "results": [],
+  "failures": [],
+  "agents": [
+   {
+    "agentId": "a4b9e63f8cfc5c21d",
+    "phase": "Research",
+    "store": "27bfbb02-6749-432b-8dfc-389970d22657",
+    "hasPayload": true,
+    "payload": "API Error: 503 [opencode-zen/deepseek-v4.1-flash-free] [429]: {\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}} (reset after 49s). This is a server-side issue, usually temporary — try again in a moment. If it persists, check your inference gateway (localhost:20128)."
+   }
+  ],
+  "agentCount": 1,
+  "withPayload": 1
+ }
+}

@@ -1,0 +1,512 @@
+[
+ {
+  "severity": "critical",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/utils/advanced-memory.ts",
+  "line": 427,
+  "title": "addToHot() hard-hangs the process once the HOT layer reaches capacity",
+  "detail": "addToHot() evicts in a synchronous while-loop, but evictFromHot() only removes the id from the LRU order (hotAccessOrder.shift()) — it does NOT remove it from this.hotContext. Removal from hotContext happens only inside demoteToWarm(), and that is gated behind `await this.storeInWarm(...)`, so it always resolves on a later microtask. The while-loop never yields to the microtask queue, so hotContext.size never decreases during the loop. After hotAccessOrder is drained, evictFromHot() returns false and does nothing, leaving `this.hotContext.size >= this.config.maxHotSize` permanently true. Resul",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "critical",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 3015,
+  "title": "Default 'context-clear' stop policy can never fire — executeTask's discussion loop is unbounded",
+  "detail": "GodRuntime hard-codes stopPolicy: 'context-clear' (line 5646) and drives discussion with `while (shouldContinue) { ... shouldContinue = discussionResult.shouldContinue }` (line 5778) with no maxRounds, timeout, or budget guard. shouldContinueDiscussion's 'context-clear' branch is `modelCoverage < 0.9 || stability < 0.8 || roundNumber < 3` — it never consults this.maxRounds, unlike every other policy branch. `stability` is computed as `1 - (sum of claimsMade over the last 3 rounds) / (rounds * 5)`. extractClaims emits up to 3 claims per participant per round (the canned reasoning template has ≥",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "critical",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 3679,
+  "title": "VerificationEngine decides pass/fail with Math.random() — the whole verification gate is a coin flip",
+  "detail": "Every registered check (micro-syntax, gen-security, adv-counterexample, …) has an executor that does nothing but return status:'pending'. The actual verdict comes from simulateCheckExecution(), which is `const random = Math.random(); const passed = random < basePassRate[checkDef.level]`. The artifact is never inspected (`_artifact` is unused). Consequences: (1) the same artifact flips COMPLETED/FAILED between runs — no reproducibility, no provenance; (2) the failure severity is itself random for micro/general, so even the failed/warnings split is arbitrary; (3) adversarial failures are hard-co",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "durability / data-loss",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/util/atomic-write/src/index.ts",
+  "line": 56,
+  "title": "writeFileAtomic never fsyncs the temp file or the parent directory — credentials and settings documents are not crash-durable",
+  "detail": "The temp file is written and immediately renamed with no `fsync` on the file handle and no `fsync` on the parent directory. After a crash, power loss, or hard reset, the rename may be observed but the data behind it not, so `$CF_HOME/.credentials.yaml` (every API key and OAuth refresh token) and `$CF_HOME/settings.yaml` can come back empty, truncated, or as the previous version on the next boot — silently, because the process already treated the write as resolved.\n\nThis is not a theoretical gap in this codebase: the sibling implementation in packages/storage/storage-json/src/atomic.ts does exa",
+  "cluster": "cf-infra"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 5878,
+  "title": "Gauntlet quality gate is simulated: critic verdict is Math.random(), so the gate passes by looping",
+  "detail": "In executeTask Phase 5 the blind critic is `winner: Math.random() > 0.3 ? 'bar' : 'artifact'` and the builder is a no-op that echoes its feedback. GauntletLoop exits as soon as `critique.winner === 'artifact' || 'tie'`, so with a 30% pass rate per round the gauntlet declares PASSED within a handful of rounds regardless of artifact quality. measureImprovement() likewise returns `Math.random() * 0.3` and discards its inputs. The advanced path (mad/utils/advanced-gauntlet.ts:496) is worse: `baseArtifactScore = 30 + (this.currentRound * 10) + (Math.random() * 20) + roundImprovement * 100` — the sc",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 5264,
+  "title": "Production readiness gate returns READY on three fabricated, hard-coded criteria",
+  "detail": "computeGateResult() builds criteriaMet with `testsPass: true`, `performanceOk: true`, `documented: true` — all literal, with the authors' own comments admitting the real checks are missing. The gate can therefore only be blocked by the ad-hoc lint heuristic; a project with failing tests and no docs still reports READY. Compounding this, runStressTestAgent() unconditionally pushes a finding titled 'Stress Test Completed' with 'No critical issues found', and checkBestPractices()/checkDocumentation() return []. This is the surface consumers rely on to decide whether to ship.",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 401,
+  "title": "LLMProviderManager.stream() converts a failed stream into a successful empty completion",
+  "detail": "stream() wraps the per-provider generator in try/catch and, on any error (HTTP 4xx/5xx, abort, network), yields a final chunk with `delta: ''` and `isFinal: true` carrying the error only in `metadata.error`, then swallows the exception. Every consumer that keys off isFinal/delta (the only fields most stream loops look at) sees a clean, successful, empty completion — no throw, no retry, no circuit-breaker trip. Combined with the `complete()` retry loop directly above (which retries all errors including non-retryable 401/400), auth failures are silently swallowed on the streaming path and blindl",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 2146,
+  "title": "StateManager rejects legal MAD pipeline configs; AdvancedMADEngine's finally block masks the original error",
+  "detail": "transitionTo() THROWS on any transition not in the allow-list, and executeTask awaits it at every phase. 'PLANNING' only permits ['DISCUSSING','VERIFYING','READY','ERROR'] and 'DEBUGGING' the same. So `createGODRuntime({ verification: { enabled: false }, gauntlet: { enabled: true } })` in PLAN/DEBUG mode reaches Phase 5 from PLANNING and throws `Invalid state transition: PLANNING -> GAUNTLET`; the same happens for productionSweep without verification. Separately, AdvancedMADEngine.execute() wraps everything in `catch { return {... status:'FAILED'} } finally { await this.godRuntime.shutdown() }",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "security",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/byok.ts",
+  "line": 417,
+  "title": "BYOK: cost is priced off the wrong map key, the budget is never enforced, and unknown-provider fallback recurses forever",
+  "detail": "Three defects in the credential/budget manager. (1) estimateCost does `baseRates[provider?.name.toLowerCase() ?? 'openai']` — but baseRates is keyed by provider *id* ('openai','anthropic',…) while ProviderConfig.name is the display name ('OpenAI','Google AI','Muse'). 'openai'→'openai' happens to match, but every other provider (anthropic, google, deepseek, opencode, muse, and all custom providers) falls through to the `|| 0.00003` default, so dailySpent/monthlySpent and every per-key totalCost are wrong — Anthropic is billed at the OpenAI rate. (2) Nothing anywhere calls getBudgetStatus() or b",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 928,
+  "title": "EventBus.request leaks a permanent listener on every timeout and cross-delivers responses between concurrent callers",
+  "detail": "Two independent bugs in the request/response correlation. (a) The timeout branch only sets settled and rejects — it never calls unsubscribe(), so every timed-out request leaves a permanent handler registered on `${eventType}.response` forever; the handler closure (and its captured data) is never collected and keeps firing no-op checks on every subsequent response. (b) requestId is minted AFTER the subscription is installed, and the handler accepts a response whenever `!event.metadata?.requestId || event.metadata.requestId === requestId`. So a response emitted without a requestId — which is exa",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/hooks/hooks-claude-code/src/index.ts",
+  "line": 270,
+  "title": "Blocking Stop hook force-continues the turn forever with no cap and a hardcoded stop_hook_active of false",
+  "detail": "Both bridges map a deny decision at the agent/turn-stopping extension point to agent.steer(), which enqueues into inbox.nextStep. In core/agent-loop/src/agent.ts the step loop only breaks when turnEnds is set and inbox.nextStep is empty, so the steer creates another step, which ends, which re-fires agent/turn-stopping, which runs the Stop hook again. There is no consecutive-continuation counter, no backoff, and no run-level halt; the code's own TODO admits it. Worse, stop_payload always sends stop_hook_active as false, so the standard Claude Code loop-guard idiom (a Stop hook that exits 2 only",
+  "cluster": "cf-misc"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/mcp/mcp-client/src/tools.ts",
+  "line": 174,
+  "title": "tools/list pagination loop is unbounded — a buggy MCP server can hang plugin activation and unload forever",
+  "detail": "`syncTools` drains pages with a bare `do { ... cursor = response.nextCursor } while (cursor)`. There is no page cap, no seen-cursor set, and no total-tools cap, and the cursor is trusted verbatim from an external third-party process reached over stdio or HTTP.\n\nConsequences when a server returns a non-empty `nextCursor` that never repeats a terminal page:\n1. `connectGeneration` awaits `enqueueSync`, and `apply()` awaits `connection.ready` (`connection.ts:177`) — the plugin's activation never settles, so `failOnStartupError` never fires and the whole Cordis fiber never activates.\n2. `enqueueSyn",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "performance / resource",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/windows-inspector.ts",
+  "line": 259,
+  "title": "Windows process inspector leaks native koffi memory on every liveness probe",
+  "detail": "`allocNative` calls `koffi.alloc()`, which allocates process-lifetime native memory that is only released by `koffi.free()`. There is no `koffi.free` call anywhere in this package (repo-wide grep returns zero hits outside koffi's own docs). `snapshotWindowsProcesses` leaks one 568-byte PROCESSENTRY32W per snapshot (line 273), and `windowsProcessState` leaks four 8-byte FILETIMEs per call (lines 296-299) — called once for *every* pid reachable from the tree root in `processTree`, and once per `isAlive`. `isAlive`/`processTree` are invoked from `LocalTerminalHandle.inspectForeground` (every PTY ",
+  "cluster": "cf-exec"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "performance / resource",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sandbox/sandbox-windows-acl/src/spawn.ts",
+  "line": 175,
+  "title": "drainPipe leaks 3-4 native koffi slots per iteration and busy-polls the event loop at 1 kHz",
+  "detail": "The drain loop allocates three `allocUint32()` slots (each a `koffi.alloc`, never freed — see `ffi.ts` `allocUint32`) on *every* iteration plus a fourth per data read, and always sleeps exactly 1 ms, even when the pipe is empty. Two compounding defects: (1) native memory grows ~12 KB/s for as long as the child lives, unbounded — a background/long-running command confined through `AclSandbox` with the documented default `stdio: 'pipe'` grows the runner's RSS indefinitely; (2) the loop spins at ~1000 iterations/second for the whole child lifetime, consuming a full core-ish share of event-loop wo",
+  "cluster": "cf-exec"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "performance",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/process-inspector.ts",
+  "line": 287,
+  "title": "Linux PTY readiness polling enumerates all of /proc (plus per-thread syscall and /proc/<pid>/mem reads) every 50 ms",
+  "detail": "`LocalPtySession.pollReadiness` (terminal-bash/src/session.ts:432) runs every `pollIntervalMs` (default 50) while any foreground send is outstanding — i.e. for the entire duration of every `terminal_send` / persistent-bash command, up to `timeoutMs` (30 s). Each iteration awaits `LocalTerminalHandle.inspectForeground()`, which does: (a) `this.descendants()` → `LinuxProcessInspector.processTree` (full readdir of /proc + a `readFileSync(/proc/<pid>/stat)` for every pid) **and** `processSession` (a second full readdir + stat sweep of every pid); (b) `foregroundPgid`; (c) `isStdinWaiting(pgid)` — ",
+  "cluster": "cf-exec"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "performance",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/api-proxy.ts",
+  "line": 534,
+  "title": "session.list re-walks the whole project/session directory tree once per cold blank session",
+  "detail": "`listVisibleSessionSummaries()` runs `summarizeCold()` for every persisted session that is not attached. A cold session whose projection-cache hint is `blank: true` (the common state for every unused \"New Session\" click) always reaches `probeColdSessionMetadata`, which calls `persistence.readFrom(meta.id, 0, signal)` (line 534). On the JSONL backend `readFrom` has no seek hook, so it calls `loadStored` → `findLog`, and `findLog` (packages/session/session-persistence-jsonl/src/index.ts:774) re-does `readdir(root)` plus, for EVERY project directory, `rejectLegacyFlatArtifact` (2 `exists()` = ope",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "security",
+  "file": "C:/Users/thaku/Workspaces/fusion/transformers-fusion/tools/quant_server.cpp",
+  "line": 150,
+  "title": "quant_server binds INADDR_ANY with no authentication whatsoever and reflects Access-Control-Allow-Origin: *",
+  "detail": "`QuantHTTPServer` has no auth mechanism at all: no token, no check_auth, nothing — a repo-wide search for auth/token/Authorization in tools/quant_server.cpp returns zero hits. It binds to `INADDR_ANY` (line 150), so any network-reachable client can drive `/api/generate`, `/api/tokenize`, `/api/detokenize`. Every response also sets `Access-Control-Allow-Origin: *` (line 219 and in send_sse_headers line 233), so a malicious web page in a victim's browser can invoke the inference endpoint cross-origin. The only bound is a 64KB request cap; `max_tokens` is clamped to 4096 but each request allocate",
+  "cluster": "xsec"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "security",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+  "line": 129,
+  "title": "win32 shell:true forwards unescaped argv to cmd.exe, so npm arguments corrupt, expand and redirect",
+  "detail": "On win32 the npm forwarder runs through cmd.exe with `shell: true`, and Node builds the command line by simply joining `['npm', ...args].join(' ')` — no quoting or escaping (Node itself emits DEP0190 for exactly this call: \"arguments are not escaped, only concatenated\"). Every value that reaches this call is user argv, and `anchorPathSpec` deliberately rewrites path specs into absolute paths that commonly contain spaces. Reproduced on this machine with the exact call shape: (1) `add \"C:/Users/thaku/my plugin\"` — cmd.exe splits at the space and npm receives `C:/Users/thaku/my`, reporting `npm e",
+  "cluster": "cf-cli"
+ },
+ {
+  "severity": "high",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+  "line": 136,
+  "title": "npm-not-found detection is unreachable on win32 — wrong message and wrong exit code",
+  "detail": "`result.error.code === 'ENOENT'` is how spawn reports a missing executable, but that only happens when no shell is used. On win32 the code deliberately sets `shell: true`, so the spawned program is always `cmd.exe` (which exists); a missing `npm` instead surfaces as cmd.exe's normal nonzero status with `result.error === undefined`. Verified with the exact call shape and `PATH` stripped to `C:\\Windows\\System32`: `error: undefined | status: 1`, stderr `\"'npm' is not recognized as an internal or external command\"`. Consequence on Windows: the guidance at line 137 (`npm not found on PATH — install",
+  "cluster": "cf-cli"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 2018,
+  "title": "IntelligentCache.set() double-subtracts an entry's size when eviction selects the key being replaced",
+  "detail": "set() unconditionally subtracts the old entry's estimated size up front (`this.currentSize -= estimateSize(existingEntry.value)`) but leaves the stale entry in the Map. The eviction loop then runs `while (this.currentSize + size > this.maxBytes && this.cache.size > 0) evictLRU()`, and evictLRU's LRU score (`timestamp + accesses*1000`) can legitimately select that same still-present key. delete() then subtracts the old size a second time. Net effect after the write: currentSize = original − 2×old + new. Once the cache is under memory pressure this drifts monotonically negative, so the cache bel",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/cf/src/mad/core/god-runtime.ts",
+  "line": 3819,
+  "title": "PolicyAgentTreeManager.terminateAgent never removes nodes from the tree, permanently exhausting maxTotalAgents",
+  "detail": "terminateAgent() recursively marks descendants 'active'→'terminated' and clears childrenIds, but never deletes anything from this.agentTree. spawnChildAgent() gates on `this.agentTree.size >= this.spawnPolicy.maxTotalAgents`, and cleanupIdleAgents() (called from GodRuntime.shutdown, with the default 5-minute idle timeout) terminates agents all the time. Every terminated agent therefore continues to occupy a slot forever. After maxTotalAgents (default 20) spawn/terminate cycles — which the idle sweeper manufactures on its own — every subsequent spawnChildAgent throws 'Max total agents (20) exce",
+  "cluster": "cf-orchestration"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/lsp/lsp-stdio/src/connection.ts",
+  "line": 257,
+  "title": "Responses carrying a string JSON-RPC id are silently dropped, permanently poisoning the pooled LSP instance",
+  "detail": "`dispatch()` accepts a server->client *request* for a string id (line 246), but a *response* is gated on `typeof id === 'number'`. JSON-RPC 2.0 allows string request ids and requires the server to echo the id exactly as received; a conforming-but-non-numeric-id server therefore gets every response discarded.\n\n`pending` is never cleared and never rejects, so `LspConnection.request()` hangs. In `LspInstance.runQuery` that surfaces as the caller's abort/tool timeout — and because the rejection is the abort error rather than the connection's retained `closeReason`, `isTransportFailure(error)` is f",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "missing-error-handling",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sdk/protocol/src/transport.ts",
+  "line": 261,
+  "title": "JSON-RPC output writes are fire-and-forget with no callback and no 'error' listener — a broken stdio pipe becomes an uncaught EPIPE crash",
+  "detail": "`write()` calls `this.output.write(json)\\n` with neither a completion callback nor any error containment, while the adjacent `flush()` (line 166-173) *does* take a callback and reject on error — so the module already knows the stream can fail, it just does not handle it on the real data path.\n\nIn production the output is `process.stdout` (`sdk/server/src/index.ts:55`). When that is a pipe (SDK-managed transports, `HarnessClient` spawns the runtime with `stdio: ['pipe','pipe','pipe']`), a reader that goes away produces EPIPE; Node emits `'error'` on the stream, and with no listener the process ",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/llm/llm-pi-ai/src/context.ts",
+  "line": 233,
+  "title": "First-pass image offload budgets against master attachment bytes, so the second pass drops roughly 4x more images than the bound needs",
+  "detail": "`toPiContextWithImages` runs `offloadRequestImagesWithPolicy` twice. The first pass (line 229-234) supplies `byteLength: ref => Math.min(ref.bytes, requestImagePolicy.maxBytes)`, and `offloadRequestImagesWithPolicy` is called with `representation: 'base64'` (line 230) — so `collectImageLengths` applies `base64Length(bytes) = ceil(bytes/3)*4` to the *master* attachment size (`llm/llm/src/content.ts:72-75`).\n\n`ref.bytes` is the durable master attachment; the request version the provider actually sees has already been pixel/byte-capped by `readImageRequest`. So the first pass measures an over-est",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/llm/llm-deepseek/src/adapter.ts",
+  "line": 636,
+  "title": "Stale-file retry fires on any HTTP status whose body merely mentions a file id — a non-retriable INVALID_REQUEST becomes a duplicate upload plus an immediate re-send",
+  "detail": "`staleFile` is computed as `usedFiles.length > 0 && providerRejectedFileId(detail)` with no status gate. `providerRejectedFileId` only pattern-matches the joined `code`/`type`/`message` text (`/\\bfile.../` + `/expired|not found|deleted|.../`) — so a 429 or 500 whose message happens to contain \"file\" and \"not found\" (a proxy/gateway error mentioning files, a rate-limit detail quoting the request path, etc.) is classified as a stale file id.\n\nThe recovery then (a) invalidates the *correct* cached mapping and (b) `continue`s the request loop with `body` unchanged. Nothing between the offload at l",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "missing-error-handling",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/http-bridge.ts",
+  "line": 75,
+  "title": "bridge() does not contain a rejection from apiHandler.fetch — the shared /api carrier surfaces carrier faults as HTTP 400",
+  "detail": "`bridge` awaits `apiHandler.fetch(request)` with no try/catch, so a rejection escapes to the webserver's per-request catch, which logs and answers `res.writeHead(400)` when headers are not yet sent (and `res.destroy()` when they are). `apiHandler` is the shared fetch handler composed by `createSharedFetchHandler`, whose non-intercepted path is the whole apiProxy (`rpc-host.ts:79` -> `toFetchHandler(apiProxy)`). Any carrier-level throw — a session that no longer resolves, a bad payload shape the two-level parse rejects by throwing, an abort — is therefore reported to the browser as **400 Bad Re",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "performance",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/subprocess/subprocess-local/src/process-inspector.ts",
+  "line": 354,
+  "title": "macOS isAlive() re-runs a full `ps -axo` for every identity on every poll",
+  "detail": "`MacProcessInspector.isAlive` shells out to `/bin/ps -axo pid=,ppid=,lstart=` and reparses the whole process table *per call*. `LocalTerminalHandle.survivors(members)` calls `isAlive` once per tracked member, and `waitForMembers` re-evaluates survivors every 25 ms for up to `graceMs`. With k descendants alive this is k `ps` process spawns every 25 ms (≈400/s for k=10) throughout every teardown wait, plus one `ps` per `descendants()`/`processTree()` call during readiness polling. On macOS this is by far the most expensive operation in the terminal readiness/teardown path and it is pure repeated",
+  "cluster": "cf-exec"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness / orphan processes",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/sandbox/sandbox-windows-acl/src/spawn.ts",
+  "line": 100,
+  "title": "The default `stdio: 'pipe'` confined spawn path never places the child in a kill-on-close job",
+  "detail": "`spawnSandboxedInherited` (used by the runner) creates a `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` job, starts the child suspended, assigns it, then resumes — an orphan backstop. `spawnSandboxed` — which is what `AclSandbox.spawn` uses for its **documented default** `stdio: 'pipe'` (index.ts line 372) — creates no job at all. If the host process dies while a piped confined child is running, the child survives unconfined-by-parent-lifetime and is never terminated by the OS. Additionally, the `PROCESS_INFORMATION.hProcess` is closed only inside `waitForExit`, which is reached only when the caller awa",
+  "cluster": "cf-exec"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "performance",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/api-proxy.ts",
+  "line": 360,
+  "title": "mux/host SSE fan-out has no backpressure: FrameQueue buffers every session event for a stalled client without bound",
+  "detail": "`FrameQueue.push()` unconditionally appends to an unbounded array and `iterate()` is the only drain point. `sseResponse` (packages/host/apiproxy/src/fetch/handler.ts:203-213) does `controller.enqueue(...)` for every frame with no `desiredSize` check, and `new ReadableStream({start})` uses the default highWaterMark 0, whose queue is still unbounded. A slow, paused or stalled SSE consumer therefore causes the host to retain every `session/event` frame of every session (full tool results and assistant messages included) in memory for that client. Notably the ZIP export path in the same package im",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "resource-leak",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/spill/spill-local/src/store.ts",
+  "line": 104,
+  "title": "Spill artifacts are never deleted anywhere in the spill stack — unbounded disk growth in the OS temp dir",
+  "detail": "`saveTextFile` creates `<root>/session-<hash>/<random>-<name>` on every oversized tool result and there is no delete, purge, TTL, quota or LRU anywhere in packages/spill (grep for `rm`/`unlink`/`purge` over the package returns nothing), nor any cross-package cleanup of the spill store. When `root` is not configured, `privateRoot()` returns a `mkdtempSync(join(tmpdir(),'cf-spill-'))` directory that is created lazily once per process and is never removed on shutdown either, so every host boot leaks a new world-adjacent temp tree. The spill seam (packages/spill/spill/src/index.ts) documents that ",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "resource-leak",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/context/agent-instructions/src/files.ts",
+  "line": 386,
+  "title": "Baseline instruction load reads every candidate file in full before the render budget is applied — no aggregate read cap",
+  "detail": "`loadBaselineInstructionSet` discovers the user-global file plus every candidate in every directory of the root→cwd chain, then `await readBounded(file, config.maxSourceBytes, ...)` for each. `readBounded` enforces only a *per-file* cap (and only bounds streaming when a `size` is available), and the configured `maxBytes` render budget is applied afterwards in `renderWorkspaceInstructionSet` — so a directory chain containing N near-cap `AGENTS.md` files reads and materializes N × `maxSourceBytes` UTF-8 bytes into JS strings only to then discard most of them. The code itself flags this at line 3",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "medium",
+  "verdict": "confirmed",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/context/agent-instructions/src/files.ts",
+  "line": 152,
+  "title": "findProjectRoot treats an fs provider failure as \"no marker\" and keeps walking up, silently adopting an ancestor project's instructions",
+  "detail": "`existsAsMarker` collapses *every* provider exception into `false`, so a transient `ctx.fs` failure on the real root marker makes `findProjectRoot` continue upward past the intended project boundary and return a higher ancestor (or the filesystem root). `discoverInstructionFiles` / `reconcileInstructionContext` then load that ancestor's `AGENTS.md` into the session's context as if it belonged to this project. The adjacent `statFile`/`probeScopeInstruction` code deliberately distinguishes `present`/`absent`/`unavailable` (a tri-state probe) — `existsAsMarker` is the one place that throws that d",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness / path-containment",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/preset/agent-presets/src/authoring.ts",
+  "line": 192,
+  "title": "deleteComposition's containment guard is a raw prefix test without a path separator",
+  "detail": "`preset.path.startsWith(dir)` accepts any path that shares a string prefix with the writable root. With two configured `user` roots `/a/b` and `/a/b2`, a preset discovered under the second has `preset.path = /a/b2/x/agent.cordis.yml`, which passes `startsWith('/a/b')`; the function then `rm`s `join('/a/b', 'x')`, which does not exist, and `force: true` makes that a successful no-op — the caller is told the preset was deleted while the real directory stays on disk and keeps occupying the id. The failure is silent rather than destructive (rm never leaves the intended root), so this is a correctn",
+  "cluster": "cf-infra"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/web/vite.config.ts",
+  "line": 24,
+  "title": "`clientDocumentTitle` silently no-ops if the title placeholder ever drifts",
+  "detail": "The plugin rewrites the document title by string-replacing the literal `<title>CF Local Build</title>`. If that exact substring is absent — someone edits `index.html`'s title, or a Vite/react plugin reorders `transformIndexHtml` ahead of this one and normalizes the element — `String.replace` matches nothing and the build succeeds with the placeholder title in the shipped artifact. Official builds set `CF_CLIENT_TITLE=CodeFusion` and assert that environment through `assertClientBuildEnvironment`, so the environment is checked while the HTML substitution it exists to perform is not. `smoke-real.",
+  "cluster": "cf-web"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/http-bridge.ts",
+  "line": 76,
+  "title": "The HTTP bridge collapses multi-valued response headers when re-emitting them onto the node response",
+  "detail": "`Object.fromEntries(response.headers.entries())` produces one value per header name, so any header the upstream `Response` carries more than one of is silently reduced to its last value. Today the `/api` responses only set single-valued headers (`content-type`, `cache-control`, and the 426 upgrade pair), so nothing is broken yet — but `session.export` already returns a Response assembled from the attachment/download path, and `set-cookie`-style multi-value headers cannot survive this bridge if a future route needs them. Node's `res.setHeader(name, string[])` accepts arrays; passing the raw hea",
+  "cluster": "cf-web"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/guard/timeout-policy/src/index.ts",
+  "line": 68,
+  "title": "A deadline that fires after the tool has already resolved converts a successful result into a spurious TOOL_TIMEOUT",
+  "detail": "The wrapper arms deadline and, after awaiting next, unconditionally replaces whatever came back with toolTimeoutResult whenever timeoutOf reports the scoped code. There is no check that the result was actually an abort-shaped result. If a tool completes successfully just before the timeout but the timer callback runs before the awaiting continuation is resumed, the model is told the call timed out even though the work completed and its side effects are committed. For a non-idempotent tool such as a write, a shell command, or an API charge, the model natural recovery is to retry, producing a du",
+  "cluster": "cf-misc"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/hooks/hooks-claude-code/src/index.ts",
+  "line": 125,
+  "title": "subagentChildren retains strong Agent references released only by a subagent/end edge that may never arrive",
+  "detail": "subagent/start stores the live Agent object in a Map keyed by runId, and only subagent/end removes it. If the end edge is not emitted for a given runId, whether a child torn down through a path that skips the paired event, a start that races the bridge own disposal window, or a runId collision across a reload, the Map holds a strong reference to the Agent and transitively its entire session event log for the process lifetime. That leak scales with the number of subagents started. The comment on lines 121-125 states the requirement explicitly, saying every retained entry relies on that paired e",
+  "cluster": "cf-misc"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/interaction/permission-presets/src/index.ts",
+  "line": 289,
+  "title": "The /permission command and the public set API write the approval-policy knob through different writers with different model-visible effects",
+  "detail": "apply takes the approval writer as a callback so the two entry points can diverge, and they do. The /permission command passes a closure around ctx.approval.setPolicy, which appends the durable approval/policy event and injects a user message telling the model the policy changed. The public set method passes a closure around setApprovalPolicy, which appends the same durable event but injects nothing. A deployment that switches presets through set therefore leaves the model runtime-context snapshot and its switch notice stale relative to the actual permission state, while a user switching throu",
+  "cluster": "cf-misc"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/llm/llm-deepseek/src/translate.ts",
+  "line": 71,
+  "title": "closeBlock synthesizes `CallId('')` instead of a per-block identity when a tool call arrives with no id",
+  "detail": "A tool-call block opened because the wire carried `tool_calls` deltas but never a `call.id` assembles to `{ id: CallId(''), name: block.name ?? '', ... }`. `CallId('')` is an empty string that survives `createMessage`/`deepFreeze` into the durable log and into the agent loop, where tool results are correlated by call id — two such blocks collide, and every subsequent tool-result message for the second call lands on the first.\n\n`BlockAssembler.assemble` handles exactly this case by synthesizing a stable per-index id (`llm/src/assembler.ts:126`: `id: partial.toolCallId ?? CallId(`call-${index}`)",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "missing-error-handling",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/client/connection/src/rpc-host.ts",
+  "line": 184,
+  "title": "Handler throw on a shared RPC channel answers a bare-text HTTP 500 instead of a server-response envelope",
+  "detail": "`rpcFetchHandler` catches a rejection from `handler(...)` and returns `new Response(`handler failure: ${String(error)}`, { status: 500 })` — plain text, not `{ type: 'server-response', rpcId, result }`.\n\nTwo concrete consequences: (1) `client/rpc.ts` only builds the `RpcResult` from a parseable envelope, so the caller sees `transport failure for ...: HTTP 500` and loses the rpcId correlation the protocol exists to provide; (2) `String(error)` renders a non-Error throw as `[object Object]`, discarding the message. The typert gateway itself is well-behaved (`rpcFailure` in `api/gateway/src/index",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/mcp/mcp-client/src/tools.ts",
+  "line": 478,
+  "title": "One unadmittable image in an MCP result collapses every image block to the same generic diagnostic",
+  "detail": "`prepareImageProjection`'s final `catch` (the `attachments.saveImages(decoded)` path) projects *every* image block through `block => ({ type: 'text', text: imageDiagnostic(block, reason) })`, dropping the `index` argument. When the batch fails, every image in the result therefore gets the identical reason string, so the model has no way to tell which of N images was rejected by admission.\n\nThe function already threads `index` correctly in the two earlier branches (`validationErrors.get(index)`, and `byIndex.get(index)`), and `imageDiagnostic(block, reason)` renders `block.mimeType` — so with o",
+  "cluster": "cf-llm"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness / classification",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/shell/bash-sandbox/src/helpers.ts",
+  "line": 112,
+  "title": "Sandbox denial is inferred from a raw stderr substring, so ordinary permission errors are reported as policy denials",
+  "detail": "`matchesSignature` returns true for any non-zero exit whose stderr merely *contains* one of the backend's denial substrings, anywhere on any line. The windows-acl dialect is `['access is denied', 'access to the path', 'permission denied']` (sandbox-local/src/index.ts:205) — which is also the ordinary English of Windows ACL/NTFS errors, `npm`/`git` failures, `type C:\\...\\SAM`, opening a locked file, `rm` on a read-only file, etc. Under `workspace-write` (and under `read-only` for reads outside the readable set) such a command gets `sandbox.denied: true`, which the tool renders as `[sandbox: fil",
+  "cluster": "cf-exec"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "performance",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/session-query/session-query-sqlite/src/index.ts",
+  "line": 491,
+  "title": "Every search request re-materializes every attached session's full document set + sha256 fingerprint, and the index rebuilds persisted_docs rows for each persisted session once per process — all on the request path",
+  "detail": "`_reconcile` runs on every `searchSessions`/`searchEvents` call. `_observeStable` then, for each live session, runs `observeSession(session.header, session.events)` which does `structuredClone` of every event, `buildSessionEventSearchDocuments` over the whole log, and a `sha256(JSON.stringify({header, events}))` — O(total session bytes) per attached session per search — none of it cached across requests (only the resulting fingerprint is compared against the temp table, which discards the derived documents). For persisted sessions whose revision is new to the index, `_replacePersistedSession` ",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "security",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/packages/host/apiproxy/src/session-export.ts",
+  "line": 107,
+  "title": "Session-log ZIP entry paths are built from an unvalidated ImageAttachmentRef parsed out of the stored log",
+  "detail": "`collectImageRefs` walks the raw JSONL of the exported artifact and does `refs.set(String(ref.attachmentId), ref)` with no shape validation; `mediaEntryPath` then interpolates that raw value into the archive path (`media/${String(ref.attachmentId)}.${MEDIA_TYPE_EXTENSIONS[ref.mediaType]}`) and `deps.attachments.readImage(ref)` is called with it. Session ids get `safeSessionIdSegment()` and spill names get `encodeSegment()`, but attachment ids get neither, and an `attachmentId` outside the four known media types silently yields an entry named `media/<id>.undefined`. Exploitability is low today ",
+  "cluster": "cf-session"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "config",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.jscpd.json",
+  "line": 2,
+  "title": "The duplication gate excludes all test code and all JS, in the loosest mode",
+  "detail": "`npm run duplication` (`jscpd --config .jscpd.json packages scripts`) is a blocking gate in `ci-primary`, `ci-consumers` and `ci-windows-observational`, but the config sets `mode: \"mild\"` (looser than jscpd's default `strict`), `minTokens: 60` / `minLines: 6` (so a 5-line or 59-token clone is invisible), `ignore: [\"**/tests/**\"]` (the largest source of copy-paste in the repo), and `format: [\"typescript\", \"tsx\"]` — which drops the 36 `.mjs`/`.cjs` files and every `.js` file from the scan. `packages` and `scripts` are also the only two roots scanned, so `apps/cli/src/plugin.ts` and the `website`",
+  "cluster": "xconfig"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "security",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/.github/workflows/landlock-run-release.yml",
+  "line": 144,
+  "title": "npm publish paths use mutable action tags while sibling workflows SHA-pin the same actions",
+  "detail": "The publish jobs that hold registry credentials pull third-party code from a mutable ref: `pypa/gh-action-pypi-publish@release/v1` at python-release.yml:211 and :246 in jobs with `id-token: write`, and `actions/checkout@v4` / `actions/setup-node@v4` / `actions/download-artifact@v4` at landlock-run-release.yml:144-154 in a job that also has `id-token: write`. The same repository SHA-pins the equivalent calls elsewhere (`actions/checkout@3d3c42e5…` in issue-policy.yml:20 and issue-lifecycle.yml:47), so the convention exists and is simply not applied to the workflows that publish. The majors are ",
+  "cluster": "xconfig"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "security",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/patches/node-pty@1.2.0-beta.15.patch",
+  "line": 14,
+  "title": "Patched node-pty honors CF_NODE_PTY_SPAWN_HELPER, letting env control which binary is executed as the PTY spawn helper",
+  "detail": "The local patch makes node-pty's unixTerminal.js read `process.env.CF_NODE_PTY_SPAWN_HELPER` and, if set, `path.resolve()` it and use it as the spawn-helper executable — bypassing both the sibling-of-execPath fallback and the packaged `native.dir + '/spawn-helper'`. Any code able to set environment variables in the host process (another plugin, a config `!!js` expression, a wrapper script) can point this at an arbitrary executable that then runs on every PTY spawn, giving a durable code-execution/persistence hook inside the terminal subsystem. The fallback `process.execPath + '-spawn-helper'` ",
+  "cluster": "xsec"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "error-ux",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/args.ts",
+  "line": 138,
+  "title": "A misspelled launcher flag is reported as \"--profile <name> is required\"",
+  "detail": "Because the first unknown token starts the app-argument boundary (`allowUnknownOption()` + `passThroughOptions()`, lines 127-129), a typo'd launcher flag never reaches commander's unknown-option handler (and `showSuggestionForTypo` therefore never runs). The action then reports the generic missing-profile error. Verified against the real parser: `cf --profil web`, `cf --porfile web` and `cf --unknown-global-flag` all exit 1 with `error: --profile <name> is required` — telling a user who *did* type a `--profile`-shaped flag that they omitted it, with no hint of which token was unrecognized. The",
+  "cluster": "cf-cli"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "error-ux",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+  "line": 150,
+  "title": "allowScripts hint misses npm's other git-host shorthands (gitlab:, bitbucket:, git://)",
+  "detail": "reference/README.md promises that \"Git-hosted plugins that ship sources build during install through their `prepare` script, the first `add` fails with npm's `allowScripts` hint (and a cf pointer at the profile's `package.json`)\". The regex only matches `git+`, `github:`, and a `.git` URL/fragment. npm also accepts `gitlab:user/repo` and `bitbucket:user/repo` git-host shorthands and plain `git://host/repo.git` — the last is covered by `\\.git(?:#|$)`, but `gitlab:`/`bitbucket:` are not, and neither is the bare `user/repo#ref` GitHub form npm resolves to git. For those specs a user gets only the",
+  "cluster": "cf-cli"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "correctness",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/src/plugin.ts",
+  "line": 41,
+  "title": "A bundle resolution failure is treated as \"not a bundle\", silently removing it from cf.profile.bundles",
+  "detail": "`exportsPatch` collapses *any* `resolveBundleDir` failure into `false` (comment: \"npm reported success yet the package is unresolvable — treat as plain\"). That boolean feeds both branches of `reconcilePlugins`: line 67 (`isBundle && !plugins.includes`) to add, and line 82/83 (`dependencySet.has(pkg) && !exportsPatch(pkg)`) to *remove* an existing entry. The comment only justifies the add side. So if resolution transiently fails for a package that is already a bundle and is still listed in `dependencies` — e.g. `cf plugin --profile x install --omit=dev` / `--omit=optional` removing an on-disk b",
+  "cluster": "cf-cli"
+ },
+ {
+  "severity": "low",
+  "verdict": "unverified-low",
+  "category": "testing",
+  "file": "C:/Users/thaku/Workspaces/fusion/code-fusion/apps/cli/tests/args.spec.ts",
+  "line": 48,
+  "title": "No coverage for cf plugin --help, npm-missing, or specs containing spaces",
+  "detail": "The plugin-mode tests stop at happy-path arg routing (`tests/args.spec.ts:48-58`) and two manifest-reconciliation e2e cases (`tests/built-bin.e2e.ts:625` and `:674`), both of which use temp paths with no spaces and a locally present npm. Nothing exercises: (a) `cf plugin --help` / `cf plugin -h` (finding: exits 1 with \"required option '--profile <name>' not specified\"); (b) the `npm not found on PATH` / exit-127 path (finding: unreachable on win32, so a Windows regression there is invisible); (c) a `--profile x add \"./some dir\"` spec — the temp checkout fixture at `built-bin.e2e.ts:627` is `cf",
+  "cluster": "cf-cli"
+ }
+]

@@ -1,0 +1,265 @@
+# TransFormers-Fusion — Master Execution Plan (Operation Clean)
+
+**Status:** ACTIVE. Single source of truth for the whole TF project.
+**Created:** 2026-10-29 · supersedes `.claude/plans/cuddly-yawning-lamport.md` (quant) and
+`.claude/plans/pasted-content-id-43ed-ye-aur-melodic-puddle.md` (architecture) for TF scope.
+**Rule:** one task at a time, 100% DoD gate, then the next. User picks priorities; this file
+records the order agreed so far.
+
+---
+
+## 0. Standing rules (binding, from the user)
+
+| Rule | Statement |
+|---|---|
+| **G-1** | `Q_1` = binary, EXACT 1.00 BPW. Permanent. |
+| **G-2** | Ternary lives in the `Q_1` family's H tier: `Q_1_K_H` = PURE TERNARY (−1/0/+1), EXACT 1.50 BPW, wire == name. No standalone ternary format. |
+| **G-3** | M tier = EXACT base + 0.25 BPW. Quality must sit strictly BETWEEN L (base) and H (base + 0.50). |
+| **G-4** | GRP families (`Q_G_*`) follow the identical L/M/H rule. |
+| **G-5** | ZERO BPW violations project-wide. Name says X ⇒ wire cuts exactly X. **Rewire the layout to match the name — never rename the ruler.** |
+| **F-0** | BitNet-bench rewrite and a standalone ternary format: DO NOT BUILD (cancelled). |
+| **F-2** | Format count shrinks. Do not pad names. |
+| **Z-0** | Zero dead code / stubs after the operation, except the documented-incomplete GPU backends. |
+| **NEW-1** | Every format must beat, or at minimum match, its industrial counterpart **at the same BPW**. Industrial set: FP16, INT8, GGUF Q8_0, Q6_K, Q4_K, BitNet b1.58, Binary 1-bit, AWQ, GPTQ, MXFP4/MXFP6/MXFP8. |
+| **NEW-2** | Reference model for benchmarks: **DeepSeek V4.1 Flash (1017)** replaces Qwen-3.8-27B. |
+| **NEW-3** | Ruler model (trained by us): **`sol-5-flash-4b`** ("Sol 5 Flash"), 4B params, 1.5 BPW. *Renamed from `innova-x-1.1-4b` (then `klawde-5-sol-4b`) by user ruling, 2026-11-12.* |
+
+---
+
+## 1. Target format ladder (60 formats)
+
+Wire == name for every row. `.0` = base, `.25` = M tier, `.50` = H tier.
+
+### 1.0 The budget proof that fixes the ladder (256-weight block)
+
+A format whose name says `B` bits per weight has a total budget of `256·B` bits for a
+256-weight block. The level payload alone is `256·B` bits, so **a grouped layout at exactly
+`B.00` has provably zero bits left for group state** — any per-group scale pushes the wire
+over `B.00`, and sacrificing a level bit (to `B−1`) leaves a whole `1.00` BPW of state, which
+is worse than the plain format at every high-BPW family (`Q_G_16` at 15-bit levels is
+strictly worse than `Q_16`).
+
+Therefore, under G-5 (wire == name), the **GRP family starts at the M tier** and the plain
+base covers every integer BPW point. The GRP base tier `Q_G_x` is retired.
+
+| Family | base (L) | M (+0.25) | H (+0.50) |
+|---|---|---|---|
+| Plain `Q_x` | `B.00` — B-bit levels + block FP16 (slots-funded) | `B.25` — + per-32 refinement byte | `B.50` — + per-32 FP16 group scale |
+| GRP `Q_G_x` | **retired** (no room for group state) | `B.25` — + per-16 4-bit group scale codes | `B.50` — + per-16 affine (4b scale + 4b offset) |
+
+Exact budgets (256 weights):
+
+| Layout | Bits | BPW |
+|---|---|---|
+| plain base | `256·B − 16` (16 slots) + `16` (fp16) | `B.00` ✓ |
+| plain M | `256·B − 16` + `16` + `64` (8 refinement bytes) | `B.25` ✓ |
+| plain H | `256·B` + `8·16` (per-32 fp16 scales) | `B.50` ✓ |
+| GRP M | `256·B − 16` + `16` + `64` (16 × 4-bit codes) | `B.25` ✓ |
+| GRP H | `256·B − 16` + `16` + `128` (16 × 8-bit affine) | `B.50` ✓ |
+
+The GRP H layout is byte-for-byte the GGUF **Q4_K** recipe (4-bit levels + per-group affine +
+global fp16) at exactly 4.50 BPW. The plain H layout is the **Q8_0** recipe (per-32 FP16
+scale) at exactly 8.50 BPW. Both are the industry-grade grouped formats, at the BPW where
+industry actually puts them.
+
+### 1.1 Plain integer families (10 base + 9 M + 9 H = 28)
+
+| Base | BPW | M (+0.25) | H (+0.50) |
+|---|---|---|---|
+| Q_1 | 1.00 | Q_1_K_M = 1.25 | **Q_1_K_H = 1.50 (TERNARY)** |
+| Q_2 | 2.00 | Q_2_K_M = 2.25 | Q_2_K_H = 2.50 |
+| Q_3 | 3.00 | Q_3_K_M = 3.25 | Q_3_K_H = 3.50 |
+| Q_4 | 4.00 | Q_4_K_M = 4.25 | Q_4_K_H = 4.50 |
+| Q_6 | 6.00 | Q_6_K_M = 6.25 | Q_6_K_H = 6.50 |
+| Q_8 | 8.00 | Q_8_K_M = 8.25 | Q_8_K_H = 8.50 |
+| Q_12 | 12.00 | Q_12_K_M = 12.25 | Q_12_K_H = 12.50 |
+| Q_16 | 16.00 | Q_16_K_M = 16.25 | Q_16_K_H = 16.50 |
+| Q_24 | 24.00 | Q_24_K_M = 24.25 | Q_24_K_H = 24.50 |
+| Q_32 | 32.00 | — (lossless ceiling, no tiers) | — |
+
+### 1.2 GRP families (9 M + 9 H = 18)
+
+`Q_G_1`..`Q_G_24` each with `_K_M` (+0.25) and `_K_H` (+0.50).
+
+### 1.3 MX families (14, quarantined)
+
+`Q_MX_{3_5,4_5,6_5,8_5,12_5,16_5,24_5}` + `Q_G_MX_*` — 7 each. These are **experimental /
+quarantined** until they meet industrial parity (E1a: currently −21…−37 dB). They stay in the
+enum (so old checkpoints keep decoding) but are excluded from the competitive set and from the
+quality gates' "must win" list.
+
+### 1.4 Retired (45 names)
+
+- Plain `_K_L` (9) and GRP `_K_L` (9): the base IS the L tier.
+- GRP base `Q_G_x` (9): provably no group-state budget at `B.00` (see §1.0).
+- Half-BPW families `Q_x_5` / `Q_G_x_5` (18): superseded by the M/H tiers.
+
+### 1.5 ID strategy
+
+**KEEP surviving IDs. Do NOT renumber.** Format ids are stored as raw `uint8` in `.quant`
+checkpoints with no version tag, so renumbering would silently reinterpret existing files.
+
+- `FORMAT_ID_SLOTS = 105` (the id space never shrinks)
+- `FORMAT_COUNT = 60` (the number of live formats)
+- `format_is_valid(Format)` — the single truth; replaces every range predicate
+  (`format_is_base/k/grp/half/mx`) and every `wire_fmt < FORMAT_COUNT` clamp.
+
+**Persistence compatibility:** the retired formats' *wire layouts* changed during the rewire,
+so their payloads are not decodable by the new codecs. Old `.quant` files therefore carry a
+header version and are **rejected by the new reader with an explicit message** (re-quantize
+from the source model) rather than silently misdecoded. The one exception — the plain `_K_L`
+rows, whose layout was byte-identical to their plain base — is remapped on read via
+`legacy_format_id_remap()`.
+
+---
+
+## 2. Rewire map (the 27 name-vs-wire gaps, direction = cut the layout)
+
+| Name | Old wire | New wire | What changes |
+|---|---|---|---|
+| `Q_G_2` | 2.625 | **2.00** | affine per-16 (4b sc + 4b min + d/dm) must fit 2.00 ⇒ group size 32, or per-32 3b sc + 3b min |
+| `Q_G_3` | 3.5 | **3.00** | per-32 4b sc + 4b min + d/dm |
+| `Q_G_4` | 4.5 | **4.00** | per-32 4b sc + 4b min + d/dm |
+| `Q_G_6` | 6.5625 | **6.00** | 6-bit levels + per-32 scale, no per-16 int8 table |
+| `Q_G_8` | 8.5 | **8.00** | companded 8-bit + per-64 fp16 scale (or slots-funded) |
+| `Q_G_12` | 12.5 | **12.00** | 12-bit + per-64 fp16 scale |
+| `Q_G_16` | 16.5 | **16.00** | plain fp16 payload, no residual tail |
+| `Q_G_24` | 24.5 | **24.00** | plain fp24 payload, no residual tail |
+| `Q_G_x_K_*` (×9) | +0.4375 / +0.5625 / +0.5 | exact base | same as their GRP base |
+| `Q_x_5` (×9) | +0.4375 | exact base | retired |
+| `Q_G_x_5` (×9) | +0.4375 | exact base | retired |
+| `Q_G_MX_3_5` | 3.78125 | 3.50 | quarantined anyway |
+
+The M/H tiers then spend the freed budget on a **shared refinement byte** (see §3.2), which is
+what makes them genuinely different codecs rather than relabelled copies.
+
+---
+
+## 3. Codec design
+
+### 3.1 Per-BPW budget algebra (must be exact at n = 256 and at every tail)
+
+For a family with base `B` bits and group size `G`, overhead `H` bits per group and one global
+FP16 (`16` bits):
+
+```
+wire_bits(n) = n*B + ceil(n/G)*H + 16
+target_bits(n) = round(target_bpw * n)
+```
+
+Solved for every (family, group size) pair; the group size is chosen so the equality holds at
+n = 256 **and** the tail path degrades inside the same budget.
+
+### 3.2 The M tier — shared refinement byte (engine-agnostic, provably +0.25 BPW)
+
+Plain M = base layout + **one refinement byte per 32 weights**:
+
+```
+refinement byte = 4 sub-blocks × 2 bits  →  scale multiplier per 8 weights
+multipliers: {0.75, 1.00, 1.25, 1.50}
+```
+
+Cost: `n/32` bytes = `n * 0.25` bits exactly. Quality: each 8-weight sub-block gets its own
+scale from a 4-way ladder ⇒ strictly between base (one scale) and H.
+
+GRP M = **per-64 FP16 group scales**: `256·B` level bits + `4×16` scale bits = `B.25` exact.
+Genuinely grouped (four independent fp16 scales per block), no refinement ladder needed.
+
+### 3.3 The H tier
+
+Plain H = base layout + **per-16 8-bit scale-multiplier codes**: `256·B` + `16×8` = `B.50`
+exact. Each 16-weight group picks one of 256 multiplier ladder values around the global
+scale — finer partitioning than M, same wire discipline.
+
+GRP H = **per-32 FP16 group scales** (the GGUF Q8_0 recipe): `256·B` + `8×16` = `B.50`
+exact, each 32-weight group carrying a full-precision fp16 scale. For `B=8` this is
+byte-for-byte the industry Q8_0 layout at exactly 8.50 BPW — industrial parity by
+construction.
+
+### 3.4 Ternary (`Q_1_K_H`, 1.50 exact)
+
+Wire layout at n = 256: `[FP16 scale: 16b][232 base-3 packed trits: 368b][24 implicit-zero
+slots]` = 384 b = 48 B = **1.5000 exact**. Per-size Diophantine solve
+(`T` trits + `S` slots s.t. `ceil(T·log₂3) + 16 = 1.5·n`); fallback chain ternary → M-layout →
+base, never inflating.
+
+---
+
+## 4. Industrial parity (NEW-1)
+
+Every row must reach **≥ the reference PSNR at ≤ the reference BPW**. Reference implementations
+live in `bench/bench_format_comparison.cpp` and must be faithful to the published specs.
+
+| Our format | BPW | Reference to beat |
+|---|---|---|
+| `Q_16` | 16.00 | IEEE FP16 (lossless-ish) |
+| `Q_8` | 8.00 | INT8 uniform (8.125), GGUF Q8_0 (8.5) |
+| `Q_G_6` / `Q_6` | 6.00–6.50 | GGUF Q6_K (6.5625) |
+| `Q_G_4` / `Q_4` | 4.00–4.50 | GGUF Q4_K (4.5), AWQ 4-bit, GPTQ 4-bit |
+| `Q_1_K_H` | 1.50 | **BitNet b1.58** (1.58) — must win at a LOWER bpw |
+| `Q_1` / `Q_G_1` | 1.00 | Binary 1-bit |
+| `Q_G_8` / `Q_8` | 8.00–8.50 | MXFP8 (8.0) |
+| `Q_G_4` | 4.00–4.50 | MXFP4 (4.0) |
+| `Q_G_6` | 6.00–6.50 | MXFP6 (6.0) |
+| `Q_G_2` / `Q_2` | 2.00–2.50 | MXFP2, FP4-style |
+
+**Fidelity fix owed:** the bench's `rt_gguf_q6k` reference uses per-16 int8 scales and drops the
+global FP16 `d` (`(void)d;`) — it is NOT the published Q6_K scheme (whose 210 B/256-block layout
+is 192 B levels + 16 B int8 scales + 2 B fp16 d). It must be made faithful before any
+"we beat Q6_K" claim is allowed.
+
+**New references to implement:** MXFP4/MXFP6/MXFP8 (block-scaled microscaling), AWQ 4-bit,
+GPTQ 4-bit — all labelled `[ref]` and quarantined from the production codec.
+
+---
+
+## 5. Workstreams (execution order)
+
+| ID | Task | Gate |
+|---|---|---|
+| **P0.0** | Baseline build + quant gate green | done — `build-eng2`, 8/8 gate tests pass |
+| **P0.1** | Extract all workflow data → `review-tracking/workflow_extracted/` | done — 7 runs, 134 labels, 397 payloads |
+| **P0.2** | This master plan | this file |
+| **L1** | `types.h`: 69 live formats, validity table, retired-id map, new `format_compat.h` | `test_format`, `test_all` |
+| **L2** | Codec rewire: exact budgets, M refinement byte, H affine, ternary | `test_fuzz_codec`, `test_format_audit` |
+| **L3** | Registry / planner / inferno / STE quantizer updates to the new ladder | `test_format_registry_complete`, `test_mix_components`, `test_quant_mix` |
+| **L4** | Persistence compat: `legacy_format_id_remap()` at the 4 clamp sites; writer asserts validity | `test_protected`, round-trip fixture |
+| **L5** | Consumer updates (adapters, model, trainer, tools) | full `ctest` |
+| **T1** | Test migration: caps regen, strict budgets (no +1), new `test_wire_budgets` | `ctest` |
+| **Q1** | Scale-fit quality: golden-section true-MSE for Q3/Q6/Q12 | fuzz caps |
+| **Q2** | Bench honesty: faithful refs, MXFP/AWQ/GPTQ added, no hardcoded victories | `bench_format_comparison` |
+| **Z1** | Zero dead code sweep | grep gate |
+| **Z2** | `QUANT` → `Quant` casing sweep (macros/env exempt) | grep gate |
+| **Z3** | README / docs truthfulness | manual |
+| **V1** | Final verify: dominance table, industrial parity table | all gates green |
+| **M1** | DeepSeek V4.1 Flash (1017) as the reference model across plan + code | grep zero `Qwen-3.8-27B` |
+| **M2** | `sol-5-flash-4b` training at 1.5 BPW (after V1) | quality report |
+
+---
+
+## 6. Model swap (NEW-2)
+
+`Qwen-3.8-27B` → **DeepSeek V4.1 Flash (1017)** in:
+`.claude/plans/pasted-content-id-43ed-ye-aur-melodic-puddle.md` (§9b, §11 Phase 6),
+`review-tracking/DEFECTS.md` (E1 series references Qwen3-8B weights),
+`transformers-fusion/` bench + docs where a real-model corpus is named.
+
+Note: the TF repo's `qwen35_engine.cpp` is a **GGUF Qwen-3.5 layout reader**, not the benchmark
+model — it stays (it is a format reader), but the benchmark corpus target changes.
+
+---
+
+## 7. Verification gates
+
+```
+cmake -S . -B build-eng2 -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ \
+      -DQUANT_BUILD_TESTS=ON -DQUANT_BUILD_BENCHMARKS=ON -DQUANT_BUILD_TOOLS=ON -DQUANT_BUILD_ADAPTERS=ON
+ninja -C build-eng2
+ctest --test-dir build-eng2 -R "test_format$|test_all|test_fuzz_codec|test_format_audit|
+      test_format_registry_complete|test_block_codec|test_grp_quality_proof|test_quant_mix|
+      test_mix_components|test_wire_budgets" --output-on-failure
+ctest --test-dir build-eng2 -E test_paged_kv_4m --output-on-failure     # full suite
+```
+
+**Strict budget rule:** tail blocks get **zero** alignment slack. The old "+1 byte" allowance
+(`block_codec.h`) is removed in T1 and the `quant_6k` tail overrun (E2b) is fixed at the source.
