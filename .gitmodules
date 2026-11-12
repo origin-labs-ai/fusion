@@ -1,8 +1,8 @@
 [submodule "transformers-fusion"]
 	path = transformers-fusion
-	url = https://github.com/origin-labs-ai/transformers-fusion.git
+	url = https://github.com/origin-labs-ai/transformers.git
 	branch = main
 [submodule "code-fusion"]
 	path = code-fusion
-	url = https://github.com/origin-labs-ai/code-fusion.git
+	url = https://github.com/origin-labs-ai/code.git
 	branch = master
