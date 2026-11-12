@@ -45,12 +45,10 @@
       assert (#18) · curriculum pick (#19) · inactive-token skip (#20)
 - [ ] T1.5 U-curve on WEIGHT-TIED looped model (OPEN-UNKNOWN #11) — experiment design + run
 - [ ] T1.6 Stability above few-B params (OPEN-UNKNOWN #23) — literature + experiment design
-
 ## T2 · Traditional Transformers (baseline side)
 
 - [ ] T2.1 §5d market-scan refresh (any 2026-11 papers missed) — browser pass
 - [ ] T2.2 Baseline bench spec (§9) — traditional vs looped head-to-head protocol
-
 ## T3 · Traditional Quantization (Track A — the ladder)
 
 - [ ] T3.1 Quality floor rulings: D-12 scale fitting · D-13 MX quarantine · D-14 bench honesty
@@ -60,7 +58,6 @@
 - [ ] T3.4 install_test duplicate header ruling (magic_size_=15 deliberate stale fixture vs fix)
 - [ ] T3.5 **Security audit 1/10** — quant wire path: memcmp NUL bug (SolIDX 6-vs-7), legacy
       alias parser backcompat, writer assert-validity (L4 sub-step)
-
 ## T4 · Loop Quantization (Track B — compute contract)
 
 - [ ] T4.1 Research: LoopQ/LoopQuant at **1.5 BPW** feasibility note (browser — their numbers
@@ -68,14 +65,12 @@
 - [ ] T4.2 Design: loop-aware quant track spec (§9b.2 Track B → written design)
 - [ ] T4.3 Shared-vs-separate weights ruling (OPEN-DECISION #5) — sets parameter count
 - [ ] T4.4 KV-cache policy for T loops (OPEN-DECISION #22) — naive vs shared-KV (15→4 sets)
-
 ## T5 · Mix Quantization
 
 - [ ] T5.1 **Research pass (browser)**: mixed-format / bit-mixing quantization literature —
       the one thin area in the audit
 - [ ] T5.2 MX family ruling (D-13 quarantine vs fix) informed by T5.1
 - [ ] T5.3 Security audit 2/10 — MX quarantine enforcement (no MX id sneaks into wire path)
-
 ## T6 · DSpine × NCM merger
 
 - [ ] T6.1 NCM full read — arXiv 2610.14162 Appendix F.1.1 + I (OPEN-RESEARCH #10) — browser
@@ -83,20 +78,17 @@
 - [ ] T6.3 Fix **V20** — `code_gen.cpp:236` 2048-token stack overflow (7th CRITICAL, untested
       path) + caller `:825 spec.M` clamp
 - [ ] T6.4 Security audit 3/10 — generation paths (V20 class: JIT-emitted C++ bounds)
-
 ## T7 · EAIN
 
 - [ ] T7.1 Scope to implementable subset (OPEN-DESIGN #7) — per-unit importance/decay +
       thresholded activation + local plasticity
 - [ ] T7.2 Stack choice ruling (OPEN-DECISION #8) — which of the 3 parallel stacks EAIN sits on
 - [ ] T7.3 Bench wiring (CS-Bench / D&CC-Bench / MQC-Bench parity targets §4)
-
 ## T8 · Inferno deep breakdown (after T1–T7)
 
 - [ ] T8.1 Full Inferno kernel + training-engine breakdown (file-by-file, call graph)
 - [ ] T8.2 Security audit 4–10 across Inferno (memory-safety, dead code, bench honesty)
 - [ ] T8.3 Gap review vs origin requirement → close every miss
-
 ## T9 · Cross-cutting
 
 - [ ] T9.1 Dashboard after EVERY step (regen + paste in chat)
@@ -111,4 +103,32 @@
 ---
 
 **Execution order:** T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 (T9 runs throughout).
+Dashboard checkpoints: after each T-item completion.
+## T10 · READMEs to publishable depth (operator targets, 2026-11-12)
+
+- [ ] T10.1 `fusion/README.md` -> **4,096 LOC** (superproject face; average code snippets allowed)
+- [ ] T10.2 `code/README.md` -> **2,048 LOC** (average code snippets)
+- [ ] T10.3 `transformers/README.md` -> **6,144 LOC** (average code snippets)
+- [ ] T10.4 Standard: "every detail, opened up" - operator will run research audit x3 for
+      publishability; docs must survive that scrutiny.
+## T11 · _archive mining -> .plan/ (operator: "wahan se bhi saara docs uthaana hai")
+
+- [ ] T11.1 Inventory `.plan/_archive` (md/pdf/docx counts, duplicate detection)
+- [ ] T11.2 Mine EVERY doc; rename ours to current naming (Sol 4 Flash etc.) and copy into
+      `.plan/` under a clean tree - **never override an existing file** (D-26 rule holds)
+- [ ] T11.3 Cross-link mined docs from master plan + BLUEPRINT
+## T12 · PDF completeness audit (transformers git + superproject fetch)
+
+- [ ] T12.1 List every PDF that ever existed in `transformers/` git history
+      (`git log --all --diff-filter=AD -- '*.pdf'`)
+- [ ] T12.2 Compare vs disk + `.plan/_archive`; recover missing ones from history
+- [ ] T12.3 Same check on the superproject repo history (fetched origin/main)
+- [ ] T12.4 Per-doc status report: in-git / recovered / missing
+## T13 · Publishable research package (operator-led; support on request)
+
+- [ ] T13.1 Research audit x3 for publishability (operator is running this)
+- [ ] T13.2 Research report PDF + DOCX - same data, two extensions, 512 pages total
+      (generation support when the operator returns with content)
+
+**Execution order:** T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7 -> T8 -> T10 -> T11 -> T12 (T9 runs throughout; T13 when the operator returns).
 Dashboard checkpoints: after each T-item completion.
