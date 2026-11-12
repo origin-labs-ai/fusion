@@ -19,8 +19,8 @@ If you already cloned without submodules, run the update command from the reposi
 
 ## Contributing
 
-- For engine code, tests and quantization work, contribute in [TransFormers-Fusion](https://github.com/origin-labs-ai/transformers-fusion).
-- For launcher or component-registry work, read the contribution scope in [CodeFusion](https://github.com/origin-labs-ai/code-fusion) first.
+- For engine code, tests and quantization work, contribute in [Transformers-Fusion](https://github.com/origin-labs-ai/transformers).
+- For launcher or component-registry work, read the contribution scope in [CodeFusion](https://github.com/origin-labs-ai/code) first.
 - For changes to the set of component revisions, open an issue here explaining why the submodule update is needed.
 
 ## Licensing
