@@ -1,14 +1,24 @@
 # Fusion Superproject - Telemetry Dashboard
 
-> **GOAL LINE:** MAIN goal = the ENTIRE Fusion Superproject. SIDE goal = MAXIMUM at **EXACT 1.0 BPW** (not 1.5 - that path is the stepping stone). FP + INT both research. Loop Quant never implemented anywhere before - Track B is the first. Details: `.plan/docs/operation-clean/DECISIONS.md` D-27.
+> **GOAL LINE (D-27):** MAIN goal = the ENTIRE Fusion Superproject. SIDE goal = MAXIMUM at **EXACT 1.0 BPW** (not 1.5 - that path is the stepping stone). FP + INT both research. Loop Quant never implemented anywhere before - Track B is the first. Details: `.plan/docs/operation-clean/DECISIONS.md` D-27.
 
-> Generated: **2026-11-12 19:08:59** - regen: `python .plan/telemetry/gen_dashboard.py`
+> **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
+
+> Generated: **2026-11-12 19:58:15** - regen: `python .plan/telemetry/gen_dashboard.py`
+
+## 0. Superproject git (fusion repo)
+
+- HEAD: `c9d6e9f Rename submodule paths to code/ and transformers/, track .plan (master plan + telemetry), refresh README with goal line and context-recovery contract`
+- branch: `## main` (dirty entries: 8)
+- submodule `code`: ## main...origin/main
+- submodule `transformers`: ## main...origin/main
+- push: NOT ordered yet (hold)
 
 ## 1. Plan verifiers (live run)
 
 | Verifier | Exit | Verdict |
 |---|---|---|
-| `verify_step1.py` | 0 | **PASS**   rows=120  headings=120  gaps=13 |
+| `verify_step1.py` | 0 | **PASS**   rows=121  headings=121  gaps=13 |
 | `step2_fix2_verify.py` | 0 | **PASS** STEP 2 ALL CHECKS PASSED |
 | `step3_verify.py` | 0 | **PASS** report     : C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_anc |
 | `step3_subanchors.py` | 0 | **PASS** wrote C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_subanchors |
@@ -31,7 +41,7 @@ check-consistency: exit=0 **13/13 checks passed**
 
 > Working tree holds peer-session work - **no commits without operator order.**
 >
-> code/windows shows tracked-file deletions by design/history: chromix 3,687
+> `code/windows` shows tracked-file deletions by design/history: chromix 3,687
 > (intentional, integrated browser = Codeix), gsx-cli 2,053 (peer seat refresh in
 > flight - disk has 1,503 files + 2,093 untracked, HEAD recoverable), zenix-cc/codeix
 > renames. Disk intact: 239,227 files, all 9 seats present.

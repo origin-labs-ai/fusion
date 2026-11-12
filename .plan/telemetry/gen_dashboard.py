@@ -44,7 +44,30 @@ def git_counts(repo):
 def main():
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     L = ["# Fusion Superproject - Telemetry Dashboard", "",
+         "> **GOAL LINE (D-27):** MAIN goal = the ENTIRE Fusion Superproject. SIDE goal = MAXIMUM at "
+         "**EXACT 1.0 BPW** (not 1.5 - that path is the stepping stone). FP + INT both research. "
+         "Loop Quant never implemented anywhere before - Track B is the first. Details: "
+         "`.plan/docs/operation-clean/DECISIONS.md` D-27.", "",
+         "> **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` "
+         "-> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master "
+         "plan. Full workflow: `.plan/BLUEPRINT.md`.", "",
          "> Generated: **%s** - regen: `python .plan/telemetry/gen_dashboard.py`" % ts, ""]
+
+    # 0. superproject git (fusion repo itself)
+    L += ["## 0. Superproject git (fusion repo)", ""]
+    code, out = run(["git", "log", "--oneline", "-1"], WS)
+    code2, out2 = run(["git", "status", "--short", "-b"], WS)
+    head = out.strip()
+    branch = out2.splitlines()[0].strip() if out2.strip() else "?"
+    dirty = max(0, len([l for l in out2.splitlines()[1:] if l.strip()]))
+    code3, out3 = run(["git", "status", "-sb"], os.path.join(WS, "code"))
+    code4, out4 = run(["git", "status", "-sb"], os.path.join(WS, "transformers"))
+    L.append("- HEAD: `%s`" % head)
+    L.append("- branch: `%s` (dirty entries: %d)" % (branch, dirty))
+    L.append("- submodule `code`: %s" % out3.splitlines()[0].strip() if out3.strip() else "- submodule code: ?")
+    L.append("- submodule `transformers`: %s" % out4.splitlines()[0].strip() if out4.strip() else "- submodule transformers: ?")
+    L.append("- push: NOT ordered yet (hold)", )
+    L.append("")
 
     # 1. verifiers (live)
     L += ["## 1. Plan verifiers (live run)", "", "| Verifier | Exit | Verdict |", "|---|---|---|"]

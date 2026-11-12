@@ -102,6 +102,11 @@
 - [ ] T9.1 Dashboard after EVERY step (regen + paste in chat)
 - [ ] T9.2 All 7 verifiers green at every checkpoint
 - [ ] T9.3 Ledger tags updated as items close (nothing silently open)
+- [ ] T9.4 **GRAPHIFY reminder (operator, 2026-11-12): regenerate the full `fusion/` graph** with
+      the graphify skill (both component repos + `.plan` in scope; `graphify-out/` is git-ignored
+      output). The operator explicitly deferred this: "Graphify waala jo kaam hai use bhi document
+      hi kar dena as reminder ki ye bhi karna hai" - so this line is the reminder; run it when
+      the operator says so (or as part of the next context-recovery refresh).
 
 ---
 

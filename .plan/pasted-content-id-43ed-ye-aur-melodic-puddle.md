@@ -2030,6 +2030,7 @@ SPEC-INFERNO §0.3 / §11 and Appendix E/O define 26 modality types that must ea
 | OC-DECISIONS | Workspace rename: `code-fusion/` → `code/`, `transformers-fusion/` → `transformers/` (operator, 2026-11-12) | covered | — | D-24. Recorded 2026-11-12 (§16 dated entry + DECISIONS D-24); product/alias vocabulary unchanged, only path-shaped refs swept. |
 | OC-DECISIONS | Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11-12) | covered | — | D-25. Recorded 2026-11-12 (§16 dated entry + DECISIONS D-25); Sonar integration + Zenix port both parked by operator ruling. |
 | OC-DECISIONS | _archive/ = reference-only port of every deleted doc (operator, 2026-11-12) | covered | — | D-26. Recorded 2026-11-12 (§16 dated entry + DECISIONS D-26); 288 files, InNova.png stays deleted. |
+| OC-DECISIONS | Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12) | covered | - | D-27. Reminder note sits at the top of every implement-facing doc; dashboard carries the GOAL LINE. |
 | OC-WORKTREE | `Modified files (12) — dispositions` | **partial** | **GAP-10** | The counts drifted: PROGRESS.md now records **24 modified + 90 untracked**, not 12. |
 | OC-WORKTREE | `Untracked files (18+) — dispositions` | **partial** | **GAP-10** | Same drift; the 3 engine proof tests are among the untracked and they are now registered. |
 | OC-WORKTREE | `What P0.0 must do (in order)` | **covered** | — | §11 Phase 1 commit hygiene. |
