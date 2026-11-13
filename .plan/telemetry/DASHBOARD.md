@@ -4,11 +4,11 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-13 18:01:45** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-13 18:13:45** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `4c77bbe fix(docgen): sync facts and README helpers (peer session)`
+- HEAD: `683bbf2 docs(readme): sync Fusion README and builder wording (peer session)`
 - branch: `## main` (dirty entries: 0)
 - submodule `code`: ## main...origin/main
 - submodule `transformers`: ## main...origin/main
@@ -36,7 +36,7 @@ check-consistency: exit=0 **13/13 checks passed**
 
 | Repo | Modified | Untracked | Remote |
 |---|---|---|---|
-| `code` | 1 | 0 | `origin-labs-ai/code.git` |
+| `code` | 0 | 0 | `origin-labs-ai/code.git` |
 | `transformers` | 0 | 0 | `origin-labs-ai/transformers.git` |
 
 > Working tree held peer-session work - **operator ordered commit + push on 2026-11-13.**
