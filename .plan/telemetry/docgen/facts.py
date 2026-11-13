@@ -279,19 +279,43 @@ def transformers_facts() -> dict:
 
 
 # --------------------------------------------------------------- code facts
+def top_entries(folder: str, limit: int = 24) -> list[dict]:
+    out = []
+    if not os.path.isdir(folder):
+        return out
+    for name in sorted(os.listdir(folder))[:limit]:
+        p = os.path.join(folder, name)
+        try:
+            st = os.stat(p)
+            out.append({"name": name, "dir": os.path.isdir(p), "bytes": st.st_size})
+        except OSError:
+            out.append({"name": name, "dir": os.path.isdir(p), "bytes": 0})
+    return out
+
+
 def code_facts() -> dict:
     reg = json.loads(read(os.path.join(CD, "arch", "windows.json")))
+    layouts = json.loads(read(os.path.join(CD, "arch", "layouts.json")))
     seats = []
     for part in reg.get("parts", []):
-        prefix = part["folder"].replace("\\", "/") + "/"
-        st = tracked_stats(CD, CD, prefix)
-        seats.append({**part, **st})
+        folder = os.path.join(CD, part["folder"].replace("/", os.sep))
+        seats.append({**part, "top": top_entries(folder),
+                      "exists": os.path.isdir(folder)})
+    extra = []
+    for name in ("merger", "vs-ext"):
+        folder = os.path.join(CD, "windows", name)
+        extra.append({"codename": name.title(), "alias": None,
+                      "folder": f"windows/{name}", "status": "present" if os.path.isdir(folder) else "missing",
+                      "contents": "Reserved support folder; not a launcher part.",
+                      "top": top_entries(folder), "exists": os.path.isdir(folder)})
     launcher = tracked_stats(CD, CD, "launcher/")
     scripts = tracked_stats(CD, CD, "scripts/")
     payloads = tracked_stats(CD, CD, "payloads/")
     return {
         "registry": reg,
-        "seats": seats,
+        "layouts": layouts,
+        "brand": read(os.path.join(CD, "BRAND.md")),
+        "seats": seats + extra,
         "launcher": launcher,
         "scripts": scripts,
         "payloads": payloads,

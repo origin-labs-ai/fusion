@@ -58,6 +58,13 @@ def section(title: str, body: list[str], count: int = 30) -> list[str]:
     return [title] + body
 
 
+def section30(title: str, items: list[str], pad: list[str]) -> list[str]:
+    """A heading plus exactly 30 body lines; *pad* must be factual, not blank."""
+    body = prose(items, 102)
+    body = fit(body, 30, pad)
+    return [title] + body
+
+
 def header32(name: str, tagline: str, pitch: list[str], nav: str,
              badges: list[str], logo: str, status: str) -> list[str]:
     """Exactly 32 lines: centred identity block + rule + status + rule."""
