@@ -128,7 +128,9 @@ def parse_research() -> list[dict]:
     out = []
     for i in range(1, len(parts), 3):
         rid, title, body = parts[i], parts[i + 1].strip(), parts[i + 2]
-        clean = [l.strip() for l in body.splitlines() if l.strip() and not l.strip().startswith("---")]
+        clean = [l.strip() for l in body.splitlines()
+                 if l.strip() and not l.strip().startswith("---")
+                 and not l.strip().startswith("#")]
         out.append({"id": rid, "title": title, "body": clean,
                     "chars": len(" ".join(clean))})
     return out

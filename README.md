@@ -1765,7 +1765,6 @@ re-init with full remote history adopted (8 commits), `.gitmodules` path fix, `.
 - Source document: D-24, D-27, `.plan/telemetry/DASHBOARD.md`, fusion git log.
 - Evidence status: DISK-VERIFIED (git log + gate 13/13 + 7 verifiers green).
 - Audit slots: 1 of 3 done.
-## B. Research in progress / pending (operator-owned or queued)
 The item is indexed as `R-10` in `.plan/RESEARCH-INDEX.md`.
 The research index separates audit-ready work from work still in progress.
 Every claim carries a command, an output and a file:line reference.
@@ -1789,6 +1788,7 @@ The item is re-read when the code changes underneath it.
 The item's sources are listed so a reviewer can repeat the pass.
 The item's claims are scoped; a claim about one model is not a claim about all models.
 The item's terminology is normalised to the current product names.
+The item's date is the date of the evidence, not the date of the file.
 
 ## R-11 · INT x FP programme (the operator's current research topic) - ACTIVE
 - Scope: the complete INT-vs-FP research programme: difference INT vs FP; what is already
@@ -2017,7 +2017,7 @@ The item is part of the 512-page publication's source set.
 ## Document control
 
 - Target: **2048** lines. Actual: **2048** lines (verified by `wc -l`).
-- Source commit: `38dc263` on `main`.
+- Source commit: `683bbf2` on `main`.
 - Knowledge base: `26` authored Markdown documents in `.plan/`.
 - Research items: `18`. Decisions: `31`.
 - Component pins: `transformers` and `code`, recorded in `.gitmodules`.
