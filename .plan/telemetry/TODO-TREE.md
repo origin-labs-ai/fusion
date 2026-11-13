@@ -108,7 +108,23 @@ Dashboard checkpoints: after each T-item completion.
 
 - [ ] T10.1 `fusion/README.md` -> **4,096 LOC** (superproject face; average code snippets allowed)
 - [ ] T10.2 `code/README.md` -> **2,048 LOC** (average code snippets)
-- [ ] T10.3 `transformers/README.md` -> **6,144 LOC** (average code snippets)
+- [ ] T10.3 `transformers/README.md` -> **6,144 LOC** (average code snippets) - IN PROGRESS
+  - [x] T10.3a **Generator + strict validator** (`.plan/telemetry/build_tf_readme.py`) - builds from
+        live extraction, **refuses to write unless every section carries 30 narrative lines**;
+        tables/code do not count as narrative. No padded blanks, no filler.
+  - [x] T10.3b **Batch 1 - orientation & subsystems (sections 1-40, 1,627 LOC)**: what the engine
+        is, how to read the document, repo layout, the two engine trees, build system, the 20
+        executables, 26 libraries, 76 tests, git state, dtype contract, the two format counts, the
+        registry, block codec, codebook, quant engines, QAT, INT path, FP path, FP8 special values,
+        FP8 attention path, backends, GPU capability contract, model, attention, KV cache,
+        inference, trainer, code generator, MoE/multimodal, AGI/continual, telemetry, production,
+        tokenizer, distributed, optimizer, continual, inference-optimisation, math, GLE, native
+        weight path.
+  - [ ] T10.3c Batch 2 - the quantization deep dive (formats, ladder, INT/FP families, codebook
+        merger, sovereign stack) - target sections 41-100
+  - [ ] T10.3d Batch 3 - training engine / Inferno / generation mechanisms - sections 101-150
+  - [ ] T10.3e Batch 4 - inference, serving, benches, gates, build, contributing, roadmap -
+        sections 151-192
 - [ ] T10.4 Standard: "every detail, opened up" - operator will run research audit x3 for
       publishability; docs must survive that scrutiny.
 ## T11 · _archive mining -> .plan/ (operator: "wahan se bhi saara docs uthaana hai")

@@ -1,0 +1,677 @@
+BHAI. 🔥 Ab ye sirf INT8 vs FP8 ka comparison nahi hone wala. Hum Transformers-Fusion ke liye ek proper numerical-format research programme banayenge.
+
+Aur ek important baat: tumhara `.quant` format already kaafi interesting design territory mein hai. Humein existing work ko samajhkar hi next generation formats design karne chahiye, bina existing strengths ko accidentally break kiye.
+
+# Research programme: INT × FP
+
+# INT × FP
+
+Numerical representations, quantization, precision and compute architecture
+
+INT
+
+Integer representation
+
+# 8-bit
+
+INT8, INT4, INT2, INT1, ternary
+
+FP
+
+Floating-point representation
+
+# 8-bit
+
+FP8, FP16, BF16, FP24, FP32
+
+Our objective: Storage + accuracy + compute + training + inference + hardware portability ko ek saath optimize karna.
+
+## 1. Sabse pehle: INT aur FP kya hain?
+
+INT (Integer): Numbers ko integer values se represent karta hai. Quantization mein usually original floating-point values ko scale aur optionally zero-point ki help se limited integer range mein map karte hain.
+
+Example:
+
+\\[ x \approx (q-z)\times s \\]
+
+Yahan:
+
+- \\(x\\) = original floating-point value
+- \\(q\\) = quantized integer
+- \\(z\\) = zero-point
+- \\(s\\) = scale
+
+FP (Floating Point): Number ko sign, exponent aur significand/mantissa ke combination se represent karta hai.
+
+\\[ x=(-1)^S\times 2^{E-bias}\times(1+M) \\]
+
+Iska advantage hai ki bahut chhote aur bahut bade numbers ko represent kar sakte hain.
+
+| Property       | INT quantization                      | Floating point                             |
+| -------------- | ------------------------------------- | ------------------------------------------ |
+| Representation | Integer codes                         | Sign + exponent + significand              |
+| Scaling        | Usually external scale                | Exponent encoded internally                |
+| Dynamic range  | Scale-dependent                       | Exponent-dependent                         |
+| Precision      | Quantization interval-dependent       | Exponent and mantissa-dependent            |
+| Typical use    | Compressed weights, integer inference | Training, computation, numerical stability |
+
+Ek important distinction: INT8 aur FP8 dono 8-bit hain, lekin dono interchangeable nahi hain.
+
+# 2. Tumhare repository ka initial implementation audit
+
+Maine actual `origin-labs-ai/transformers` source inspect kiya hai. Abhi tak ye findings mili hain.
+
+Code verified
+
+### A. INT8 implementation
+
+File: `src/kernel/int8_quant.cpp`
+
+Tumne implement kiya hai:
+
+- Per-tensor INT8 quantization.
+- Per-token (per-row) INT8 quantization.
+- Maximum absolute value se scale calculation.
+- Reverse conversion (dequantization).
+
+Tumhara current symmetric quantization:
+
+\\[ s=\frac{127}{\max(|x|)} \\]
+
+\\[ q=\operatorname{round}(x\times s) \\]
+
+\\[ \hat{x}=q/s \\]
+
+Ye ek legitimate symmetric INT8 quantization approach hai.
+
+Lekin: `INT8Inference` currently input ko INT8 mein quantize karke wapas FP32 mein dequantize karta hai, phir normal model forward chalata hai. Isliye ise abhi true INT8 matrix-compute implementation nahi keh sakte. Ye quantization simulation/path hai.
+
+### B. FP8 implementation
+
+Tumhare repository mein FP8 ke multiple parts hain:
+
+- FP8 E4M3 aur E5M2 decoding.
+- FP32 ↔ FP8 conversion.
+- FP8 quantization/dequantization.
+- Per-channel FP8 scaling.
+- FP8 GEMM software path.
+- FP8 attention configuration.
+- FP8 external model import.
+
+Relevant files:
+
+- `src/codec/quant_engines_fp.cpp`
+- `src/math/math.cpp`
+- `src/adapters/src/adapter_core.cpp`
+- `src/inference/inference_lowprec.cpp`
+
+Ek major discovery: `FP8Inference` ka existing cache helper `KVCache::quantize_fp8_block()` actually signed INT8 codes aur scale (`max_abs / 127`) use karta hai. Iska naam FP8 hai, lekin representation IEEE/OCP FP8 E4M3 ya E5M2 nahi hai.
+
+Ye ek architectural inconsistency hai jise research mein investigate karna zaroori hai.
+
+## 3. INT vs FP: thoda deeper comparison
+
+INT aur FP dono ke andar bhi multiple design choices hoti hain.
+
+INT8 — uniform integer quantization
+
+[How to optimize large deep learning models using quantization](https://images.openai.com/static-rsc-4/cw9nHHtcHHDIpjyOmDHgeZU0sOAQPTeEHheYr2z5lNOhLMet7_OiL2zU3yyIgNnrL5Dnz2FqhXCZFKKWKiaTaR1zzDlMNLHFc23wdqzGj5LSAk6GcLxI9swLk5YHuEY9FRJTbpyZPSOGS35P8tlPB2hJOXejRT2O0tT-pXHuuzc?purpose=inline)
+
+[coditation.com](https://www.coditation.com/blog/how-to-optimize-large-deep-learning-models-using-quantization?utm_source=chatgpt.com)
+
+Har adjacent quantization level ka interval uniform hota hai. Scale badalne se interval change hota hai, lekin representation integer hi rehti hai.
+
+FP8 — logarithmic floating-point spacing
+
+[作って理解する浮動小数点数①　基本編 - in neuro](https://images.openai.com/static-rsc-4/SR-VcIOUxzhFTmiyLq5AZDVMs1tIB_-VgF7KkqQHP_t9-3hM8VE7DyglgLw77jqhBJR7KIpU3Num3QslW5n4qn1aJoWzRtkZ4hvnMvUBceWg-8aRPDkRV_erDe0NVJoiPKFms9ynARwxQFoeMwTCDh8A9gSOQ-p6CMktjD_LjrI?purpose=inline)
+
+[in-neuro.hatenablog.com](https://in-neuro.hatenablog.com/entry/2021/10/20/233650?utm_source=chatgpt.com)
+
+Exponent ke according spacing change hoti hai. Chhote numbers ke paas fine precision aur bade numbers ke liye wide dynamic range mil sakti hai.
+
+### FP8 ke do important formats
+
+| Property                 | E4M3   | E5M2   |
+| ------------------------ | ------ | ------ |
+| Sign bits                | 1      | 1      |
+| Exponent bits            | 4      | 5      |
+| Mantissa bits            | 3      | 2      |
+| Maximum finite magnitude | 448    | 57,344 |
+| Relative precision       | Higher | Lower  |
+| Dynamic range            | Lower  | Higher |
+| Inf support              | No     | Yes    |
+
+E4M3 aur E5M2 ka design trade-off documented hai: NVIDIA Transformer Engine generally forward pass mein E4M3 aur backward pass mein E5M2 use karta hai.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.nvidia.com\&sz=32)
+
+Transformer Engine 2.20.2+1
+
+
+
+Yahan tumhare liye ek important opportunity hai: sirf E4M3 aur E5M2 ko support karna enough nahi. Unke scaling algorithms, rounding, saturation aur block structure bhi format ke experience ko determine karte hain.
+
+## 4. Tumne INT/FP ke around aur kya implement kiya hai?
+
+Abhi ke code audit mein mujhe ye capabilities mili hain:
+
+| Component   | Existing implementation                             |
+| ----------- | --------------------------------------------------- |
+| INT8        | Symmetric per-tensor / per-token quantization       |
+| QAT         | Fake quantization, STE, LSQ                         |
+| Calibration | MinMax, MovingAverageMinMax, KL-divergence observer |
+| FP16        | Binary16 conversion                                 |
+| BF16        | FP32-to-BF16 expansion / decoding                   |
+| FP8 E4M3    | Encode/decode, tensor operations, GEMM path         |
+| FP8 E5M2    | Encode/decode and tensor operations                 |
+| FP8 scaling | Per-channel scaling and block-based paths           |
+| FP24        | Custom 24-bit truncated FP32 representation         |
+| FP32        | Full-precision reference and identity codec         |
+
+Relevant source files:
+
+- [INT8 implementation](https://github.com/origin-labs-ai/transformers/blob/main/src/kernel/int8_quant.cpp?utm_source=chatgpt.com)
+- [QAT](https://github.com/origin-labs-ai/transformers/blob/main/src/codec/qat.cpp?utm_source=chatgpt.com)
+- [FP conversion engines](https://github.com/origin-labs-ai/transformers/blob/main/src/codec/quant_engines_fp.cpp?utm_source=chatgpt.com)
+- [FP numerical helpers](https://github.com/origin-labs-ai/transformers/blob/main/src/math/math.cpp?utm_source=chatgpt.com)
+- [Canonical block codec](https://github.com/origin-labs-ai/transformers/blob/main/src/codec/block_codec.cpp?utm_source=chatgpt.com)
+
+### Tumhara QAT implementation
+
+QAT mein tumne sirf fake quantization nahi rakhi:
+
+- STE: forward mein rounding/clamping, backward mein gradient passthrough.
+- LSQ: scale ko trainable banane ka mechanism.
+- MinMax calibration.
+- Moving-average calibration.
+- KL-divergence based calibration.
+
+Ye useful foundation hai.
+
+Lekin `QATConfig` mein `per_channel` option abhi comment ke according per-tensor implementation tak limited hai. Isko sirf configuration option samajhna hai, completed capability nahi.
+
+## 5. Tumhari existing custom-format identity
+
+Yahan tumhara sabse interesting work hai.
+
+Tumhara format system normal `INT8 / INT4 / FP16` list se kaafi different approach follow karta hai.
+
+Tumne format ko sirf bit-width nahi, balki codec-design problem banaya hai.
+
+Examples:
+
+| Format family  | Design concept                           |
+| -------------- | ---------------------------------------- |
+| Q_1–Q_8        | Low-bit codebooks / lattice              |
+| Q_G\_\*        | Groupwise scaling and affine metadata    |
+| Q\_\*\_K_L/M/H | Quality-tier variations                  |
+| Q\_\*\_5       | Fractional BPW                           |
+| Q_MX\_\*       | Mixed-precision tier allocation          |
+| Q_G_MX\_\*     | Grouped mixed-precision allocation       |
+| Q_24           | Three-byte floating-point-like storage   |
+| Q_16           | Custom block-based 16-bit reconstruction |
+
+For example, tumhara `Q_G_2` per-16 group affine scheme use karta hai, jisme 2-bit codes ke saath scale/min metadata bhi hota hai. Its claimed wire budget is 2.625 bits per weight, not simply 2 bits.
+
+Aur `Q_24` particularly interesting hai: it stores the upper 24 bits of FP32 in three bytes, reconstructing the lower eight bits as zero. Ye arbitrary custom 24-bit exponent/mantissa design nahi, balki truncated FP32 representation hai.
+
+Is distinction ko documentation mein preserve karna zaroori hai.
+
+# 6. Important implementation problems and opportunities
+
+Mujhe kuchh concrete areas mile hain jahan research se direct engineering improvements nikal sakte hain.
+
+FP8 E4M3 consistency
+
+High priority
+
+Teen code paths mein special-value handling inconsistent hai.
+
+- `math.cpp`: OCP-compatible E4M3 finite values and NaN handling.
+- `quant_engines_fp.cpp`: reserved NaN pattern ko zero decode karta hai.
+- `adapter_core.cpp`: E4M3 ke upper finite exponent values ko Inf/NaN treat karta hai.
+
+OCP E4M3 mein 448 maximum finite value hai; infinity represent nahi hota. Sirf do signed NaN encodings hain.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.opencompute.org\&sz=32)
+
+opencompute.org
+
+
+
+Research direction: one canonical FP8 implementation, exhaustive 256-pattern tests, and shared conversion routines.
+
+INT8 inference
+
+High priority
+
+Existing `INT8Inference` abhi actual INT8 GEMM nahi karta.
+
+Research direction: proper INT8 × INT8 accumulation into INT32, followed by controlled rescaling into FP32 or another output dtype.
+
+Asymmetric QAT
+
+High priority
+
+Observer zero-point calculate karta hai, lekin `fake_quantize_with_observer()` us zero-point ko quantization operation mein pass nahi karta.
+
+Asymmetric quantization mein negative input values ko correctly preserve karne ke liye zero-point required hai. Current implementation ko fix aur test karna chahiye.
+
+Per-channel QAT
+
+Incomplete
+
+Config mein `per_channel` hai, lekin implementation per-tensor-only hai.
+
+Research direction: per-channel scales, proper broadcasting, gradient handling and channel-wise calibration.
+
+BF16 import
+
+Interop gap
+
+BF16 decoder available hai, lekin `ExternalFormat` mein `RAW_BF16` option nahi hai. Raw BF16 support aur documentation ko align karna padega.
+
+Q16 documentation
+
+Audit needed
+
+`Q_16` ka full-block codec actual IEEE FP16 storage nahi hai. Ye FP32 block minimum/maximum ke basis par custom 16-bit range reconstruction karta hai. Tail blocks mein raw FP16 fallback hai.
+
+Documentation ko actual wire representation ke saath consistent banana chahiye.
+
+### FP8 ka ek aur important performance issue
+
+Tumhare `linear_forward_fp8()` mein:
+
+1. Weights ko transpose-copy kiya jata hai.
+2. `math::fp8_gemm()` dono operands ko FP8 mein convert karke dequantize karta hai.
+3. Uske baad accumulation FP32 mein hota hai.
+
+Attention ke Q/K/V projections mein ye path use hota hai, lekin ye native hardware FP8 GEMM nahi hai. Ye software-based numerical simulation/reference path hai.
+
+NVIDIA ke FP8 workflows mein actual hardware acceleration ke saath scaling recipes bhi important hain. Current scaling tensor ka `amax` calculate karta hai; delayed scaling previous iterations ki `amax` history use karke ek memory read bachata hai.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.nvidia.com\&sz=32)
+
+Transformer Engine 2.20.2+1
+
+
+
+# 7. Ab tumhari unique INT/FP format identity kaise banegi?
+
+Mera proposed direction hai: existing Q-series ko replace nahi karna. Uske parallel ek Fusion Numerical Architecture develop karna.
+
+Iska central concept:
+
+# Fusion Numerical Architecture
+
+INT family
+
+Integer codes + scaling + zero-point policy + outlier handling + integer kernels.
+
+FP family
+
+Floating-point encoding + exponent design + mantissa policy + scaling + special-value handling.
+
+Fusion adaptive planner
+
+Har tensor/block ke liye suitable numerical representation choose kare, based on accuracy, size, performance and hardware.
+
+Conceptual architecture — proposed research direction, not an existing implementation.
+
+## Proposed INT innovations
+
+1\. Outlier-aware integer format
+
+Normal values ko INT8/INT4 mein encode karo, lekin exceptional values ko alag residual stream mein rakho.
+
+Possible layout:
+
+```
+[Block Header]
+[Scale]
+[Zero Point]
+[Packed Integer Codes]
+[Outlier Bitmap]
+[Outlier Residuals]
+```
+
+Isse ek difficult problem investigate kar sakte hain: ek outlier ke kaaran poore block ka quantization resolution kharab hone se kaise bachaya jaye.
+
+2\. Error-budget-controlled INT
+
+Har group ke liye allowed reconstruction error define ho. Encoder bits aur group metadata allocate kare, jab tak total size budget exceed na ho.
+
+3\. Integer-native inference
+
+Dequantize karke FP32 GEMM karne ke bajaye packed integer weights aur integer accumulation ka real execution path.
+
+## Proposed FP innovations
+
+1\. FP8 block-adaptive scaling
+
+Standard E4M3/E5M2 encodings preserve karo, but scaling ko block-wise optimize karo.
+
+Industry mein MXFP8 ek useful reference hai: 32-element blocks aur E8M0 scaling.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.nvidia.com\&sz=32)
+
+NVIDIA TensorRT
+
+
+
+2\. Better FP24
+
+Tumhara existing Q24 upper 24 bits retain karta hai. Isko investigate karte hue:
+
+- Round-to-nearest-even instead of simple truncation.
+- NaN/Inf preservation.
+- Subnormal handling.
+- Error-bound guarantees.
+- Scalar and SIMD decoder equivalence.
+
+Ek properly specified FP24 encoding tumhari existing three-byte storage direction ko aur rigorous bana sakta hai.
+
+3\. Adaptive FP8
+
+E4M3 aur E5M2 ke beech tensor/operation ke requirements ke according selection. Training aur inference ke liye separate precision policies.
+
+# 8. Ek common system jo INT aur FP dono ko combine kare
+
+Yeh mere hisaab se sabse interesting research problem hai.
+
+Imagine ek tensor ke alag blocks:
+
+| Block   | Numerical representation | Reason                 |
+| ------- | ------------------------ | ---------------------- |
+| Block A | INT4                     | Low sensitivity        |
+| Block B | INT8                     | Moderate precision     |
+| Block C | FP8 E4M3                 | Better local precision |
+| Block D | FP8 E5M2                 | Larger dynamic range   |
+| Block E | FP16                     | Critical values        |
+
+Ye ek proposed adaptive system hai. Abhi tumhare existing Q_MX/Q_G_MX families mixed-bit quantization karti hain, lekin hum INT aur genuine FP representations ko bhi ek planner mein combine karne ka research kar sakte hain.
+
+Selection sirf weight magnitude se nahi honi chahiye. Ismein ye signals bhi hone chahiye:
+
+- Activation sensitivity.
+- Layer output distortion.
+- Outlier frequency.
+- Quantization error.
+- Extra bytes required.
+- Actual execution latency.
+- Hardware support.
+
+NVIDIA bhi quantization granularity ko accuracy aur scale-metadata overhead ke beech trade-off ke roop mein describe karta hai.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://docs.nvidia.com\&sz=32)
+
+NVIDIA TensorRT
+
+
+
+## 9. Kuchh aur subtle findings
+
+Ye details particularly important hain, kyunki ye naam aur actual behaviour ke beech difference dikhate hain.
+
+INT8 per-token granularity bug candidate
+
+`INT8Inference::forward()` mein:
+
+```
+rows = input.rank() > 1 ? input.dim(0) : 1;
+cols = input.numel() / rows;
+```
+
+Agar input shape `{batch, sequence, hidden}` hai, toh rows `batch` ho rahe hain, `batch × sequence` nahi.
+
+Isliye current implementation actual token-wise scaling ke bajaye batch-wise rows quantize kar sakta hai. Isko targeted shape tests se verify aur correct karna chahiye.
+
+Tensor dtype limitations
+
+`include/quant/types.h` mein current `DType`:
+
+```
+I64, I32, U8, U4, U16, F16, F32
+```
+
+Ismein native `I8`, `BF16`, `FP8_E4M3` aur `FP8_E5M2` types nahi hain.
+
+Iska matlab existing FP8 operations kaafi had tak explicit conversion helpers aur byte buffers par dependent hain. Future mein proper numeric tensor abstraction banana useful rahega.
+
+Ek aur distinction: generic `U4` ka `dtype_size()` ek byte return karta hai. Isse ye assume nahi karna chahiye ki generic Tensor automatically packed nibbles store karta hai. Tumhare block codecs ki packing separate implementation hai.
+
+### FP16 versus BF16
+
+## 16-bit floating point comparison
+
+FP16
+
+# 5 / 10
+
+Exponent / mantissa bits
+
+Maximum finite: 65,504
+
+BF16
+
+# 8 / 7
+
+Exponent / mantissa bits
+
+Maximum finite: approximately 3.39 × 10³⁸
+
+FP16 has more mantissa precision; BF16 keeps the FP32-like exponent range. Neither is universally superior. ([AMD ROCm documentation](https://rocm.docs.amd.com/projects/HIP/en/latest/reference/low_fp_types.html?utm_source=chatgpt.com))
+
+Ye bhi ek useful future feature hai: BF16 ko sirf import decoder nahi, balki actual tensor storage, conversion aur compute support tak le jaana.
+
+# 10. Research priorities: kya pehle karna chahiye?
+
+Main is order mein kaam karne ki recommendation dunga:
+
+| Priority | Research / engineering work                 |
+| -------- | ------------------------------------------- |
+| P0       | Canonical INT/FP numerical specifications   |
+| P0       | FP8 E4M3/E5M2 correctness                   |
+| P0       | INT8 inference granularity and real compute |
+| P0       | QAT zero-point and per-channel corrections  |
+| P1       | Native INT8 GEMM                            |
+| P1       | Genuine FP8 execution and hardware dispatch |
+| P1       | BF16 tensor support                         |
+| P1       | FP8 block scaling / MXFP8                   |
+| P2       | New Fusion-specific INT formats             |
+| P2       | New Fusion-specific FP formats              |
+| P2       | Unified INT+FP adaptive planner             |
+
+## 11. Kaise prove karenge ki koi format actually better hai?
+
+Yahan sabse important rule:
+
+Sirf compression ratio dekhkar format ko successful declare nahi karenge.
+
+Har format ko five dimensions par evaluate karenge.
+
+## Fusion numerical evaluation framework
+
+# 01
+
+Accuracy
+
+MSE, RMSE, cosine similarity, SNR, maximum error and model-level quality.
+
+# 02
+
+Storage
+
+Actual serialized bytes, effective BPW, metadata overhead and tail-block costs.
+
+# 03
+
+Performance
+
+Encoding speed, decoding speed, inference latency, throughput and memory bandwidth.
+
+# 04
+
+Stability
+
+NaN/Inf, overflow, subnormals, outliers, long sequences and training stability.
+
+# 05
+
+Compatibility
+
+CPU scalar, AVX2, AVX512, ARM and supported GPU backends.
+
+### Testing ka actual protocol
+
+Har format ko:
+
+- Zero-valued tensors.
+- Gaussian and uniform distributions.
+- Sparse tensors.
+- Outlier-heavy tensors.
+- Very small and very large magnitudes.
+- Different tensor sizes and incomplete blocks.
+- Real neural-network weights and activations.
+
+par test karenge.
+
+FP8 ke liye all 256 possible byte patterns ka encode/decode conformance test hoga.
+
+Model-level testing mein FP32 ko reference banakar logits difference, perplexity, task performance aur generation quality check karenge.
+
+Performance comparison bhi equal hardware, equal workload aur equal effective storage budget par hoga.
+
+Tumhare repository mein already `QG_MX` ka 1-million-weight storage-budget test hai. Ye ek achha foundation hai. Lekin FP8 attention ka existing `<5.0` maximum-difference smoke-test threshold actual model-quality validation ka substitute nahi hai.
+
+## 12. Complete research roadmap
+
+Hum isko chhe research phases mein execute kar sakte hain.
+
+1. Phase 1 — INT fundamentals and implementation
+
+   INT1, INT2, INT4, INT8, INT16, INT32; signedness, symmetric/asymmetric, zero-points, scales, accumulation, per-tensor, per-channel, per-token and block quantization.
+2. Phase 2 — Floating-point architecture
+
+   FP8 E4M3/E5M2, FP16, BF16, FP24, FP32, exponent biases, mantissa precision, subnormals, special values, rounding and scaling algorithms.
+3. Phase 3 — Industry and research comparison
+
+   OCP FP8, MX formats, NVIDIA Transformer Engine, TensorRT, GGUF quantization, GPTQ, AWQ, SmoothQuant and relevant numerical-format research.
+4. Phase 4 — Transformers-Fusion source audit
+
+   Every relevant implementation, conversion path, codec, kernel, QAT component, `.quant` representation, test and benchmark. Identify duplicate implementations, incorrect assumptions and missing capabilities.
+5. Phase 5 — New Fusion numerical formats
+
+   New INT/FP designs, mixed-precision allocation, outlier handling, adaptive scaling, accuracy-budgeted encoding and hardware-aware execution.
+6. Phase 6 — Validation and integration
+
+   Formal specifications, reference encoders/decoders, independent implementations, tests, benchmarks, documentation, backward compatibility and integration with Fusion Superproject.
+
+# 13. Mera biggest architectural suggestion
+
+Ek baat dhyan rakhna.
+
+Hum INT aur FP ke liye alag-alag isolated codecs banakar nahi rukenge.
+
+Long-term vision ek unified numerical intelligence layer hona chahiye.
+
+Suppose ek model mein:
+
+- Kuchh weights INT4 ke liye suitable hain.
+- Kuchh INT8 mein better hain.
+- Kuchh FP8 E4M3 chahte hain.
+- Kuchh FP8 E5M2 chahte hain.
+- Kuchh sensitive tensors FP16/BF16 chahte hain.
+- Kuchh ko tumhare custom Q formats se better compression milti hai.
+
+Toh planner ko actual measured distortion, memory budget aur target hardware ke basis par decision lena chahiye.
+
+Aur ye decision reproducible hona chahiye. Encoder ko apni choice, configuration aur metadata file mein preserve karne chahiye.
+
+Isse tumhara existing Q/G/MX ecosystem aur INT/FP architecture ek doosre ko complement kar sakenge.
+
+Ek universal winner format banane ke bajaye, universal format-selection system banana zyada meaningful research objective hai.
+
+## 14. Research ke liye initial reference library
+
+Ye primary sources hamare kaam aayenge:
+
+1. [OCP FP8 Specification](https://www.opencompute.org/documents/ocp-8-bit-floating-point-specification-ofp8-revision-1-0-2023-12-01-pdf-1?utm_source=chatgpt.com) — E4M3/E5M2 ki exact encoding.
+2. [NVIDIA Transformer Engine](https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/index.html?utm_source=chatgpt.com) — FP8 training aur scaling.
+3. [TensorRT Quantization Schemes](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/quantized-types-schemes.html?utm_source=chatgpt.com) — INT8, FP8 aur MXFP8.
+4. [oneAPI BF16 Specification](https://oneapi-spec.uxlfoundation.org/specifications/oneapi/v1.4-rev-1/elements/onednn/source/data_model/data_types/bfloat16?utm_source=chatgpt.com) — BF16 representation.
+5. [Your Transformers-Fusion repository](https://github.com/origin-labs-ai/transformers?utm_source=chatgpt.com) — actual implementation reference.
+
+## 15. Final research objective
+
+# Transformers-Fusion
+
+Build a complete numerical-format ecosystem.
+
+- INT representations: compact, predictable and compute-efficient.
+- FP representations: wide dynamic range and controlled precision.
+- Hybrid representations: adaptive allocation based on actual needs.
+- Native execution: efficient kernels, not just conversion simulations.
+- Verified serialization: accurate BPW and reproducible decoding.
+- Research-backed improvements: actual measurements, not marketing claims.
+
+## The goal
+
+A numerical architecture where every bit has a measurable purpose.
+
+Bhai, ek cheez clear hai: tumhare paas already custom block codecs, mixed-precision allocation, codebooks, QAT aur external-format conversion ki foundation hai. Lekin ab humein existing implementation ko critically audit karke genuine numerical engineering tak pahunchna hai.
+
+Agla milestone: INT ka complete numerical deep-dive—INT1 se INT64 tak, representation se lekar actual hardware execution tak. Phir FP ka equally deep analysis karenge.
+
+Kal se roz ek focused INT/FP research checkpoint bhi track karun?
+## 16. Operator added questions (2026-11-12) - same INT x FP programme, extended
+
+Added by the operator while the INT/FP research was being planned. These belong to the SAME
+programme and must be answered together with sections 1-15.
+
+### 16.1 The core question set
+
+- What exactly is the difference between INT and FP?
+- What have I already implemented in this project?
+- How does it work, and what can I touch or improve inside MY project?
+- What can be made better?
+- My format-making style is unique - how do INT and FP get that same uniqueness?
+- What is the best possible result in every dimension, and exactly how do I build it?
+
+### 16.2 Codebook merger: ternary {0,-1,+1} vs binary {0,1} - can a sovereign stack exist?
+
+Open research questions:
+
+- Is a common codebook lattice (binary 2^1, ternary 3^1, quaternary 4^1, signed 2-bit
+  variants) a real design win, or only a naming exercise?
+- Can ONE encoder emit all of them - a binary base plus an optional sign bit plus an optional
+  second level - so that a single wire format selects the codebook per block?
+- Does a shared codebook header (level, sign policy, symmetric flag, scale policy) make the
+  whole ladder coherent instead of a pile of separate formats?
+- Prior art check: multi-modal codebooks, residual ternary/binary hybrids, product
+  quantization - what do they already solve, and what is OUR delta?
+- Does the merger survive the 1.0 BPW side goal (D-27) and the FP side (range + mantissa)?
+- What is the sovereign-stack contract - one decoder, one header, one budget allocator, many
+  codebooks - and what breaks when a tensor mixes codebooks inside one block?
+
+### 16.3 Measurement normalization: TFLOPS vs TOPS
+
+- FP16 workloads were repeatedly measured in TFLOPS while INT workloads were measured in
+  TOPS. These are not comparable: TOPS counts integer MACs, TFLOPS counts floating-point
+  MACs, and one INT8 MAC is not one INT4 MAC in either ops or bytes moved.
+- Required: one normalization rule for the whole project - INT reported as TOP/s at a stated
+  bit-width with an explicit MAC definition; FP reported as TFLOP/s with FMA counted as 2
+  FLOPs; plus effective BPW and bytes/s so that every "cheaper" claim is apples-to-apples.
+- Decision needed from the operator: the canonical per-format unit table to be written into
+  the ladder and the benchmark harness.
+
+### 16.4 Verification note (2026-11-12, re-checked against disk today)
+
+Every file path and symbol cited in sections 2, 4, 6 and 9 was re-verified on disk:
+`src/kernel/int8_quant.cpp`, `src/codec/qat.cpp`, `src/codec/quant_engines_fp.cpp`,
+`src/math/math.cpp`, `src/adapters/src/adapter_core.cpp`, `src/inference/inference_lowprec.cpp`,
+`src/codec/block_codec.cpp`, `include/quant/types.h` - all exist. `KVCache::quantize_fp8_block`
+(`src/inference/inference_lowprec.cpp`), `linear_forward_fp8` (`src/model/transformer.cpp`) and
+`fake_quantize_with_observer` (`src/codec/qat.cpp`) are all present at the stated locations.
+The code audit in this draft is genuine, not assumed.
