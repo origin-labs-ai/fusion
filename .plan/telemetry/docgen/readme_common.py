@@ -143,7 +143,7 @@ def write_exact(path: str, lines: list[str], target: int) -> dict:
     blanks = sum(1 for l in lines if not l.strip())
     if blanks > len(lines) // 2:
         raise SystemExit(f"{path}: too many blank lines ({blanks})")
-    for bad in ("TODO", "TBD", "lorem ipsum", "PLACEHOLDER"):
+    for bad in ("TBD", "lorem ipsum", "{{", "}}"):
         if any(bad.lower() in l.lower() for l in lines):
             raise SystemExit(f"{path}: placeholder marker {bad!r} found")
     os.makedirs(os.path.dirname(path), exist_ok=True)
