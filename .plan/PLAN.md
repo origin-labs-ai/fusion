@@ -120,7 +120,7 @@ Reread only the goal + this plan, as a reviewer who did not write it.
 **Q2 — Which assumption has not been checked against the code or docs?**
 - ✅ *Verified*: "SPEC-INFERNO.md / Inferno is absent from the master plan" (grep → 0 matches).
 - ✅ *Verified*: "§10A–§10N anchors exist" (read 1316–1352; A…N present as bold anchors, 10O–10W as headings).
-- ❌ *Unchecked*: **"SPEC-INFERNO.md *is* the Inferno spec"** — its H1 says "TransFormers-Fusion Training Engine Specification"; §2 is "The 32x mandate". Close, but the word *Inferno* must be confirmed inside it. → **Added to Step 1.**
+- ❌ *Unchecked*: **"SPEC-INFERNO.md *is* the Inferno spec"** — its H1 says "Transformers-Fusion Training Engine Specification"; §2 is "The 32x mandate". Close, but the word *Inferno* must be confirmed inside it. → **Added to Step 1.**
 - ❌ *Unchecked*: **the 60-vs-69 format conflict** — a conflict *inside* a doc, invisible to a heading-only scan. → **Step 1's check extended to open-question / conflict / TODO lines** and the authoritative-master-plan ruling.
 - ❌ *Unchecked*: **whether `review-tracking/DEFECTS.md`'s 6 critical defects are all mirrored in the master plan** (§10M appears to list them, but line-by-line parity was never checked). → covered by the same extension.
 - ⚠️ *Not an assumption, a trap*: the plan's "18 of 20 GPU backends" claim is **not** to be trusted. Step 2 already says "derive from disk (not from the plan's claim)". Kept.

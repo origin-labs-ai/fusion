@@ -22,7 +22,7 @@
 
 ## A. Completed research (audit-ready)
 
-### R-01 · Master plan loop, Steps 1-6 (TransFormers-Fusion architecture plan)
+### R-01 · Master plan loop, Steps 1-6 (Transformers-Fusion architecture plan)
 - **Scope:** the whole master plan: 117-row source coverage map (§10X), 13 gaps, KAT inventory
   (§2.1b.1), 156 line-anchors, 7-tree audit (§10Y), 8 decision gates (§6.1, D-1..D-8),
   corruption scan, Phase-0 ledger, arXiv re-resolve 67/67 + browser 9/9.

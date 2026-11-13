@@ -4,21 +4,21 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-12 19:58:15** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-13 11:50:16** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `c9d6e9f Rename submodule paths to code/ and transformers/, track .plan (master plan + telemetry), refresh README with goal line and context-recovery contract`
-- branch: `## main` (dirty entries: 8)
+- HEAD: `8916755 Point the transformers submodule at the new README commit (58ae02c)`
+- branch: `## main` (dirty entries: 15)
 - submodule `code`: ## main...origin/main
-- submodule `transformers`: ## main...origin/main
+- submodule `transformers`: ## main...origin/main [ahead 1]
 - push: NOT ordered yet (hold)
 
 ## 1. Plan verifiers (live run)
 
 | Verifier | Exit | Verdict |
 |---|---|---|
-| `verify_step1.py` | 0 | **PASS**   rows=121  headings=121  gaps=13 |
+| `verify_step1.py` | 0 | **PASS**   rows=122  headings=122  gaps=13 |
 | `step2_fix2_verify.py` | 0 | **PASS** STEP 2 ALL CHECKS PASSED |
 | `step3_verify.py` | 0 | **PASS** report     : C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_anc |
 | `step3_subanchors.py` | 0 | **PASS** wrote C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_subanchors |
@@ -37,7 +37,7 @@ check-consistency: exit=0 **13/13 checks passed**
 | Repo | Modified | Untracked | Remote |
 |---|---|---|---|
 | `code` | 5759 | 45 | `origin-labs-ai/code.git` |
-| `transformers` | 28 | 92 | `origin-labs-ai/transformers.git` |
+| `transformers` | 86 | 92 | `origin-labs-ai/transformers.git` |
 
 > Working tree holds peer-session work - **no commits without operator order.**
 >

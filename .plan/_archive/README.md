@@ -1,4 +1,4 @@
-# ⚡ TransFormers-Fusion — R0001.01 Release
+# ⚡ Transformers-Fusion — R0001.01 Release
 
 > **Phase 24 honesty notice (2026-09-07, docs-only sync, no build; version line re-verified
 > 2026-09-10):** version one-truth is **1.1.0 / `R0001.01`** (`CMakeLists.txt:3`
@@ -5562,7 +5562,7 @@ Every term used anywhere in this merged document, defined in one line:
 Questions the merged document is asked most often, answered from the full text:
 
 - Q: Is this README one project or two documents pasted together? A: One project, two layers — the engineering README and the research narrative are the same engine told twice.
-- Q: Why is the logo an image? A: It is not — the README header is text-only (the old `TransCender.png` banner was removed with the TransFormers-Fusion rename so the repo stays light); recognizability comes from the title + release line.
+- Q: Why is the logo an image? A: It is not — the README header is text-only (the old `TransCender.png` banner was removed with the Transformers-Fusion rename so the repo stays light); recognizability comes from the title + release line.
 - Q: What is the single most important idea? A: A frozen core plus additive, verified pages — nothing is overwritten, so nothing is forgotten.
 - Q: Does the engine really swap personas in zero milliseconds? A: No — that is a design target. The pointer-swap design exists; the latency is not yet measured on shipping hardware.
 - Q: What is the Pointer Hot-Swap Subsystem? A: It is the subsystem that swaps active persona weights by exchanging pointers; the swap is atomic, token-verified, and reversible.

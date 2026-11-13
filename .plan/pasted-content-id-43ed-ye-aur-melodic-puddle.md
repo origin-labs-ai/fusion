@@ -67,7 +67,7 @@ Plus: it takes decisions **according to the context**, and it **learns from its 
 ### The equation
 
 ```
-Fusion  =  CodeFusion  +  TransFormers-Fusion
+Fusion  =  CodeFusion  +  Transformers-Fusion
 ```
 
 ### Accepted name variants — ALL are valid
@@ -78,16 +78,16 @@ The user gave these explicitly and said the plan must follow them:
 |---|---|---|
 | **The whole project** | **Fusion** | — |
 | **Harness side** | **CodeFusion** | `code-fusion` |
-| **Engine side** | **TransFormers-Fusion** | `Transformers-Fusion` · `TransFormersFusion` · `transformers-fusion` · **TransCender** · **transcender** · **Transcender** |
+| **Engine side** | **Transformers-Fusion** | `Transformers-Fusion` · `TransformersFusion` · `transformers-fusion` · **TransCender** · **transcender** · **Transcender** |
 
-> Verbatim: *"Fusion = CodeFusion / code-fusion + TransFormers-Fusion / transformers-fusion / TransCender / transcender / Transcender."*
+> Verbatim: *"Fusion = CodeFusion / code-fusion + Transformers-Fusion / transformers-fusion / TransCender / transcender / Transcender."*
 
 **Rule for docs and code:** pick **one canonical form per surface** and use it consistently there, but recognise **every** variant above as referring to the same thing. Recommended per surface:
 
 | Surface | Use |
 |---|---|
 | Directory on disk | `code/`, `transformers/` (already the case) |
-| Prose / product name | **CodeFusion**, **TransFormers-Fusion** |
+| Prose / product name | **CodeFusion**, **Transformers-Fusion** |
 | GitHub remote (already set) | `origin-labs-ai/code`, `origin-labs-ai/transformers` |
 | The legacy / nickname for the engine | **TransCender** — *"is also / formerly known as"* |
 
@@ -101,8 +101,8 @@ Saved verbatim so nothing is ever lost to a spelling difference again.
 |---|---|
 | The whole project | **Fusion** · `fusion` · FUSION |
 | The harness | **CodeFusion** · `code-fusion` · `cf` · `@origin-ai/cf` |
-| The engine | **TransFormers-Fusion** · `Transformers-Fusion` · **TransFormersFusion** · `transformers-fusion` · **TransCender** · `transcender` · **Transcender** |
-| The combination | **Fusion = CodeFusion + TransFormers-Fusion** |
+| The engine | **Transformers-Fusion** · `Transformers-Fusion` · **TransformersFusion** · `transformers-fusion` · **TransCender** · `transcender` · **Transcender** |
+| The combination | **Fusion = CodeFusion + Transformers-Fusion** |
 
 **Models**
 
@@ -140,7 +140,7 @@ Saved verbatim so nothing is ever lost to a spelling difference again.
 
 ```
 fusion        = code-fusion | cf                 → CodeFusion
-fusion        = transformers-fusion | transcender → TransFormers-Fusion / TransCender
+fusion        = transformers-fusion | transcender → Transformers-Fusion / TransCender
 model.train   = sol-4-flash                      @ 1.5 BPW
 model.bench   = deepseek-v4.1-flash
 bench         = CS-Bench-1.0 | CS-Bench-1.1 | D&CC-Bench-1.0 | MQC-Bench-1.0
@@ -501,7 +501,7 @@ NCM needs two stages, matching the paper:
 ## 3c. DSpine — Adjacent Causal Injection speculative decoding (RESEARCH ADDED 2026-11-09)
 
 > Operator asked: **"TF — DSpine x NCM"** — implement both generation mechanisms in
-> TransFormers-Fusion. DSpine accelerates the AR token loop (lossless); NCM replaces the
+> Transformers-Fusion. DSpine accelerates the AR token loop (lossless); NCM replaces the
 > generation shape. They compose. This section is the implementable spec, extracted from
 > the full paper ([arXiv `2609.36173v2`](https://arxiv.org/html/2609.36173v2), read live
 > 2026-11-09; code [tencent/dspine](https://github.com/tencent/dspine); models
@@ -613,7 +613,7 @@ their contextual computation").
    remaining AR/loop steps. Order: engine → NCM → DSpine (DSpine needs a stable target to draft FOR).
 7. **SGLang integration is the paper's harness; ours is CodeFusion ↔ TF engine bridge.** The
    paper runs DSpine in SGLang; our equivalent is the CodeFusion ↔ TF engine bridge (§10R item 5).
-8. **The "spine" name is a direct fit** — the engine IS TransFormers-Fusion; DSpine injects
+8. **The "spine" name is a direct fit** — the engine IS Transformers-Fusion; DSpine injects
    conditioning through the depth of a drafter backbone ("spine") — the plan's "spine" language
    ("the engine IS the spine") now has a literal mechanism match. The engine-side analogue:
    predecessor→successor injection through depth = a per-token-depth spine. (Narrative note,
@@ -1099,7 +1099,7 @@ A **traditional** transformer uses each layer's parameters **once**; depth = (pa
 - **Loops cannot simply be treated as extra depth, because the loops share weights.** Distinct layers add nearly uncorrelated increments (sum ~ √L); a shared layer adds **positively correlated** increments at every loop (sum ~ **N**, linear).
 - For a single layer looped `N` times, in the infinite-width limit, **multiplying the residual branch by `1/N` and keeping the learning rate independent of `N`** is the **only** parameterisation with **both** a stable forward pass **and** maximal residual-stream updates.
 - **Loop-µP** = loop factor `1/N` × depth factor `L^(−1/2)`: **residual branch × `1/(N√L)`**, Adam **LR factor `1/√L` with no factor of `N`**. Empirically, the base LR tuned on the smallest model stays best for **loop counts up to 8 and executed depths up to 384 layers**.
-- **Consequence for TransFormers-Fusion:** our `TransformerBlock` is pre-norm and §5's routing **weight-ties layers**, so **our residual stream will grow linearly in the loop count** — exactly the failure Loop-µP fixes. **Phase-0 action: add the `1/N` residual scaling on the looped path and assert the residual-stream norm is flat across loop counts.** This is a cheap, concrete experiment with a published reference result.
+- **Consequence for Transformers-Fusion:** our `TransformerBlock` is pre-norm and §5's routing **weight-ties layers**, so **our residual stream will grow linearly in the loop count** — exactly the failure Loop-µP fixes. **Phase-0 action: add the `1/N` residual scaling on the looped path and assert the residual-stream norm is flat across loop counts.** This is a cheap, concrete experiment with a published reference result.
 - **The alternative fix is a different residual *interface*, not a different scaling law.** **Loopback Transformer (`2611.07226`)** shows that a full block output **contains both its input and its new update**, so weighting that output also reweights the history already carried by the input. Reading the **individual update** instead — keeping the shared stack's input on a separate path — gives **separate controls over input strength, total update weight, and allocation across updates**: **geometric decay** sets the total update weight and supplies a recency prior, **attention** learns how to allocate it. Loopback reaches lower validation loss than standard Transformer baselines with **40–75% of their Transformer parameters** (191M–3B, ClimbMix). **Two caveats, read before adopting:** *"extra visits have not improved validation loss"*, and Hyperloop's advantage **did not persist** after switching to GPT-2-style initialisation and retuning learning rates — so a residual-interface change must be **re-tuned**, not dropped in. **For us this is the concrete alternative to Loop-µP's `1/N`, and it is the same shape as our §5e `G`/`S` idea (attention over prior depths).**
 - **The instability has two named sources** (`2605.18797`, Fully Looped Transformer): **gradient oscillation** and **residual explosion**. Its two *parameter-free* fixes — distribute inter-loop signals across all layers, and **attention injection** — make training stable to **12 loops**. **Our `1/N` residual scaling addresses the second; nothing in our plan yet addresses the first (gradient oscillation), so it must be measured rather than assumed.**
 - **Stability now has a usable theory.** `2604.15259` frames looped architectures along three axes — **local attractivity, input-dependence, geometry** — and proves that looped networks **without recall** have countable fixed points and **cannot achieve strong input-dependence at any spectral regime**, while **recall with outer normalization** reliably produces a regime where the fixed point is simultaneously **locally attractive, locally smooth in the input, and supported by stable backpropagation**. → **Design implication: without a mechanism to re-read earlier depths, our looped model cannot become input-dependent in the fixed point.** That is a direct argument for keeping §5e's depth attention (`G`/`S`) as **core**, not optional.
@@ -1160,7 +1160,7 @@ Stability ceilings in the literature: **Fully Looped Transformer trains stably t
 
 **The honest caveat:** both compute-matching wins need the **same** configuration — **MoE backbone + per-layer or mid-stack looping + exactly two loops**. Our §5 routing is a **dense** plan, and the published compute-matching evidence is **MoE-only**. This is a caveat, not a blocker.
 
-### 5d.5 What this means for TransFormers-Fusion — the actionable list
+### 5d.5 What this means for Transformers-Fusion — the actionable list
 
 1. **Adopt the Loop-µP residual scaling on the looped path** — residual **× 1/N**, LR independent of N. Cheapest concrete Phase-0 experiment with a published reference (LR transfers to 8 loops / 384 executed layers). **Add a V-gate: residual-stream norm flat across loop counts.**
 2. **Default `T = 2`, measure up to 4.** Two independent sources: Ouro's T=8 loss spikes, and `2610.00673`'s own T=8 run showing no gain past loop 3–4. The two compute-matching wins use exactly **2**. Ship a ladder 2 → 4 with the fixed-depth baseline at **T = 2** (not an arbitrary baseline — §5c.3's "fixed-repeat baseline" must be the marginal-return knee).
@@ -1242,7 +1242,7 @@ Stability ceilings in the literature: **Fully Looped Transformer trains stably t
 > - **Benchmark / reference model = `deepseek-v4.1-flash`** (DeepSeek V4.1 Flash). §1.1 and `MASTER_PLAN.md` **NEW-2** already said this, but the *machine-readable* block still carried `model.bench = qwen-3.8-27b`. **Stale — now fixed.**
 > - **The ruler model we train = `sol-4-flash`** ("Sol 4 Flash" — exact name, no `4B`/`4b` suffix or prefix). Renamed from `innova-x-1.1-4b` across **all 10** plan sites, plus `review-tracking/MASTER_PLAN.md` **NEW-3** and **M2**.
 > - **Both legacy strings are now RENAMED (user ruling, 2026-11-12: *"Sab rename hoyega!"*): `SolIDX` ← `InNovaIDX`, `tracesol` ← `traceInnovas`.**
->   - **`SolIDX`** is the `.idx` legacy-magic name now (`include/quant/quant_format.h:206`; `src/codec/quant_format.cpp:640`, `:680`, `:687` — reader branch matches `SolIDX`, 7 bytes incl. NUL). **Consequence stated plainly: any `.idx` written by the old InNova-era writer (10-byte `InNovaIDX` magic) will no longer parse.** If such files exist they must be regenerated; the pre-rename code is preserved in `fusion/.plan/.rea-tmp/`. The current writer still emits `TransFormers-FusionIDX` (22 B) — that live format is untouched.
+>   - **`SolIDX`** is the `.idx` legacy-magic name now (`include/quant/quant_format.h:206`; `src/codec/quant_format.cpp:640`, `:680`, `:687` — reader branch matches `SolIDX`, 7 bytes incl. NUL). **Consequence stated plainly: any `.idx` written by the old InNova-era writer (10-byte `InNovaIDX` magic) will no longer parse.** If such files exist they must be regenerated; the pre-rename code is preserved in `fusion/.plan/.rea-tmp/`. The current writer still emits `Transformers-FusionIDX` (22 B) — that live format is untouched.
 >   - **`tracesol`** is the Plotly series variable (`transformers/scripts/plot_comparison_charts.py:149`), renamed from `traceInnovas`. Code is touched here under the explicit rename ruling; the Go gate remains closed for *feature* work.
 
 
@@ -2031,6 +2031,7 @@ SPEC-INFERNO §0.3 / §11 and Appendix E/O define 26 modality types that must ea
 | OC-DECISIONS | Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11-12) | covered | — | D-25. Recorded 2026-11-12 (§16 dated entry + DECISIONS D-25); Sonar integration + Zenix port both parked by operator ruling. |
 | OC-DECISIONS | _archive/ = reference-only port of every deleted doc (operator, 2026-11-12) | covered | — | D-26. Recorded 2026-11-12 (§16 dated entry + DECISIONS D-26); 288 files, InNova.png stays deleted. |
 | OC-DECISIONS | Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12) | covered | - | D-27. Reminder note sits at the top of every implement-facing doc; dashboard carries the GOAL LINE. |
+| OC-DECISIONS | Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (operator, 2026-11-13) | covered | - | D-28. Sweep completed 2026-11-13 across the working trees (docs, code, build scripts, CI, benches, tests); writer magic lowered to `Transformers-FusionIDX` while the reader still accepts the pre-D-28 spelling, so existing `.idx` files keep decoding. `DECISIONS.md` keeps the historical spelling on purpose. |
 | OC-WORKTREE | `Modified files (12) — dispositions` | **partial** | **GAP-10** | The counts drifted: PROGRESS.md now records **24 modified + 90 untracked**, not 12. |
 | OC-WORKTREE | `Untracked files (18+) — dispositions` | **partial** | **GAP-10** | Same drift; the 3 engine proof tests are among the untracked and they are now registered. |
 | OC-WORKTREE | `What P0.0 must do (in order)` | **covered** | — | §11 Phase 1 commit hygiene. |
@@ -2821,7 +2822,7 @@ and **M2**, and `transformers/PROGRESS.md`. **16 occurrences** of `klawde-5-sol-
 
 | Old | New | Where | Consequence |
 |---|---|---|---|
-| `InNovaIDX` | **`SolIDX`** | `include/quant/quant_format.h:206`; `src/codec/quant_format.cpp:640`, `:680`, `:687`; `install_test/include/quant/quant_format.h` | The reader's legacy branch now matches `SolIDX` at **7 bytes incl. NUL** (was 10 for `InNovaIDX`). **Any `.idx` file written by the old InNova-era writer will no longer parse.** The current writer magic `TransFormers-FusionIDX` (22 B) is **untouched** — the live on-disk format is unchanged. |
+| `InNovaIDX` | **`SolIDX`** | `include/quant/quant_format.h:206`; `src/codec/quant_format.cpp:640`, `:680`, `:687`; `install_test/include/quant/quant_format.h` | The reader's legacy branch now matches `SolIDX` at **7 bytes incl. NUL** (was 10 for `InNovaIDX`). **Any `.idx` file written by the old InNova-era writer will no longer parse.** The current writer magic `Transformers-FusionIDX` (22 B) is **untouched** — the live on-disk format is unchanged. |
 | `traceInnovas` | **`tracesol`** | `transformers/scripts/plot_comparison_charts.py:149`, `:180` | Cosmetic — a Plotly series variable. No behaviour change. |
 
 The plan previously said *"Two strings must NOT be renamed … renaming them would break on-disk format
@@ -2908,7 +2909,7 @@ became `https://github.com/origin-labs-ai/code.git` / `https://github.com/origin
 path-shaped reference and `.git` URL — 93 live files swept (plan, `PLAN.md`, `review-tracking/`,
 `docs/operation-clean/`, every `.rea-tmp` script, `transformers/PROGRESS.md`, `code/arch`,
 `code/payloads`). **What deliberately did NOT change:** verbatim operator quotes, the §1
-alias-vocabulary table (CodeFusion / TransFormers-Fusion / TransCender are names, not paths) and
+alias-vocabulary table (CodeFusion / Transformers-Fusion / TransCender are names, not paths) and
 historical evidence dumps. Full backup: `.plan/.rea-tmp/rename-sweep-backup-20261112-182006/`.
 
 **Deleted-docs archive port (`.plan/_archive/`):** every doc ever deleted from both repos is now
@@ -2931,3 +2932,18 @@ range, 0 unresolved**) · `verify_step5.py` (65 checks) · `step6_audit.py` (PAS
 `arxiv_recheck.py` (67/67).
 
 **No implementation code was touched — the "Go." gate stays closed.**
+
+
+### 2026-11-13 - naming normalisation: `Transformers-Fusion` -> `Transformers-Fusion` (D-28)
+
+The engine's product name lost its capital `F`: **Transformers-Fusion**. The change is
+byte-length preserving, so every size-derived fact in this plan (file sizes, archive manifest
+byte counts, wire budgets) stays valid. The sweep covered the plan tree, the decision log,
+the review-tracking documents, the operation-clean docs, the engine's sources, headers, tests,
+benchmarks, build scripts and CI workflows, the launcher payloads and the recovered archive.
+
+**The wire format was not broken.** The `.idx` magic moved from `Transformers-FusionIDX` to
+`Transformers-FusionIDX` - both 22 bytes, so the layout is identical - and the reader now
+accepts **both** spellings, so files written by earlier builds keep decoding. The writer emits
+the new spelling only. `TransCenderIDX` and `SolIDX` keep their names; they are different
+magics with different lengths and their own history.

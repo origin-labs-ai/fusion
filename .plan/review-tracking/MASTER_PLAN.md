@@ -1,4 +1,4 @@
-# TransFormers-Fusion — Master Execution Plan (Operation Clean)
+# Transformers-Fusion — Master Execution Plan (Operation Clean)
 
 > **OPERATOR REMINDER (2026-11-12):** MAIN goal = the ENTIRE Fusion Superproject; SIDE goal = MAXIMUM at EXACT 1.0 BPW (not 1.5). FP + INT quantization families both in scope. Loop Quantization has never been implemented anywhere - Track B is the first. Full note: .plan/docs/operation-clean/DECISIONS.md D-27.
 

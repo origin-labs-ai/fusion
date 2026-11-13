@@ -374,3 +374,45 @@ Every implement-facing document carries the reminder note in the operator's own 
 - *"Aaj tak kisi ne Loop Quantization implement bhi nahi kiya hai, koi bhi model ka!"*
 - Implementation: reminder inserted in master plan, PLAN.md, LADDER.md, PROGRESS.md,
   TODO-TREE, BLUEPRINT; telemetry DASHBOARD carries it top-of-file.
+
+
+## D-28 · Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (operator, 2026-11-13)
+
+**Rule:** the capital `F` in "Formers" is dropped everywhere in the Fusion Superproject -
+`TransFormers-Fusion` becomes **`Transformers-Fusion`** - across documentation, code, build
+scripts, CI workflows, benchmarks, tests, telemetry strings and archived documents.
+`CodeFusion` and `TransCender` keep their names (D-24 left the product vocabulary alone;
+this ruling narrows it for the engine name only). The spelling is **byte-length preserving**
+(`TransFormers` and `Transformers` are both 12 characters), so file sizes, the archive
+manifest's byte column and every size-derived fact stay valid.
+
+**Wire-format safety:** the `.idx` magic moves from `TransFormers-FusionIDX` to
+`Transformers-FusionIDX`. Both are 22 bytes (21 compared + NUL), so the layout does not
+change, and the reader now accepts **both** spellings so that files written by earlier
+builds keep decoding. The writer emits the new spelling only. The magic that would have
+been broken is therefore not broken - this honours the standing ruling that the wire format
+is not touched without an operator decision.
+
+**Trace:**
+- *"poore fusion/ me jahaa bhi and kahi bhi Trans'F'ormers-Fusion likha hua hai, 'F'ormers
+  me to usko 'f' kardo, lower case kar do! Har ek jagah, docs se lekar code tak, jahaa jo
+  bhi hai - sab!"*
+- Implementation: project-wide sweep with backups (`.plan/.rea-tmp/rename-lowerf-backup-*`),
+  dual-magic reader, test updated to assert the new magic and the legacy alias.
+
+**Executed (2026-11-13):**
+- 83 text files rewritten - 9 under `.plan/`, 74 under `transformers/`; `code/` needed none.
+- The first sweep died with `WinError 206` (path too long) after 33,284 mirrored backups. It was
+  completed with a flat, hash-named backup: `.plan/.rea-tmp/rlb-20261113-113652/` (83 entries,
+  `index.jsonl` maps every rewritten file to its backup). Re-running the sweep changes 0 files.
+- Excluded on purpose: `.git`, `.mimosa`, build trees, `__pycache__`, `.rea-tmp` snapshots, every
+  `*.bak*` / backup copy, and this file (the decision log keeps the historical spelling).
+- Wire format: the writer magic is lowered; the reader keeps the pre-D-28 spelling as a fourth
+  accepted magic. `tests/test_sha256_corrupt.cpp` gained `Test 6` (legacy magic still readable) -
+  16/16 tests pass on a fresh Ninja + clang++ build (`build-norm/`), and `test_math` /
+  `test_kernel` still pass.
+- Residual scan: zero `TransFormers` occurrences outside this decision log.
+- Commit status: `.plan` committed with this record. `transformers/` already carried ~69 unrelated
+  in-flight changes from earlier sessions, so the rename is applied in its working tree but is
+  deliberately **not** committed there - committing it would mix unrelated work into a naming
+  commit. `code/` was likewise left untouched.
