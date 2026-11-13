@@ -62,6 +62,12 @@ def header32(name: str, tagline: str, pitch: list[str], nav: str,
              badges: list[str], logo: str, status: str) -> list[str]:
     """Exactly 32 lines: centred identity block + rule + status + rule."""
     assert len(badges) == 8, f"{name}: need 8 badges, got {len(badges)}"
+    pitch_lines: list[str] = []
+    for p in pitch:
+        pitch_lines.extend(wrap(p, 96))
+    while len(pitch_lines) < 3:
+        pitch_lines.append("Every number in this document is generated from the live tree "
+                           "by `.plan/telemetry/docgen/`.")
     L = [
         '<div align="center">',
         f'  <img src="{logo}" alt="{name}" width="96" />',
@@ -70,12 +76,9 @@ def header32(name: str, tagline: str, pitch: list[str], nav: str,
         "",
         f"  **{tagline}**",
         "",
-    ]
-    pitch_lines = []
-    for p in pitch:
-        pitch_lines.extend(wrap(p, 96))
-    L += [f"  {p}" for p in pitch_lines[:3]]
-    L += [
+        f"  {pitch_lines[0]}",
+        f"  {pitch_lines[1]}",
+        f"  {pitch_lines[2]}",
         "",
         "  <p>",
         f"    {nav}",
@@ -92,19 +95,6 @@ def header32(name: str, tagline: str, pitch: list[str], nav: str,
         "",
         "---",
     ]
-    if len(L) < 32:
-        # insert extra pitch lines before the nav block without moving the rule
-        need = 32 - len(L)
-        at = 8 + len(pitch_lines[:3])
-        L[at:at] = [""] * 0 if need <= 0 else [""] * 0
-        while len(L) < 32:
-            L.insert(at, "  " + "The document is generated from the live tree; every count below is reproducible.")
-    if len(L) > 32:
-        # drop optional pitch lines first
-        while len(L) > 32 and len(pitch_lines) > 1:
-            idx = 7
-            del L[idx]
-            pitch_lines.pop()
     assert len(L) == 32, f"{name}: header is {len(L)} lines"
     return L
 
