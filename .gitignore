@@ -21,3 +21,6 @@ graphify-out/
 # Backups are history, not knowledge. Git already carries history; these stay on disk.
 *.bak-*
 *.bak
+
+# docgen live-facts cache: regenerated from the tree and contains local paths.
+.plan/telemetry/docgen/facts.json
