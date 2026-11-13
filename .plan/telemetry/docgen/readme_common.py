@@ -92,8 +92,10 @@ def header32(name: str, tagline: str, pitch: list[str], nav: str,
         "---",
         "",
         status,
+        "> **Generated from the live tree:** every count, pin and verifier exit in this document is reproducible.",
         "",
         "---",
+        "",
     ]
     assert len(L) == 32, f"{name}: header is {len(L)} lines"
     return L
