@@ -284,7 +284,7 @@ def build() -> dict:
         "Fusion",
         "One superproject. Two components. One exact goal.",
         [
-            "Fusion is the umbrella over the Transformers-Fusion C++20 engine and the CodeFusion Windows workspace. It owns the plan, the decision log, the telemetry and the publishable documentation. The engine carries the numbers; the launcher carries the product; the superproject carries the evidence that the two still agree. This README is generated at exactly 2,048 lines from the live tree.",
+            "Fusion is the umbrella over the C++20 engine and the Windows launcher. It owns the plan, the decisions, the telemetry and the publishable documentation. This README is generated at exactly 2,048 lines from the live tree.",
         ],
         '<a href="#-what-fusion-is"><b>Overview</b></a> • <a href="#-the-goal-line-d-27"><b>Goal</b></a> • '
         '<a href="#-repository-topology"><b>Topology</b></a> • <a href="#-telemetry-dashboard"><b>Telemetry</b></a> • '
