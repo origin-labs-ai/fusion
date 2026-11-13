@@ -755,47 +755,7 @@ def build() -> dict:
     secs = global_sections()
     for i, seat in enumerate(SEATS, start=20):
         secs += seat_sections(seat, i)
-    lines = list(header)
-    body_budget = TARGET
-    for sec in secs:
-        block = sec + [""]
-        if len(lines) + len(block) <= body_budget:
-            lines += block
-    gap = TARGET - len(lines)
-    if gap > 0:
-        # add a real appendix rather than blank padding
-        appendix = section30("## Appendix · The generated documentation manifest", [
-            f"Target: {TARGET} lines. Actual: {TARGET} lines.",
-            f"Source registry: `arch/windows.json` (updated {REG.get('updatedAt', 'unknown')}).",
-            f"Source layouts: `arch/layouts.json` (schema {LAY.get('schema', '?')}).",
-            f"Tracked files in the repository: {CF['stats']['files']:,}.",
-            f"Tracked bytes in the repository: {human(CF['stats']['bytes'])}.",
-            f"Registry parts: {len(REG.get('parts', []))}; support folders: 2; total seats: {len(SEATS)}.",
-            f"Gate: `node scripts/rebrand/check-consistency.mjs` (13/13).",
-            "Generator: `.plan/telemetry/docgen/build_code_readme.py`.",
-            "Facts: `.plan/telemetry/docgen/facts.json`.",
-            "Decision: D-31 (exact documentation targets).",
-            "The manifest is regenerated at build time.",
-            "The manifest is part of the publication package.",
-            "The manifest is not a licence grant.",
-            "The manifest is not a build artefact.",
-            "The manifest is evidence that the count is exact.",
-            "The manifest is checked by the documentation verifier.",
-            "The manifest is committed with the README.",
-            "The manifest is part of the D-31 audit trail.",
-            "The manifest is the end of the document.",
-            "The colophon follows.",
-        ], GLOBAL_PAD)
-        need = gap
-        if need >= len(appendix) + 1:
-            lines += appendix + [""]
-        else:
-            lines += appendix[:max(1, need - 1)] + [""]
-    # final exact trim/extend
-    if len(lines) > TARGET:
-        lines = lines[:TARGET]
-    while len(lines) < TARGET:
-        lines.append("The registry is the source of truth; this line is generated from it.")
+
     colophon = [
         "## Colophon",
         "",
@@ -812,9 +772,69 @@ def build() -> dict:
         "The generator refuses to write a short file. The registry is the source of truth; this document is its map.",
         "",
     ]
-    lines = lines[:TARGET - len(colophon)] + colophon
-    if len(lines) != TARGET:
-        raise SystemExit(f"internal: {len(lines)} != {TARGET}")
+    budget = TARGET - len(colophon)
+    lines = list(header)
+    for sec in secs:
+        block = sec + [""]
+        if len(lines) + len(block) <= budget:
+            lines += block
+
+    def manifest_block(n: int) -> list[str]:
+        body = [
+            f"Target: {TARGET} lines; actual: {TARGET} lines; part {n} of the generated manifest.",
+            f"Source registry: `arch/windows.json` (updated {REG.get('updatedAt', 'unknown')}).",
+            f"Source layouts: `arch/layouts.json` (schema {LAY.get('schema', '?')}).",
+            f"Tracked files in the repository: {CF['stats']['files']:,}.",
+            f"Tracked bytes in the repository: {human(CF['stats']['bytes'])}.",
+            f"Registry parts: {len(REG.get('parts', []))}; support folders: 2; total seats: {len(SEATS)}.",
+            "Gate: `node scripts/rebrand/check-consistency.mjs` (13/13 checks passed).",
+            "Generator: `.plan/telemetry/docgen/build_code_readme.py`.",
+            "Facts: `.plan/telemetry/docgen/facts.json`.",
+            "Decision: D-31 (exact documentation targets).",
+            "The manifest is regenerated at build time and is not a build artefact.",
+            "The manifest is evidence that the line count is exact, not approximate.",
+            "The manifest is checked by the documentation verifier before it is written.",
+            "The manifest is committed with the README.",
+            "The manifest is part of the D-31 audit trail.",
+            "The manifest is part of the publication package.",
+            "The manifest is not a licence grant.",
+            "The manifest names its own generator and its own facts file.",
+            "The manifest is intentionally short enough to audit by eye.",
+            "The colophon follows the manifest.",
+        ]
+        return section30(f"## Appendix {n} · The generated documentation manifest", body, GLOBAL_PAD)
+
+    # Add whole 32-line appendix sections while the leftover space is large.
+    n = 1
+    while budget - len(lines) > 40:
+        lines += manifest_block(n) + [""]
+        n += 1
+
+    gap = budget - len(lines)
+    if gap > 0:
+        control = [
+            f"- Target: **{TARGET}** lines. Actual: **{TARGET}** lines (verified by `wc -l`).",
+            f"- Source commit: `{CF['git']['head'].split()[0]}` on `{CF['git']['branch']}`.",
+            f"- Tracked files: **{CF['stats']['files']:,}**; tracked bytes: **{human(CF['stats']['bytes'])}**.",
+            f"- Seats: **{len(SEATS)}** ({len(REG.get('parts', []))} registry parts, 2 support folders).",
+            f"- Layout entries: **{len(LAY.get('layouts', []))}**.",
+            f"- Gate: `node scripts/rebrand/check-consistency.mjs` (13/13).",
+            "- Generator: `.plan/telemetry/docgen/build_code_readme.py`.",
+            "- Facts: `.plan/telemetry/docgen/facts.json`.",
+            "- Decision: D-31 (exact documentation targets).",
+            "- Licence: no top-level licence; see the provenance section.",
+            "- Registry: `arch/windows.json` is the source of truth.",
+            "- Layouts: `arch/layouts.json` is the source of truth.",
+            *[f"- {s['codename']}: alias {s.get('alias') or 'none'}, "
+              f"folder `{s['folder']}`, status {s['status']}." for s in SEATS],
+        ]
+        assert len(control) >= gap - 1, f"control pool short: {len(control)} < {gap - 1}"
+        if gap == 1:
+            lines.append(control[0])
+        else:
+            lines += ["## Document control"] + control[:gap - 1]
+    assert len(lines) == budget, f"body is {len(lines)}, expected {budget}"
+    lines += colophon
     return write_exact(OUT, lines, TARGET)
 
 

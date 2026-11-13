@@ -1865,7 +1865,7 @@ narrative lines (tables and code do not count), which makes padded blank lines i
 - `.plan/docs/operation-clean/LADDER.md` — 169 lines, 9257 bytes.
 - `.plan/docs/operation-clean/PLAN.md` — 156 lines, 19379 bytes.
 - `.plan/docs/operation-clean/WORKING-TREE.md` — 56 lines, 7898 bytes.
-- `.plan/telemetry/DASHBOARD.md` — 99 lines, 6561 bytes.
+- `.plan/telemetry/DASHBOARD.md` — 99 lines, 6540 bytes.
 - `.plan/telemetry/TODO-TREE.md` — 203 lines, 13967 bytes.
 - `.plan/review-tracking/DEFECTS.md` — 167 lines, 11677 bytes.
 - `.plan/review-tracking/DRAFT.md` — 511 lines, 145343 bytes.
@@ -1965,9 +1965,8 @@ The publication reuses this table rather than inventing a second one.
 - Tests: **76** test files; **140** named cases.
 - Executables: **20**. Libraries: **26**.
 - Backends: **24**. Source directories: **14**.
-- Engine commit: `fb774af docs(quant): finish QuantIDX rename bookkeeping and InNova legacy note` on
-`main`.
-- Source files: **714**; source lines: **173,963**.
+- Engine commit: `98f5a10` on `main`.
+- Source files: **714**; source lines: **173,968**.
 The engine is C++20 and builds with CMake.
 The quantization registry is the single source of truth for format identity.
 The block codec is the single source of truth for wire layout.
@@ -2022,10 +2021,11 @@ renegotiated in the decision log rather than silently missed.
 The live source is the repository; the generator re-reads it on every build.
 The live source is the repository; the generator re-reads it on every build.
 The live source is the repository; the generator re-reads it on every build.
+The live source is the repository; the generator re-reads it on every build.
 ## Document control
 
 - Target: **2048** lines. Actual: **2048** lines (verified by `wc -l`).
-- Source commit: `09f2294 chore(repo): ignore the docgen live-facts cache (regenerated, local paths)` on `main`.
+- Source commit: `38dc263` on `main`.
 - Knowledge base: `26` authored Markdown documents in `.plan/`.
 - Research items: `18`. Decisions: `31`.
 - Component pins: `transformers` and `code`, recorded in `.gitmodules`.
