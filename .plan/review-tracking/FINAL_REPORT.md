@@ -286,7 +286,10 @@ Parts and alias ladder (Lite → Plus → Pro → Studio → Max → Ultra):
 | GSX-CLI | # | `windows/gsx-cli` | opencode workspace + MiMoCode (Xiaomi) source | present |
 | Zingma | Lite | `windows/zingma` | empty — seat for Qoder's native Quest/agents window | empty |
 | Sonar | Plus | `windows/sonar` | empty — seat for the reverse-engineered DeepSeek Harness | empty |
-| Zenix CC | Ultra | `windows/zenix-cc` | empty — seat for native Claude Desktop | empty |
+| Zenix | Ultra | `windows/zenix` | native Claude Desktop 5.1231.2 (`SOURCE/` present) | present |
+
+> **Naming update (2026-11-13, D-29):** this row was `Zenix CC` / `windows/zenix-cc` in the
+> 2026-10-27 snapshot; the `CC` suffix is retired and the seat is now **Zenix**.
 
 Rules now enforced by the registry (`arch/windows.json` is the single source of
 truth; `launcher/launch.ps1` and every `window.json` are derived from it):
@@ -298,6 +301,6 @@ truth; `launcher/launch.ps1` and every `window.json` are derived from it):
 - Roles are not assigned: **Ingot is not the main part**.
 - `windows/onyx` is a real folder again; the junction is gone.
 
-Open items: place the three empty seats (Zingma, Sonar, Zenix CC), rename the physical
+Open items: place the three empty seats (Zingma, Sonar, Zenix), rename the physical
 `obsidian` folder to `onyx`, and finish the `apps/cli` truncation repair tracked in §10.
 

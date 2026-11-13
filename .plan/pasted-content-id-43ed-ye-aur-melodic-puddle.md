@@ -78,7 +78,7 @@ The user gave these explicitly and said the plan must follow them:
 |---|---|---|
 | **The whole project** | **Fusion** | — |
 | **Harness side** | **CodeFusion** | `code-fusion` |
-| **Engine side** | **Transformers-Fusion** | `Transformers-Fusion` · `TransformersFusion` · `transformers-fusion` · **TransCender** · **transcender** · **Transcender** |
+| **Engine side** | **Transformers-Fusion** | `TransformersFusion` · `transformers-fusion` · **TransCender** · **transcender** · **Transcender** |
 
 > Verbatim: *"Fusion = CodeFusion / code-fusion + Transformers-Fusion / transformers-fusion / TransCender / transcender / Transcender."*
 
@@ -91,6 +91,11 @@ The user gave these explicitly and said the plan must follow them:
 | GitHub remote (already set) | `origin-labs-ai/code`, `origin-labs-ai/transformers` |
 | The legacy / nickname for the engine | **TransCender** — *"is also / formerly known as"* |
 
+> **Path/repo note (D-24, reaffirmed 2026-11-13, D-29):** the component folders and GitHub
+> repos carry no `-fusion` suffix — `code/` (`origin-labs-ai/code`) and `transformers/`
+> (`origin-labs-ai/transformers`). The product names **CodeFusion** and **Transformers-Fusion**
+> are unchanged; this path rule does not rename product vocabulary.
+
 ### 1.1 Complete alias registry — ALL names the user has given
 
 Saved verbatim so nothing is ever lost to a spelling difference again.
@@ -101,7 +106,7 @@ Saved verbatim so nothing is ever lost to a spelling difference again.
 |---|---|
 | The whole project | **Fusion** · `fusion` · FUSION |
 | The harness | **CodeFusion** · `code-fusion` · `cf` · `@origin-ai/cf` |
-| The engine | **Transformers-Fusion** · `Transformers-Fusion` · **TransformersFusion** · `transformers-fusion` · **TransCender** · `transcender` · **Transcender** |
+| The engine | **Transformers-Fusion** · **TransformersFusion** · `transformers-fusion` · **TransCender** · `transcender` · **Transcender** |
 | The combination | **Fusion = CodeFusion + Transformers-Fusion** |
 
 **Models**
@@ -256,7 +261,7 @@ This is the finding that would have made the whole project fail its own definiti
 | Layer | File | What it computes | Status |
 |---|---|---|---|
 | **TRAINING** | `src/model/autograd_functions.cpp:17` — `ScaledDotProductAttentionFunction::forward` | `scale = 1.0f/std::sqrt((float)D_)` at **:25**; score loop with `sum * scale` at **:56**; **`softmax_forward_avx2(wd + row, sd + row, S_full_)` at :67**; backward at **:107** with its own `scale` at **:125** and `sum * scale` at **:178**, **:196** | 🔴 **CORE — the #1 change site.** Both forward **and** backward must learn `G`/`S`, or training will not match inference. |
-| **JIT codegen** | `src/trainer/code_gen.cpp:219` — `attention_flash` | **Emits the literal formula as generated C++**: `float scale = 1.0f / sqrtf((float)head_dim);` at **:229**; max-subtracted softmax at **:262–267** (`expf(scores[j] - max_score)`, then `/= (sum + 1e-10f)`); also `generate_softmax` at **:406** and the `attention_basic` template at **:1107** | 🔴 **CORE.** The generator *writes* the traditional attention into every JIT-compiled kernel. **🔴 CRITICAL — the score buffer is `min(seq_len, 2048)` but three loops run `j < seq_len` and write `scores[j]` (**`src/trainer/code_gen.cpp`:236** cap, **:237** loop, **:258** / **:264** / **:267** writes) ⇒ for `seq_len > 2048` the generated kernel **overflows a stack buffer**. The caller at **:825** passes `spec.M` with **no clamp**, and `tests/test_code_gen.cpp:43` only ever uses `seq_len=8`, so **the overflow path is untested**. This is a **memory-safety defect**, not merely a 2048-token ceiling.** |
+| **JIT codegen** | `src/trainer/code_gen.cpp:232` — `attention_flash` | **Emits the literal formula as generated C++**: `float scale = 1.0f / sqrtf((float)head_dim);` at **:241**; max-subtracted softmax at **:284–286** (`expf(scores[j] - max_score)`, then `/= (sum + 1e-10f)`); also `generate_softmax` at **:406+** and the `attention_basic` template at **:1146** | 🔴 **CORE.** The generator *writes* the traditional attention into every JIT-compiled kernel. **✅ FIXED 2026-11-13 (V20/T6.3):** the score buffer is now a heap `std::vector<float> scores(static_cast<size_t>(seq_len), 0.0f)` at **:258** (real seq_len, no cap), `generate_attention` rejects `seq_len > 2048` and non-positive shapes loudly, the caller clamp at **:852** is the boundary gate, and `tests/test_code_gen.cpp::test_attention_v20_budget` covers 8/2048/2049/8224/32768 — **60/60 tests pass**, emitted kernel compiles clean at `/W4`. **Still open (capability):** streaming/tiled softmax for >2048-token contexts (gate **V20** second half). |
 | **Flash kernel** | `src/kernel/flash_attention.cpp` | `scale = 1.0f/std::sqrt((float)D)` at **:50** (with an INF/NaN guard at **:45–51**); tiled online softmax with max-subtraction at **:109–166** | 🔴 **CORE** — the fast path for `S_full > 64`. |
 | **Scalar/AVX math** | `src/math/math.cpp` | `softmax(const Tensor&, Tensor&, int axis)` at **:232** — **verified 2026-11-10: this is a GENERIC axis-parameterised elementwise softmax, NOT a duplicate of the attention formula** (same class as the already-confirmed `math_avx2*` / `math_avx512` files, which RESEARCH-4 already proved attention-free). It is the *primitive* every attention path calls, not a copy of the formula. `vec_softmax_stable` at **:373**; `vec_softmax_stable_avx2` at **:556** — which **just forwards to the scalar version**, i.e. an **AVX2-named function with no AVX2 implementation** — a §2 dead-code violation in its own right | 🟡 **SUPPORTING (shared primitive)** + 🟡 **DEAD** (the AVX2 wrapper) — **the previous 🔴 CORE label was wrong** |
 | **SIMD math** | `src/math/simd_math.cpp` | `rms_norm_scalar` :47, `rms_norm_avx2` :61, `rms_norm_avx512` :101 | 🟢 **SUPPORTING** — but the RoPE AVX2 stride bug (§10M) lives in this file |
@@ -274,7 +279,7 @@ This is the finding that would have made the whole project fail its own definiti
 
 **(b) is the cheapest to land** and keeps the 16 primitive-only backends valid (and leaves the 4 fused ones needing only a `G`/`S` parameter), but it may not achieve the O(n) common case §3.2 requires. **This is a Phase-0 decision, and it must be made before any kernel work starts.**
 
-**The 2048 ceiling is worse than a ceiling — it is a live stack buffer overflow (NEW CRITICAL DEFECT, 2026-11-10).** `src/trainer/code_gen.cpp:236` sizes the generated score buffer at `min(seq_len, 2048)`, but the generated kernel's three loops (`:237`, `:263`, `:267`) all run `j < seq_len` and write `scores[j]` (`:258`, `:264`, `:267`). **For any `seq_len > 2048` the JIT-emitted `quant_attention` writes past the end of a 2048-element stack buffer** — a stack-smash in generated code. The path is reachable: the only caller, `src/trainer/code_gen.cpp:825`, passes `spec.M` **with no clamp**, and `tests/test_code_gen.cpp:43` only ever calls `generate_attention(8, …)`, so **nothing exercises `seq_len > 2048`**. **Two fixes are needed, in this order:** (1) **memory safety** — clamp the write loop to the buffer size *or* size the buffer to `seq_len` *or* reject `seq_len > 2048` at the generator boundary with a loud error (gate **V20**); (2) **capability** — a 4M-token context cannot be served by a generator that caps at 2048, so either stream/tiled the softmax in generated code or stop using the JIT path for long sequences.
+**The 2048 ceiling was worse than a ceiling — a live stack buffer overflow (DEFECT FOUND 2026-11-10, **FIXED 2026-11-13**).** The generator used to size the score buffer at `min(seq_len, 2048)` while the generated kernel's loops ran `j < seq_len` — for any `seq_len > 2048` the JIT-emitted `quant_attention` wrote past the end of a 2048-element stack buffer, and the caller passed `spec.M` unclamped with no test ever exercising `seq_len > 2048`. **Fix (T6.3/V20, 2026-11-13):** the emitted buffer is now `std::vector<float> scores(static_cast<size_t>(seq_len), 0.0f)` — heap, sized to the **real** seq_len, standard C++ at every size (`src/trainer/code_gen.cpp:258`); `generate_attention` **rejects loudly** (`std::invalid_argument`, naming gate V20) for non-positive shapes and `seq_len > 2048` (`:211` region), because truncate-clamping would be a bench-honesty lie; the `attention_basic` template got the same heap buffer (`:1146`); the caller clamp is the boundary gate at `:852`. Regression: `tests/test_code_gen.cpp::test_attention_v20_budget` (12 assertions — seq_len 8/2048 generate, 2049/8224/32768 throw, caller clamp, template heap buffer; pre-fix, `tests/test_code_gen.cpp:43` only ever called `generate_attention(8, …)`, so the overflow path was untested) — build-norm **60/60**, gate `test_code_gen` Passed, and the emitted 2048 kernel compiles clean at `/W4` with clang-cl. **Remaining (capability fix 2):** the generator still refuses `seq_len > 2048`, so a 4M-token context must go through the flash path — streaming/tiled softmax in generated code is the open capability work (gate **V20**'s second half).
 
 #### 2.1c Breakage surface the first inventory missed
 
@@ -1009,6 +1014,97 @@ Labelled per DRAFT.md §57's observation / inference / **unknown** rule.
 5. **Whether the factorial dead-zone result holds for weight-tied loops** (§5c.2 note) — untested in the literature as far as found.
 6. **Complementary learning systems / hippocampal CLS** — no matching paper surfaced in the query run. **UNKNOWN**, though our in-repo ECC covers the practical need.
 
+### 5c.6 G/S DESIGN NOTE — the written design (OPEN-RESEARCH #4 deliverable, 2026-11-13)
+
+> **Method:** deep-read of the ten §5 papers — `2603.10123` (Cesàro U-curve), `2603.15031` (AttnRes),
+> `2605.18855` (Delta AttnRes), `2610.13630` (MSAR), `2607.27230` (MHAR), `2607.09694` (LR-AttnRes),
+> `2606.18524` (Loop-µP), `2610.00673` (Closing the Loop), `2605.16343` (LoopQ), `2610.16368`
+> (LoopQuant) — abstracts fetched live this session, bodies consolidated against §5c.2/§5c.3, §5d
+> and §5e (whose 2026-11-10 pass read every ID from live arXiv API responses). **This note states
+> the design and tags every remaining fork; it closes no OPEN-DECISION by fiat** — each fork keeps
+> its ledger id and the operator stamps it (D-15 delegation covers priority, not the ruling).
+
+**G — the gate (design statements G1…G8):**
+
+1. **G1 · Backbone = Form B on both axes.** Sequence axis: `G(GS)` selects `m ≪ n` keys from the
+   index `S` and softmaxes over those `m` with a `log m` normaliser — length-invariant, O(n), and
+   V10's strict-superset property holds **by construction** (`m = n, G ≡ 1` recovers today's
+   softmax). Depth axis: the *same* mechanism is AttnRes (`2603.15031`) — softmax attention over
+   preceding layer outputs. One mechanism, two axes; §5e names the family.
+2. **G2 · No new router module.** Route by **reading the attention scores already computed**
+   (A-MoD, `2412.20875`): *"no additional trainable parameters"*, adapts from pretrained
+   transformers, and it composes with `G`. Our engine has no spare router budget at the
+   1.0-BPW side goal. Learned-gate vs post-hoc readout stays **OPEN-DECISION #6** (readout is the
+   recommended default, and the fixed-repeat baseline of `1803.08165` is a mandatory ablation).
+3. **G3 · Routing cost decoupled from width.** Use **LR-AttnRes's r-dimensional routing keys**
+   (`2607.09694`) for any `G`-side scoring — the only family variant whose routing cost does not
+   scale with hidden width `d`. MHAR (`2607.27230`) shows a single shared depth query degrades
+   progressively **as width grows** — a scaling hazard, not a styling choice.
+4. **G4 · Form C is required, as a hypothesis.** The factorial dead zone `O(1/(H−1)!)`
+   (`2603.10123`) lives in the **residual-depth** path; without a depth correction the
+   mid-context influence collapses regardless of the sequence-axis gate. **Caveat carried into
+   the gate:** the Cesàro result assumes **distinct per-layer operators**; under weight-tied
+   loops the constant is **OPEN-UNKNOWN #11** — Form C stays a hypothesis until the step-0
+   U-curve is reproduced on a weight-tied looped model.
+5. **G5 · Attend over deltas, not cumulative states.** Delta AttnRes (`2605.18855`): cumulative
+   hidden states are redundant, driving **routing collapse** (weights near-uniform, max ≈ 0.2)
+   at depth; routing over per-sublayer **deltas** restores contrast (max ≈ 0.6). Design
+   consequences: `S`'s depth entries store **sublayer deltas**; and `G`'s V-gate asserts
+   **depth-attention contrast** (max routing weight), not merely output correctness — the same
+   spirit as V12's flat influence-density assertion.
+6. **G6 · Exit gate, specified.** `λ_t(x) = σ(Gate(F^(t)(x)))`; inference uses the **Q-exit
+   rule** (exit when the exit-CDF crosses `q` — a deployment knob, no retraining). Training
+   requirements: **LR warmup** (without it `p(exit at step 1)` stays 1.00 for 2,267 steps —
+   the silent collapse), **β ≥ 0.10** for recovery, and the **smoothed exit loss**
+   `L = (1−ε)·Σ p_t·L_t + (ε/T)·Σ L_t` with **ε = 0.05** so abandoned steps keep gradient
+   (≥ 0.0167 of LM weight at T = 3). **Monitor the exit distribution directly; the LM loss
+   will not show the collapse.** [OPEN-DECISION #18's content, stated as design.]
+7. **G7 · The policy must shrink work, not just depth.** Per-token routing where inactive
+   tokens skip deeper recursions **including their attention and KV work**
+   (Mixture-of-Recursions; T-LoopFormer `2609.15160`). This is a **design requirement on the
+   `HybridAttnKind` / `build_hybrid_schedule` seam**, not an optimisation. [OPEN-DECISION #20.]
+8. **G8 · Norm interaction + Form A quarantine.** Our `TransformerBlock` is **pre-norm**
+   (`transformer.h:139-142`); MoDA (`2603.15619`) reports depth attention *"pairs better with
+   post-norm than pre-norm"* — a concrete, checkable Phase-0 risk, not an assumption.
+   Form A (rectified/unnormalised gate, Softpick lineage) breaks V10's normaliser and changes
+   downstream training dynamics: **experimental flag only**, with its own gradient check (V19).
+
+**S — the structure (design statements S1…S6):**
+
+1. **S1 · Bounded is state of the art.** ARLoop (`2611.05234`): **sliding-window depth attention
+   matches or outperforms full-history** at larger recurrent depths. So `S` = a **bounded,
+   sliding, persistent index**: the active window stays hot, older state moves **into the
+   `.idx`-backed store**. "Never forgets anything" is satisfied by *eviction into* `S`, never
+   by deletion — the §3.2 wording holds.
+2. **S2 · Two axes in one index.** `S` holds **sequence history and depth history**
+   (MoDA, `2603.15619`: depth-KV entries from earlier layers alongside sequence entries). The
+   depth entries carry the **deltas** (G5).
+3. **S3 · Position-independence constraint.** The index is **not position-ordered** (§5c.2
+   Form B requirement) — keying `S` by position would re-introduce the position bias `G`
+   exists to kill.
+4. **S4 · KV-cache policy, stated.** Naive = `T` separate KV sets per position; **shared-KV**
+   (`2610.33360`) cuts persistent cache sets **15 → 4** and removes **81–89%** of the
+   continuation-loss penalty (parallel pass supplies cache entries, continuation reads
+   recursively, **consistency loss in the final 10%** of the token budget). At the 1.0/1.5-BPW
+   × 4M-window budget this is first-order memory. [**OPEN-DECISION #22**; recommendation:
+   shared-KV.]
+5. **S5 · Loop-entry identity path.** `2609.30820`: per-channel INT4 fails **first at the
+   non-residual loop-entry adapter** — quantised perturbation without an identity path feeds
+   back through later steps. Our looped entry seam gets an **identity path**, and any PTQ on
+   looped blocks accumulates GPTQ Hessians over **all** recurrence steps.
+6. **S6 · Quantisation-first discipline.** `G` is a normalisation over an attention row —
+   OASIS (`2605.17887`) shows an extra depth-wise normalisation channel **amplifies sinks,
+   outliers and low-bit error**. Therefore `G` goes **inside the quantisation test set from
+   day one**, at **every** wire BPW on the ladder — the **1.0-BPW side goal included**, and
+   both **FP and INT** format families (D-27). [**OPEN-DECISION #14**; recommendation: yes.]
+
+**Forks this note deliberately leaves open** (each carries its ledger id — the operator stamps):
+#12 confirm B+C composite (recommend: yes) · #13 single-stream vs multi-stream + routing-key
+dimensionality · #6 learned gate vs post-hoc readout · #16 adopt Loop-µP `×1/N` · #21 residual
+interface: Loop-µP scaling vs Loopback per-block-update · #22 KV policy · #17 default loop
+ladder (recommend: T = 2, measure to 4) · #14 `G` in the quant set (recommend: day one) ·
+#11 weight-tied dead-zone measurement (OPEN-UNKNOWN) · #20 work-shrinking routing seam.
+
 ---
 
 ## 5d. LOOP vs TRADITIONAL — the two transformer types: attention, and training (verified 2026-11-10)
@@ -1241,9 +1337,9 @@ Stability ceilings in the literature: **Fully Looped Transformer trains stably t
 >
 > - **Benchmark / reference model = `deepseek-v4.1-flash`** (DeepSeek V4.1 Flash). §1.1 and `MASTER_PLAN.md` **NEW-2** already said this, but the *machine-readable* block still carried `model.bench = qwen-3.8-27b`. **Stale — now fixed.**
 > - **The ruler model we train = `sol-4-flash`** ("Sol 4 Flash" — exact name, no `4B`/`4b` suffix or prefix). Renamed from `innova-x-1.1-4b` across **all 10** plan sites, plus `review-tracking/MASTER_PLAN.md` **NEW-3** and **M2**.
-> - **Both legacy strings are now RENAMED (user ruling, 2026-11-12: *"Sab rename hoyega!"*): `SolIDX` ← `InNovaIDX`, `tracesol` ← `traceInnovas`.**
->   - **`SolIDX`** is the `.idx` legacy-magic name now (`include/quant/quant_format.h:206`; `src/codec/quant_format.cpp:640`, `:680`, `:687` — reader branch matches `SolIDX`, 7 bytes incl. NUL). **Consequence stated plainly: any `.idx` written by the old InNova-era writer (10-byte `InNovaIDX` magic) will no longer parse.** If such files exist they must be regenerated; the pre-rename code is preserved in `fusion/.plan/.rea-tmp/`. The current writer still emits `Transformers-FusionIDX` (22 B) — that live format is untouched.
->   - **`tracesol`** is the Plotly series variable (`transformers/scripts/plot_comparison_charts.py:149`), renamed from `traceInnovas`. Code is touched here under the explicit rename ruling; the Go gate remains closed for *feature* work.
+> - **Both legacy strings were renamed in the 2026-11-12 wave** (user ruling: *"Sab rename hoyega!"*): `SolIDX` ← `InNovaIDX`, `tracesol` ← `traceInnovas`. **The wire-magic half was reverted on 2026-11-13 by D-30.**
+>   - **`SolIDX` is not an engine `.idx` magic.** A model name is not a wire identity. The engine `.idx` reader accepts `Transformers-FusionIDX` (22 B, current) and `TransCenderIDX` (15 B, the engine's former name — "formerly known as"); `SolIDX` and `InNovaIDX` are rejected. `SolIDX` (7 B incl. NUL) is reserved and specified for **model manifests** in `transformers/docs/MODEL_MANIFEST.md`. Regression: `tests/test_sha256_corrupt.cpp` Test 8.
+>   - **`tracesol`** remains the Plotly series variable (`transformers/scripts/plot_comparison_charts.py:149`), renamed from `traceInnovas`. It is cosmetic and stays. Code was touched under the explicit rename ruling; the Go gate remains closed for *feature* work.
 
 
 ### 6.1 Decision gates closed — the eight open Phase-0 questions (2026-11-12)
@@ -2032,6 +2128,8 @@ SPEC-INFERNO §0.3 / §11 and Appendix E/O define 26 modality types that must ea
 | OC-DECISIONS | _archive/ = reference-only port of every deleted doc (operator, 2026-11-12) | covered | — | D-26. Recorded 2026-11-12 (§16 dated entry + DECISIONS D-26); 288 files, InNova.png stays deleted. |
 | OC-DECISIONS | Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12) | covered | - | D-27. Reminder note sits at the top of every implement-facing doc; dashboard carries the GOAL LINE. |
 | OC-DECISIONS | Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (operator, 2026-11-13) | covered | - | D-28. Sweep completed 2026-11-13 across the working trees (docs, code, build scripts, CI, benches, tests); writer magic lowered to `Transformers-FusionIDX` while the reader still accepts the pre-D-28 spelling, so existing `.idx` files keep decoding. `DECISIONS.md` keeps the historical spelling on purpose. |
+| OC-DECISIONS | Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13) | covered | - | D-29. `Zenix-CC` -> `Zenix` across folder, registry and current-state docs; duplicate `Transformers-Fusion` alias removed from §1 and §1.1; the folder/repo `-fusion` rule is reaffirmed without renaming product vocabulary. |
+| OC-DECISIONS | Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCenderIDX` only; `SolIDX` is model-manifest-only (operator, 2026-11-13) | covered | - | D-30. `SolIDX` and `InNovaIDX` are rejected by `QUANTIdxReader`; `TransCenderIDX` is the legacy "formerly known as" alias; `SolIDX` is specified separately in `transformers/docs/MODEL_MANIFEST.md`; Test 8 asserts the accept/reject split (28 tests, 0 failures). |
 | OC-WORKTREE | `Modified files (12) — dispositions` | **partial** | **GAP-10** | The counts drifted: PROGRESS.md now records **24 modified + 90 untracked**, not 12. |
 | OC-WORKTREE | `Untracked files (18+) — dispositions` | **partial** | **GAP-10** | Same drift; the 3 engine proof tests are among the untracked and they are now registered. |
 | OC-WORKTREE | `What P0.0 must do (in order)` | **covered** | — | §11 Phase 1 commit hygiene. |
@@ -2225,10 +2323,10 @@ Research gate first, then unblock the smallest things, then the big build.
 - **[RESOLVED 2026-11-12]** **Discard the superseded plan.** Rewrite the comment at `include/quant/transformer.h:119-122` that still points at *"Cender/ formula (Phase 19-23, owner-gated)"* — that plan is dead; ours is authoritative (§2.1). **VERIFIED 2026-11-10 — and the plan's anchor was WRONG:** the stale note lives at **lines 119–122** (*"NOTE (owner purge 2026-09-07): attention-variant layer classes REMOVED … until the Cender/ formula (Phase 19-23, owner-gated) proves parity"*), not 116–118. **Anchor corrected.**
 - **[RESOLVED 2026-11-10]** **Produce the KAT-layer inventory** (§2.1b) — the shape is now mapped: `ScaledDotProductAttentionFunction::forward` (training), `src/trainer/code_gen.cpp::attention_flash` (JIT-emitted C++), `src/kernel/flash_attention.cpp`, `src/math/math.cpp::softmax`, and **18 of 20 GPU backends**. **The remaining Phase-0 work is the *decision*, not the inventory:**
   - **How do `G` and `S` reach the hardware?** (a) a fused Fusion kernel with all paths delegating to it, (b) compute `G`/`S` outside the inner loop and pass them in, keeping the kernel contract, or (c) a separate Fusion path for train + inference, leaving the traditional kernels for legacy checkpoints. **(b) is cheapest to land; (c) is cleanest.** This is the single most important architectural decision in the project and it must be made **before any kernel work starts.**
-  - **The 2048-token ceiling in generated code** (`src/trainer/code_gen.cpp:236`) must be removed or bypassed — a 4M context cannot be served by a generator that caps at 2048. **RE-VERIFIED 2026-11-10** at `src/trainer/code_gen.cpp:236`: `code << indent(3) << "float scores[" << std::to_string(seq_len > 2048 ? 2048 : seq_len) << "];\n";` — **confirmed, still open** (gate **V20**).
+  - **The 2048-token ceiling in generated code** (`src/trainer/code_gen.cpp:236`) must be removed or bypassed — a 4M context cannot be served by a generator that caps at 2048. **~~RE-VERIFIED 2026-11-10 … still open~~ RESOLVED 2026-11-13 (T6.3/V20 fix landed):** the buffer is now a heap `std::vector<float>` sized to the real seq_len (`:258`), the boundary rejects `seq_len > 2048` loudly, and `test_attention_v20_budget` covers 2049/8224/32768. The **capability** half (streaming/tiled softmax for 4M contexts) stays open as gate V20's second half.
   - ~~Confirm the `src/math/math_avx2*.cpp` and `math_avx512.cpp` files compute no attention.~~ **ANSWERED 2026-11-10 (live code check): they compute NO attention.** `math_avx2_tiled.cpp` has **zero** attention tokens; `math_avx2.cpp`, `math_avx2_vec.cpp` and `math_avx512.cpp` contain only **generic elementwise `softmax` primitives** (`softmax` @460, `vec_softmax_stable` @149 and @557, `softmax_avx512` @286) — not attention. That softmax is **already** a known KAT site (`src/math/math.cpp::softmax`, §2.1b), so it stays on the sweep list via that path. **These four files need no attention-sweep work.**
 - **[RESOLVED 2026-11-12]** **Fix the plan's own line anchors.** The adversarial review found the first inventory conflated `.cpp` definition lines, `.h` class-declaration lines and section-banner lines, and left several wrong citations. A cleanup pass is required because the plan is a working document.
-- **[OPEN-RESEARCH]** Deep-read the §5 papers; produce a written design note for `G` and `S`.
+- **[RESOLVED 2026-11-13]** Deep-read the §5 papers; produce a written design note for `G` and `S`. → **Done: §5c.6** (ten papers deep-read; abstracts fetched live 2026-11-13; every fork tagged to its ledger id, nothing closed by fiat).
 - **[OPEN-DECISION]** Resolve: whether transformed layers use **shared weights** (one set, both modes) or **separate weights that switch** — this sets the parameter count.
 - **[OPEN-DECISION]** Decide the **loop-exit policy** (learned gate vs post-hoc confidence readout — §5 evidence favours the latter being competitive).
 - **[OPEN-DESIGN]** Design **EAIN** scoped to the implementable subset only (§4.9): per-unit importance/decay + thresholded activation + local plasticity driven by reward prediction error + offline consolidation.
@@ -2260,14 +2358,14 @@ Research gate first, then unblock the smallest things, then the big build.
 - **[OPEN-ACTION]** Deliverable: a design note in `transformers/` (which has no docs system — create one modelled on `code/docs/AGENTS.md`, respecting its tier taxonomy, word budgets, and one-physical-line-per-paragraph rule).
 
 
-**Phase-0 status ledger (2026-11-12).** Every bullet above carries an explicit status tag, so **nothing is silently open**. The counts: **12 RESOLVED**, **15 OPEN-DECISION**, **2 OPEN-RESEARCH**, **1 OPEN-DESIGN**, **2 OPEN-UNKNOWN**, **1 OPEN-ACTION**.
+**Phase-0 status ledger (2026-11-13).** Every bullet above carries an explicit status tag, so **nothing is silently open**. The counts: **13 RESOLVED**, **15 OPEN-DECISION**, **1 OPEN-RESEARCH**, **1 OPEN-DESIGN**, **2 OPEN-UNKNOWN**, **1 OPEN-ACTION**.
 
 | # | Status | What it is |
 |---|---|---|
 | 1 | **RESOLVED 2026-11-12** | Anchor corrected to `transformer.h:119-122` (Step 3); the comment rewrite itself is Phase-1 work. |
 | 2 | **RESOLVED 2026-11-10** | §2.1b.1 rebuilt from disk; the remaining work is the *decision*, not the inventory (Step 2). |
 | 3 | **RESOLVED 2026-11-12** | **153/153** anchors + **79/79** continuation refs resolve; 8 drifted citations fixed (Step 3). |
-| 4 | **OPEN-RESEARCH** | The §5 papers must be read end-to-end and a written `G`/`S` design note produced. Source: §5c.1–§5c.5. |
+| 4 | **RESOLVED 2026-11-13** | The §5 papers read end-to-end; the written `G`/`S` design note is **§5c.6**. Source: §5c.1–§5c.6. |
 | 5 | **OPEN-DECISION** | Sets the parameter count. §5d.3.4 (Loop-µP) and §5e both assume **weight-tied** layers; §5d.3.4 gives the evidence. |
 | 6 | **OPEN-DECISION** | Learned gate vs post-hoc confidence readout. §5 evidence favours the latter being competitive — the comparison is a Phase-0 measurement. |
 | 7 | **OPEN-DESIGN** | EAIN scoped to the implementable subset only (§4.9): per-unit importance/decay + thresholded activation + local plasticity from reward prediction error + offline consolidation. |
@@ -2302,7 +2400,7 @@ Research gate first, then unblock the smallest things, then the big build.
 
 ### Phase 1 — Stabilise (fast, unblocks everything)
 - Commit or explicitly park the **307 modified** `code/` files and **84 untracked** `transformers/` files. Do not start architecture on a dirty tree.
-- Fix the **7 confirmed critical defects** (§10M), ordered by risk: `agi_flywheel.cpp (sandbox_compile_and_test :1867, std::system :1912)` (unsandboxed LLM-generated C++) → **`src/trainer/code_gen.cpp:236` JIT-generated attention stack overflow (untested path)** → **`src/server/production_gen.cpp:212` / `src/model/expert_parallel.cpp:134` / `tools/quant_server.cpp:150` (three unauthenticated `INADDR_ANY` listeners — the plan's old `serve.cpp:118` was the wrong file, wrong line and wrong claim; §10M)** → `Math.random()` verification gate → DDP no-op → `-march=native` → vacuous determinism gate.
+- Fix the **7 confirmed critical defects** (§10M), ordered by risk: `agi_flywheel.cpp (sandbox_compile_and_test :1867, std::system :1912)` (unsandboxed LLM-generated C++) → **~~`src/trainer/code_gen.cpp:236` JIT-generated attention stack overflow (untested path)~~ FIXED 2026-11-13 (T6.3/V20: heap buffer + loud boundary gate + `test_attention_v20_budget`, 60/60)** → **`src/server/production_gen.cpp:212` / `src/model/expert_parallel.cpp:134` / `tools/quant_server.cpp:150` (three unauthenticated `INADDR_ANY` listeners — the plan's old `serve.cpp:118` was the wrong file, wrong line and wrong claim; §10M)** → `Math.random()` verification gate → DDP no-op → `-march=native` → vacuous determinism gate.
 - **Dead-code purge project-wide** (§2 rule) — including the known instances: `AttentionResidual` (zero call sites), `HybridAttnKind` all-STD stub, the **dead `inferno_hook_stability_plasticity`** and its unwired replacement (§4.6), the **dead `importance_factor_ = 8.0f`** field in `src/trainer/reward.cpp` **— RE-VERIFIED 2026-11-10: `importance_factor_` occurs exactly TWICE in the whole tree (`include/quant/reward.h:45` declaration `= 8.0f`, `src/trainer/reward.cpp:13` constructor init) and is **never read anywhere → confirmed dead**, the **dead `learningRate`** in the unmounted MAD router, the seven `packages/mad/*` stubs (either wire or delete — **wire, since §10R needs a router applier**), and the **dead MQA/GQA/SWA/ALiBi declarations** in `include/quant/inference_opt.h` (§2.1d).
 - **Delete the telemetry `KVCacheQuantizer` stub and point the report at the real `Q4KVCache`** (§10Y.3). `src/core/telemetry.cpp:283` returns a **hardcoded `0.001f`** from `estimated_quality_loss()` and **prints it at `:321`** — a constant presented as a measurement. `quantize_old_states` (:248) quantizes nothing and `restore_for_attention` (:264) is a `memcpy`; the real implementation already exists at `src/model/kv_cache_quant4.cpp` (420 lines, Lloyd-Max 16-centroid, tested by `tests/test_kv_cache_quant4.cpp`). **Delete the stub, reuse the real thing** — §2 zero-dead-code and no-duplicates, one change. Gate **V28**.
 - **Resolve the three ECC/continual stacks** (§4.8a) into one — this is a Phase-1 cleanup that unblocks Phase 4. **REMOVED — the user rejected ECC consolidation; the three stacks stay as they are.**
@@ -2429,7 +2527,7 @@ Each target is pass/fail, checked by running real code — not by inspection.
 | **V17** | Zero dead code, re-checked after the sweep | Re-run V9 once Phase 2 completes — the sweep creates dead paths by definition, and every one must be resolved before Phase 2 closes. |
 | **V18** | KAT layer actually computes the Fusion formula (§2.1b) | Grep the whole tree for the literal `softmax(QKᵀ/√D)V` construction in `src/math/`, `src/kernel/`, `src/backend/`, `src/trainer/code_gen.cpp`. **Assert zero occurrences in any path a training run can reach** — including the 18 GPU backends and the JIT-emitted C++ in `code_gen.cpp`. |
 | **V19** | Forward/backward parity | The Fusion attention must have a **correct backward pass** — `ScaledDotProductAttentionFunction::backward` (`autograd_functions.cpp:107`) is a separate implementation of the same math. Assert a **finite-difference gradient check** against the forward: if `G`/`S` appear in forward, they must appear in backward, or training silently diverges. |
-| **V20** | The 2048 generated-code cap is gone | `src/trainer/code_gen.cpp:236` sizes the generated score buffer at `min(seq_len, 2048)`. Assert a generated kernel **at 4M context** either streams/tiled-softmaxes or the JIT path is not used. |
+| **V20** | The 2048 generated-code cap is gone | `src/trainer/code_gen.cpp:236` (now **:258**) sizes the generated score buffer as `std::vector<float> scores(static_cast<size_t>(seq_len), 0.0f)` — heap, sized to the real seq_len; `generate_attention` rejects `seq_len > 2048` and non-positive shapes loudly (T6.3 fix, 2026-11-13, regression `test_code_gen::test_attention_v20_budget`). The remaining assertion: a generated kernel **at 4M context** must either stream/tile the softmax (capability work, still open) or the JIT path must not be used for long sequences. |
 | **V21** | `.idx` is lazy and lossless (§8.1) | Assert: (a) a 4M-token context is **not** densely attended — the index is consulted for out-of-window content; (b) **content evicted from the active window is still retrievable** through `.idx`; (c) the index is invalidated on tool-result mutation and released on agent disposal, matching `file-reference-local` semantics. |
 | **V22** | 1.5 BPW is exact on the wire (§9b.1) | Assert `format_wire_bpw(Q_1_K_H) == 1.50` exactly, and that (OC-G-5, zero BPW violations). Assert no name-vs-wire gap across the registry. |
 | **V23** | NCM reconstruction fidelity (§3b.4) | Round-trip text through the multiscale VQ-VAE tokenizer: assert **names, numbers and exact strings survive reconstruction byte-for-byte** — on a corpus containing filenames, error strings, page/line references and numeric values. This gates V5 (the PDF test): if the hierarchy loses detail, the generator cannot restore it. |
@@ -2610,6 +2708,12 @@ reachable — the only caller (`src/trainer/code_gen.cpp:825`) passes `spec.M` w
 `tests/test_code_gen.cpp:43` only ever calls `generate_attention(8, …)`, so **nothing exercises
 `seq_len > 2048`**. It is now §10M's **7th critical defect** and Phase 1 carries the fix (gate **V20**),
 ordered second after the unsandboxed LLM-generated C++.
+**UPDATE 2026-11-13 (T6.3/V20 — FIXED):** the heap `std::vector<float>` score buffer sized to the real
+seq_len landed (`:258`), `generate_attention` rejects `seq_len > 2048` and non-positive shapes with a loud
+`std::invalid_argument`, the `attention_basic` template got the same treatment, and `tests/test_code_gen.cpp::test_attention_v20_budget`
+covers 8/2048/2049/8224/32768 plus the caller clamp — **60/60 tests pass** in build-norm, the emitted 2048
+kernel compiles clean at `/W4` (clang-cl), and the gate `test_code_gen` is green. The **capability** half
+(streaming/tiled softmax for >2048-token contexts) remains open as gate V20's second half.
 
 **§16 reconciled (gap GAP-12).** The line *"The KAT-layer inventory does not exist yet — it is the single
 largest unknown and the gate on V8"* contradicted §2.1b.1 and the Phase-0 bullet; it is now marked
@@ -2636,10 +2740,13 @@ now corrected**, each against the live file rather than against memory:
 1. **Benchmark / reference model → DeepSeek V4.1 Flash** (`deepseek-v4.1-flash`). §1.1 and `review-tracking/MASTER_PLAN.md` **NEW-2** already carried this; the *machine-readable* block still said `model.bench = qwen-3.8-27b` — a stale leftover of the swap. Fixed. (The `tencent/Qwen3.8-27B-DSpine-b16` HF ids, the `Qwen3-8B` drafter policy, the `qwen35_engine.cpp` GGUF layout reader and the paper-measured Qwen baselines are **code and literature facts**, not the benchmark-model choice — they stay.)
 2. **Ruler model → `sol-4-flash`** ("Sol 4 Flash") — chain `innova-x-1.1-4b` → `klawde-5-sol-4b` → `sol-5-flash-4b` → `sol-4-flash`. All **10** plan sites plus `review-tracking/MASTER_PLAN.md` **NEW-3** and **M2** now use the new name. The plan is the **architecture** authority and `MASTER_PLAN.md` is the **ladder** authority (§10X.0) — a rename that stayed only in one of the two would have re-created exactly the drift this step exists to kill.
 
-**Two strings were subsequently renamed too** (user ruling, 2026-11-12 — *"Sab rename hoyega!"*):
-`SolIDX` (the `.idx` legacy magic, formerly `InNovaIDX`) and `tracesol`
-(`transformers/scripts/plot_comparison_charts.py:149`, formerly `traceInnovas`). The old names
-survive only as *attributed history* — see §6.1 and the 2026-11-12 rename-wave entry in §16.
+**Two strings were subsequently renamed in that wave** (user ruling, 2026-11-12 — *"Sab rename
+hoyega!"*): `SolIDX` (then treated as the `.idx` legacy magic, formerly `InNovaIDX`) and `tracesol`
+(`transformers/scripts/plot_comparison_charts.py:149`, formerly `traceInnovas`). **D-30
+(2026-11-13) reverted the wire-magic half:** the engine `.idx` accepts `Transformers-FusionIDX`
+and `TransCenderIDX` only, while `SolIDX` is reserved for model manifests
+(`transformers/docs/MODEL_MANIFEST.md`); `tracesol` stays. The old names survive only as
+*attributed history* — see §6.1 and the 2026-11-12 rename-wave entry in §16.
 
 **Method note for future passes.** Anchors were resolved against a **multi-root index** with
 component-boundary suffix matching, because the plan cites three different trees by relative path:
@@ -2772,8 +2879,10 @@ weight-tied U-curve constant (§5c.2 gap 5) and looped-model OOD stability above
 Flash** (`deepseek-v4.1-flash`); the ruler model we train = **`sol-4-flash`** ("Sol 4 Flash"),
 renamed from `innova-x-1.1-4b` across all plan sites **and** in `review-tracking/MASTER_PLAN.md`
 (**NEW-3** + **M2**). Two legacy strings were renamed in the same wave (user ruling, 2026-11-12 —
-*"Sab rename hoyega!"*): **`SolIDX`** (the `.idx` legacy magic, formerly `InNovaIDX`) and
-**`tracesol`** (`scripts/plot_comparison_charts.py:149`, formerly `traceInnovas`).
+*"Sab rename hoyega!"*): **`SolIDX`** (then treated as the `.idx` legacy magic, formerly
+`InNovaIDX`) and **`tracesol`** (`scripts/plot_comparison_charts.py:149`, formerly `traceInnovas`).
+**D-30 (2026-11-13) reverted the wire-magic half:** `SolIDX` is model-manifest-only and
+`TransCenderIDX` is the only accepted legacy engine alias; `tracesol` stays.
 
 **6. The plan is implementation-ready.** Every gate is now a named, checkable thing:
 
@@ -2825,10 +2934,17 @@ and **M2**, and `transformers/PROGRESS.md`. **16 occurrences** of `klawde-5-sol-
 | `InNovaIDX` | **`SolIDX`** | `include/quant/quant_format.h:206`; `src/codec/quant_format.cpp:640`, `:680`, `:687`; `install_test/include/quant/quant_format.h` | The reader's legacy branch now matches `SolIDX` at **7 bytes incl. NUL** (was 10 for `InNovaIDX`). **Any `.idx` file written by the old InNova-era writer will no longer parse.** The current writer magic `Transformers-FusionIDX` (22 B) is **untouched** — the live on-disk format is unchanged. |
 | `traceInnovas` | **`tracesol`** | `transformers/scripts/plot_comparison_charts.py:149`, `:180` | Cosmetic — a Plotly series variable. No behaviour change. |
 
+> **Correction (2026-11-13, D-30):** the `InNovaIDX -> SolIDX` wire rename in item 2 is **reverted**.
+> A model name is not an engine wire identity. The `.idx` reader accepts `Transformers-FusionIDX`
+> (22 B, current) and `TransCenderIDX` (15 B, the engine's former name — "formerly known as") only;
+> `SolIDX` and `InNovaIDX` are rejected. `SolIDX` (7 B incl. NUL) is now the reserved magic of the
+> model manifest, specified in `transformers/docs/MODEL_MANIFEST.md`. `tracesol` stays — it is
+> cosmetic. The full record and the test proof are in the D-30 entry below.
+
 The plan previously said *"Two strings must NOT be renamed … renaming them would break on-disk format
-compatibility."* **That note was superseded by the user's ruling and now records the opposite**, with the
-compatibility consequence stated plainly rather than hidden. Pre-rename copies of both code files are in
-`fusion/.plan/.rea-tmp/`.
+compatibility."* **The 2026-11-13 D-30 ruling restored that original compatibility rule for the engine
+wire magic**: the engine keeps its own identity, and the model name moves to a separate manifest
+namespace. Pre-rename copies of both code files are in `fusion/.plan/.rea-tmp/`.
 
 **3. `~/.claude/plans/` → `.plan/` — the workspace moved, and the plan followed.** The user consolidated
 **every** planning artefact into `fusion/.plan/`: the master plan, `PLAN.md`, `review-tracking/` (with
@@ -2873,7 +2989,7 @@ landed**. Everything below was fixed in this pass; **nothing is carried forward 
 | 1 | *"`verify_step5.py` -> STEP 5 ALL CHECKS PASSED (62 checks)"* | The verifier still expected `klawde-5-sol-4b` and the **pre-move** `fusion/review-tracking/MASTER_PLAN.md`, so it **failed** (2 FAIL + `FileNotFoundError`). The script written to repair it, `fix_v5_after_rename.py`, was saved to `fusion/.rea-tmp/` (the **old** directory) and **never executed**. | verifier re-pointed and updated; **re-run green** |
 | 2 | *"the other 16 are primitive-only (… + `igpu_zero_copy.cpp`)"* | **False.** `src/backend/igpu_zero_copy.cpp:1127` `IGPUZeroCopyTrainer::forward_attention` is a **naive composed attention** with an inline softmax — the 5th attention implementation in `src/backend/`, and a sweep site. The split is **4 fused + 1 composed + 15 primitive-only**. | §2.1b.1 re-based on disk; **D-4** and **GAP-4** extended to three sites |
 | 3 | *"64 scripts re-pointed at `.plan/`"* | Only the **input** paths were re-pointed. `step3_verify.py` and `step3_subanchors.py` still **wrote their reports** to `fusion/.rea-tmp/`, and 8 stale artefacts stayed there. | output paths re-pointed; stale copies removed |
-| 4 | `install_test/include/quant/quant_format.h:206` | The `InNovaIDX -> SolIDX` rename touched **3 of the 4** sites. This duplicate header still read `magic_size_ = 15; // 15 = TranscenderIDX, 10 = legacy SolIDX` — and in the main header the comment became *"10 = legacy **SolIDX**"*, which is nonsense: `SolIDX` is **6 chars + NUL = 7**, while 10 was the **old** `InNovaIDX` length. | both comments corrected to `7`; the `memcmp(data_, "SolIDX", 6)` branch is now documented honestly (6 chars compared; the 7th byte set in `magic_size_` is the NUL) |
+| 4 | `install_test/include/quant/quant_format.h:206` | The `InNovaIDX -> SolIDX` rename touched **3 of the 4** sites. This duplicate header still read `magic_size_ = 15; // 15 = TranscenderIDX, 10 = legacy SolIDX` — and in the main header the comment became *"10 = legacy **SolIDX**"*, which is nonsense: `SolIDX` is **6 chars + NUL = 7**, while 10 was the **old** `InNovaIDX` length. | both comments corrected to `7`; **superseded 2026-11-13 by D-30** — the `SolIDX` branch is removed from the engine path (`TransCenderIDX` is the only legacy alias; `SolIDX` is model-manifest-only) |
 | 5 | `PLAN.md` | Its own Files table still pointed at `.plan-tmp/PLAN.md` and `fusion/.rea-tmp/` after the `.plan/` move — the loop's plan contradicted reality. | paths corrected |
 
 **Two further corrections in this pass, both from the user's 14:23 ruling:**
@@ -2934,7 +3050,7 @@ range, 0 unresolved**) · `verify_step5.py` (65 checks) · `step6_audit.py` (PAS
 **No implementation code was touched — the "Go." gate stays closed.**
 
 
-### 2026-11-13 - naming normalisation: `Transformers-Fusion` -> `Transformers-Fusion` (D-28)
+### 2026-11-13 - naming normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (D-28)
 
 The engine's product name lost its capital `F`: **Transformers-Fusion**. The change is
 byte-length preserving, so every size-derived fact in this plan (file sizes, archive manifest
@@ -2942,8 +3058,98 @@ byte counts, wire budgets) stays valid. The sweep covered the plan tree, the dec
 the review-tracking documents, the operation-clean docs, the engine's sources, headers, tests,
 benchmarks, build scripts and CI workflows, the launcher payloads and the recovered archive.
 
-**The wire format was not broken.** The `.idx` magic moved from `Transformers-FusionIDX` to
+**The wire format was not broken.** The `.idx` magic moved from `TransFormers-FusionIDX` to
 `Transformers-FusionIDX` - both 22 bytes, so the layout is identical - and the reader now
 accepts **both** spellings, so files written by earlier builds keep decoding. The writer emits
-the new spelling only. `TransCenderIDX` and `SolIDX` keep their names; they are different
-magics with different lengths and their own history.
+the new spelling only. `TransCenderIDX` stays as the legacy engine alias. `SolIDX` was briefly
+treated as a third engine magic during the 2026-11-12 rename wave, but **D-30 (2026-11-13)
+retired it from the engine path** and reserved it for model manifests — see the D-30 entry below.
+
+### 2026-11-13 - naming cleanup: Zenix-CC -> Zenix + alias-registry duplicates (D-29)
+
+The native Claude Desktop seat is **Zenix** - the `CC` suffix is removed from the folder
+(`windows/zenix`), registry entries and current-state docs. The component folders and GitHub
+repos carry no `-fusion` suffix (`code/`, `origin-labs-ai/code`; `transformers/`,
+`origin-labs-ai/transformers`) - reaffirming D-24 - while the product names **CodeFusion** and
+**Transformers-Fusion** stay unchanged (D-28). The §1 accepted-variants table and the §1.1
+alias registry each listed `Transformers-Fusion` twice; the duplicates are removed. Current
+tooling/docs updated: `code/scripts/rebrand/fix-zenix.mjs` (renamed from `fix-zenix-cc.mjs`),
+`code/scripts/rebrand/migrate-arch.mjs`, `.plan/review-tracking/FINAL_REPORT.md`,
+`.plan/review-tracking/PROGRESS.md`, `.plan/telemetry/gen_dashboard.py`. Historical evidence
+(the 2026-10-27 report row, the 2026-11-01 listing, `.plan/_archive/`) keeps its dated
+spelling and carries a correction note instead. Full record: `DECISIONS.md` D-29.
+
+### 2026-11-13 — wire-magic identity correction: `SolIDX` is model-only, `TransCenderIDX` is the engine alias (D-30)
+
+**Trigger, verbatim:** *"ye TransCenderIDX kyu SolIDX banaa? Bhai, Seedha matlab ye tha ki
+Transformers-FusionIDX / TransCenderIDX same cheej the yaani TF = TC tha, Sol to wo model ka naam
+socha gaya jo ki train kara jaayega ya fine tune karaa jaayega, ye kya jhol ho gaya!"* — and
+*"InNovaIDX bhi nahi rakhna hai naa! Hame TransCenderIDX / Transformers-FusionIDX dono is also
+known as ya formerly known as bhi daal sakte hai!"*
+
+**The defect.** The 2026-11-12 rename wave treated `SolIDX` as the new name of the `.idx` legacy
+magic and shipped a 7-byte reader branch. That conflated two namespaces — **engine wire identity**
+and **model identity** — and it made old 10-byte `InNovaIDX` files unreadable. The `.idx` header
+identifies the engine, so a model name must never enter the magic. The correct equivalence is
+`Transformers-FusionIDX` = current engine identity and `TransCenderIDX` = the same engine's
+"formerly known as" alias; `Sol` is only the trained model family (`sol-4-flash`).
+
+**Ruling (D-30).**
+
+| Namespace | Accepted | Rejected |
+|---|---|---|
+| Engine `.idx` | `Transformers-FusionIDX` (22 B, current); pre-D-28 capital-F spelling (same 22 B, read-only); `TransCenderIDX` (15 B, legacy "formerly known as") | `SolIDX` (7 B), `InNovaIDX` (10 B) |
+| Model manifest | `SolIDX` (7 B incl. NUL), reserved and specified — no engine consumer | — |
+
+`tracesol` stays as the cosmetic Plotly series name; it is not a wire identity.
+
+**Code (2026-11-13).**
+- `src/codec/quant_format.cpp`: the `SolIDX` reader branch is removed; `TransCenderIDX` remains the
+  only legacy engine branch. The writer still emits `Transformers-FusionIDX`.
+- The pre-D-28 capital-F magic is compared **byte-wise** (`"Trans"` + `'F'` + `"ormers-FusionIDX"`)
+  so the source tree never carries the old spelling.
+- Reader minimum size is **23 B** (15 B legacy magic + 8 B header), replacing the 15 B guard that
+  was sized for the retired 7 B magic.
+- Every early return after ownership transfer nulls `data_` as well as `mapped_file_`; the
+  22-byte-magic-only probe exposed a dangling `data_` that made `valid()` return true.
+- `include/quant/quant_format.h` and `install_test/include/quant/quant_format.h` comments corrected
+  to describe the two engine magics only.
+
+**Tests.** `tests/test_sha256_corrupt.cpp` gained **Test 8**: `TransCenderIDX` opens and yields the
+same tensor names; `SolIDX` and `InNovaIDX` are rejected. Proof:
+`build-norm/tests/test_sha256_corrupt.exe` -> **28 tests, 0 failures, exit 0**;
+`SHA256_TEST_LOG.md` regenerated.
+
+**Documentation.**
+- `transformers/README.md` §9 and §12 rewritten: engine wire identity vs model identity.
+- `transformers/PROGRESS.md`: dated D-30 correction bullet; the 2026-11-12 rename-wave and post-loop
+  records are marked superseded.
+- **New** `transformers/docs/MODEL_MANIFEST.md`: normative `SolIDX` model-manifest specification —
+  7-byte magic, version, JSON length, version-1 fields, compatibility rules and current status.
+- `.plan/docs/operation-clean/DECISIONS.md`: D-30 appended.
+- `.plan/telemetry/TODO-TREE.md`: T3.2 closed; T3.5 annotated as superseded.
+
+**Why `SolIDX` has a spec but no implementation.** No model-manifest consumer exists in the tree
+today — the only manifest artefacts are `tools/dataset_manifest.schema.json` and the `PackManifest`
+test struct. The project rule is zero dead code and zero stubs, so the format is documented as
+**reserved**, not implemented. The first consumer must add a writer, a reader and a regression test
+before the status changes to **implemented**.
+
+### 2026-11-13 (grind pass) — T1.1 closed: the G/S design note lands as §5c.6
+
+The Phase-0 ledger's **OPEN-RESEARCH #4** is closed: the ten §5 papers
+(`2603.10123`, `2603.15031`, `2605.18855`, `2610.13630`, `2607.27230`, `2607.09694`,
+`2606.18524`, `2610.00673`, `2605.16343`, `2610.16368`) were deep-read for this design
+note — abstracts fetched live from arXiv this session, bodies consolidated against the
+verified §5d/§5e/§5f extraction. The written design is **§5c.6**: eight design statements
+for `G` (Form-B backbone on both axes, attention-map readout instead of a new router,
+r-dimensional routing keys, Form C as a labelled hypothesis, delta-based depth entries with
+a contrast V-gate, the full exit-gate specification, the work-shrinking per-token policy,
+and the pre-norm risk note with Form A quarantined behind a flag) and six for `S`
+(bounded sliding-window index, dual sequence/depth axes, position-independence, the shared-KV
+policy with its numbers, the loop-entry identity path, and quantisation-first discipline).
+**Every remaining fork keeps its ledger id — #6, #11, #12, #13, #14, #16, #17, #18, #20, #21,
+#22 — with recommendations stated and rulings explicitly left to the operator** (D-15
+delegates priorities, not rulings). Ledger: OPEN-RESEARCH 2 → 1, RESOLVED 12 → 13;
+TODO-TREE T1.1 ticked. The dashboard (`gen_dashboard.py`) was regenerated after the change.
+No implementation code was touched — this is a research close-out.

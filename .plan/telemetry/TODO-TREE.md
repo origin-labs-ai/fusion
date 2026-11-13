@@ -36,9 +36,10 @@
 
 ## T1 · Loop Transformers (research close-out)
 
-- [ ] T1.1 **G/S design note** (OPEN-RESEARCH #4) — deep-read §5 papers (2603.10123, 2603.15031,
+- [x] T1.1 **G/S design note** (OPEN-RESEARCH #4) — deep-read §5 papers (2603.10123, 2603.15031,
       2605.18855, 2610.13630, 2607.27230, 2607.09694, 2606.18524, 2610.00673, 2605.16343,
-      2610.16368) via browser → written design note in plan §5c
+      2610.16368) → **DONE 2026-11-13: design note written as master-plan §5c.6** (8 G-statements
+      + 6 S-statements, every fork tagged to its ledger id; abstracts fetched live 2026-11-13)
 - [ ] T1.2 Loop-exit policy decision (OPEN-DECISION #6) — evidence note → operator ruling
 - [ ] T1.3 S/G depth-axis variant pick (OPEN-DECISION #13)
 - [ ] T1.4 Loop-µP ×1/N scaling ruling (#16) · T=2 fixed-depth baseline (#17) · exit-distribution
@@ -52,12 +53,28 @@
 ## T3 · Traditional Quantization (Track A — the ladder)
 
 - [ ] T3.1 Quality floor rulings: D-12 scale fitting · D-13 MX quarantine · D-14 bench honesty
-- [ ] T3.2 TransCenderIDX wire-magic ruling (THEOREM_CENDER.md + `quant_format.cpp:640`) —
-      operator ruling required, wire format NOT touched without it
-- [ ] T3.3 Verify igpu_zero_copy.cpp:1127 5th-attention-site KAT entry landed (fix_igpu_audit)
+- [x] T3.2 TransCenderIDX wire-magic ruling (THEOREM_CENDER.md + `quant_format.cpp:640`) —
+      **RESOLVED 2026-11-13 (D-30)**: the engine `.idx` accepts `Transformers-FusionIDX` (22 B,
+      current) and `TransCenderIDX` (15 B, formerly known as) only; `SolIDX` and `InNovaIDX` are
+      rejected. `SolIDX` is reserved for model manifests
+      (`transformers/docs/MODEL_MANIFEST.md`). Test 8 proves the accept/reject split
+      (28 tests, 0 failures).
+- [x] T3.3 Verify igpu_zero_copy.cpp:1127 5th-attention-site KAT entry landed (fix_igpu_audit)
+      — **VERIFIED 2026-11-13**: the KAT-layer inventory §2.1b.1 GPU-backends row carries the
+      corrected entry (5th attention implementation in `src/backend/`; 4 fused + 1 composed + 15
+      primitive-only), post-loop audit row 2965 documents the fix.
 - [ ] T3.4 install_test duplicate header ruling (magic_size_=15 deliberate stale fixture vs fix)
-- [ ] T3.5 **Security audit 1/10** — quant wire path: memcmp NUL bug (SolIDX 6-vs-7), legacy
-      alias parser backcompat, writer assert-validity (L4 sub-step)
+- [x] T3.5 **Security audit 1/10** — quant wire path: memcmp NUL bug (SolIDX 6-vs-7), legacy
+      alias parser backcompat, writer assert-validity (L4 sub-step) — **AUDIT DONE 2026-11-13**:
+      SolIDX 6-vs-7 = CORRECT at the time (no bug); **D-30 (2026-11-13) then retired `SolIDX`
+      from the wire path entirely** — only `Transformers-FusionIDX` / `TransCenderIDX` remain;
+      writer assert-validity was documented but never
+      implemented → FIXED (write_block + write_format_table throw on invalid/retired ids);
+      MoE format-table label bug LIVE at moe_model.cpp:414 (Q_8 label over raw FP32) → FIXED
+      (writes Q_32, payload truth); QUANTIdxReader truncated-header overread → FIXED (per-magic
+      size gates 30/23 + header-bounds guard). Regression: `test_sha256_corrupt` Test 7
+      (23/0 pass). Remaining audit items 2–10 (quant_import/adapter paths, benches, inferno
+      writer, install_test dup header, MoE/production label reads) are separate to-dos.
 ## T4 · Loop Quantization (Track B — compute contract)
 
 - [ ] T4.1 Research: LoopQ/LoopQuant at **1.5 BPW** feasibility note (browser — their numbers
@@ -75,8 +92,12 @@
 
 - [ ] T6.1 NCM full read — arXiv 2610.14162 Appendix F.1.1 + I (OPEN-RESEARCH #10) — browser
 - [ ] T6.2 DSpine §3c spec × NCM §3b spec → **merger design** (one generation mechanism doc)
-- [ ] T6.3 Fix **V20** — `code_gen.cpp:236` 2048-token stack overflow (7th CRITICAL, untested
-      path) + caller `:825 spec.M` clamp
+- [x] T6.3 Fix **V20** — `code_gen.cpp:236` 2048-token stack overflow (7th CRITICAL, untested
+      path) + caller `:825 spec.M` clamp — **DONE 2026-11-13**: heap score buffer (std::vector,
+      real seq_len), V20 loud boundary gate (seq_len>2048 / non-positive shapes throw), caller
+      clamp comment, attention_basic template heap buffer, 12 regression rows
+      (`test_code_gen::test_attention_v20_budget`). Evidence: build-norm 60/60 tests pass;
+      emitted 2048 kernel compiles clean at /W4 (clang-cl); gate `test_code_gen` Passed.
 - [ ] T6.4 Security audit 3/10 — generation paths (V20 class: JIT-emitted C++ bounds)
 ## T7 · EAIN
 

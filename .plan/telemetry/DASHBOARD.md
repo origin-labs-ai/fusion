@@ -4,21 +4,21 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-13 11:50:16** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-13 17:11:14** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `8916755 Point the transformers submodule at the new README commit (58ae02c)`
-- branch: `## main` (dirty entries: 15)
-- submodule `code`: ## main...origin/main
-- submodule `transformers`: ## main...origin/main [ahead 1]
-- push: NOT ordered yet (hold)
+- HEAD: `174a0ab Complete the D-28 naming sweep: TransFormers -> Transformers across .plan (9 files), log the executed state, map the new D-28 heading in the 10X coverage table, regen dashboard`
+- branch: `## main` (dirty entries: 12)
+- submodule `code`: ## main...origin/main [ahead 1]
+- submodule `transformers`: ## main...origin/main [ahead 2]
+- push: operator-ordered 2026-11-13 (commit + push all three repos)
 
 ## 1. Plan verifiers (live run)
 
 | Verifier | Exit | Verdict |
 |---|---|---|
-| `verify_step1.py` | 0 | **PASS**   rows=122  headings=122  gaps=13 |
+| `verify_step1.py` | 0 | **PASS**   rows=124  headings=124  gaps=13 |
 | `step2_fix2_verify.py` | 0 | **PASS** STEP 2 ALL CHECKS PASSED |
 | `step3_verify.py` | 0 | **PASS** report     : C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_anc |
 | `step3_subanchors.py` | 0 | **PASS** wrote C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_subanchors |
@@ -36,20 +36,20 @@ check-consistency: exit=0 **13/13 checks passed**
 
 | Repo | Modified | Untracked | Remote |
 |---|---|---|---|
-| `code` | 5759 | 45 | `origin-labs-ai/code.git` |
-| `transformers` | 86 | 92 | `origin-labs-ai/transformers.git` |
+| `code` | 0 | 0 | `origin-labs-ai/code.git` |
+| `transformers` | 84 | 89 | `origin-labs-ai/transformers.git` |
 
-> Working tree holds peer-session work - **no commits without operator order.**
+> Working tree held peer-session work - **operator ordered commit + push on 2026-11-13.**
 >
 > `code/windows` shows tracked-file deletions by design/history: chromix 3,687
 > (intentional, integrated browser = Codeix), gsx-cli 2,053 (peer seat refresh in
-> flight - disk has 1,503 files + 2,093 untracked, HEAD recoverable), zenix-cc/codeix
-> renames. Disk intact: 239,227 files, all 9 seats present.
+> flight - disk has 1,503 files + 2,093 untracked, HEAD recoverable), zenix-cc -> zenix
+> and codeix renames. Disk intact: 239,227 files, all 9 seats present.
 
 ## 4. Phase-0 ledger (master plan)
 
 - OPEN-DECISION: **15**
-- OPEN-RESEARCH: **2**
+- OPEN-RESEARCH: **1**
 - OPEN-DESIGN: **1**
 - OPEN-UNKNOWN: **2**
 - OPEN-ACTION: **1**
@@ -77,24 +77,23 @@ check-consistency: exit=0 **13/13 checks passed**
 
 ## 7. Open ledger items (the grind queue)
 
-1. **[OPEN-RESEARCH]** Deep-read the §5 papers; produce a written design note for `G` and `S`.
-2. **[OPEN-DECISION]** Resolve: whether transformed layers use **shared weights** (one set, both modes) or **separate weigh
-3. **[OPEN-DECISION]** Decide the **loop-exit policy** (learned gate vs post-hoc confidence readout — §5 evidence favours t
-4. **[OPEN-DESIGN]** Design **EAIN** scoped to the implementable subset only (§4.9): per-unit importance/decay + threshol
-5. **[OPEN-DECISION]** **Decide which existing continual-learning stack EAIN sits on** (§4.8a): three parallel stacks exist
-6. **[OPEN-RESEARCH]** **Research NCM** (§3b) — read arXiv `2610.14162` in full. **The §3b.6 spec is already extracted from
-7. **[OPEN-UNKNOWN]** **Reproduce the step-0 U-curve on a WEIGHT-TIED looped model** (§5c.2, gap 5). The `2603.10123` dead
-8. **[OPEN-DECISION]** **Decide the `G` formulation** — §5c.2 recommends **B (index-selected, `log m` normalisation) + C (d
-9. **[OPEN-DECISION]** **Pick the `S`/`G` depth-axis variant** (§5e). The Attention-Residual family (`2603.15031`, `2607.18
-10. **[OPEN-DECISION]** **Put `G` in the quantisation test set from day one** (§5f). OASIS (`2605.17887`) shows an extra dep
-11. **[OPEN-DECISION]** **Default the routing to a small loop count and measure against a fixed-depth baseline** (§5d). The
-12. **[OPEN-DECISION]** **Adopt the Loop-µP residual scaling on the looped path** (§5d.3.4, `2606.18524`): residual branch
-13. **[OPEN-DECISION]** **Default the loop count to 2 and measure up to 4** (§5d.3.6). Two independent sources: Ouro's **T=8
-14. **[OPEN-DECISION]** **Design the exit gate and monitor it directly** (§5d.3.2, `2510.25741`, `2610.00673`): `λ_t(x) = σ(
-15. **[OPEN-DECISION]** **Use the correctness-directed online depth mask as our loop curriculum** (§5d.3.3, `2610.00673`): c
-16. **[OPEN-DECISION]** **Make §5's routing per-token AND attention-work-reducing** (§5d.2 axis 3, §5d.5 item 5): inactive t
-17. **[OPEN-DECISION]** **Decide our residual interface for the looped path** (§5d.3.4, `2611.07226`). Loop-µP's **× 1/N** a
-18. **[OPEN-DECISION]** **Decide our KV-cache policy for `T` loops** (§5d.1 item 2, `2610.33360`). The naive choice is `T` s
-19. **[OPEN-UNKNOWN]** **Add an OOD-stability gate, not just a loss gate** (§5d.4). The corpus reports looped models at **~
-20. **[OPEN-DECISION]** Decide **where the harness talks to the engine** — the C++ `quant::agi::WorldModel` is complete but
-21. **[OPEN-ACTION]** Deliverable: a design note in `transformers/` (which has no docs system — create one modelled on `co
+1. **[OPEN-DECISION]** Resolve: whether transformed layers use **shared weights** (one set, both modes) or **separate weigh
+2. **[OPEN-DECISION]** Decide the **loop-exit policy** (learned gate vs post-hoc confidence readout — §5 evidence favours t
+3. **[OPEN-DESIGN]** Design **EAIN** scoped to the implementable subset only (§4.9): per-unit importance/decay + threshol
+4. **[OPEN-DECISION]** **Decide which existing continual-learning stack EAIN sits on** (§4.8a): three parallel stacks exist
+5. **[OPEN-RESEARCH]** **Research NCM** (§3b) — read arXiv `2610.14162` in full. **The §3b.6 spec is already extracted from
+6. **[OPEN-UNKNOWN]** **Reproduce the step-0 U-curve on a WEIGHT-TIED looped model** (§5c.2, gap 5). The `2603.10123` dead
+7. **[OPEN-DECISION]** **Decide the `G` formulation** — §5c.2 recommends **B (index-selected, `log m` normalisation) + C (d
+8. **[OPEN-DECISION]** **Pick the `S`/`G` depth-axis variant** (§5e). The Attention-Residual family (`2603.15031`, `2607.18
+9. **[OPEN-DECISION]** **Put `G` in the quantisation test set from day one** (§5f). OASIS (`2605.17887`) shows an extra dep
+10. **[OPEN-DECISION]** **Default the routing to a small loop count and measure against a fixed-depth baseline** (§5d). The
+11. **[OPEN-DECISION]** **Adopt the Loop-µP residual scaling on the looped path** (§5d.3.4, `2606.18524`): residual branch
+12. **[OPEN-DECISION]** **Default the loop count to 2 and measure up to 4** (§5d.3.6). Two independent sources: Ouro's **T=8
+13. **[OPEN-DECISION]** **Design the exit gate and monitor it directly** (§5d.3.2, `2510.25741`, `2610.00673`): `λ_t(x) = σ(
+14. **[OPEN-DECISION]** **Use the correctness-directed online depth mask as our loop curriculum** (§5d.3.3, `2610.00673`): c
+15. **[OPEN-DECISION]** **Make §5's routing per-token AND attention-work-reducing** (§5d.2 axis 3, §5d.5 item 5): inactive t
+16. **[OPEN-DECISION]** **Decide our residual interface for the looped path** (§5d.3.4, `2611.07226`). Loop-µP's **× 1/N** a
+17. **[OPEN-DECISION]** **Decide our KV-cache policy for `T` loops** (§5d.1 item 2, `2610.33360`). The naive choice is `T` s
+18. **[OPEN-UNKNOWN]** **Add an OOD-stability gate, not just a loss gate** (§5d.4). The corpus reports looped models at **~
+19. **[OPEN-DECISION]** Decide **where the harness talks to the engine** — the C++ `quant::agi::WorldModel` is complete but
+20. **[OPEN-ACTION]** Deliverable: a design note in `transformers/` (which has no docs system — create one modelled on `co

@@ -66,7 +66,7 @@ def main():
     L.append("- branch: `%s` (dirty entries: %d)" % (branch, dirty))
     L.append("- submodule `code`: %s" % out3.splitlines()[0].strip() if out3.strip() else "- submodule code: ?")
     L.append("- submodule `transformers`: %s" % out4.splitlines()[0].strip() if out4.strip() else "- submodule transformers: ?")
-    L.append("- push: NOT ordered yet (hold)", )
+    L.append("- push: operator-ordered 2026-11-13 (commit + push all three repos)", )
     L.append("")
 
     # 1. verifiers (live)
@@ -94,11 +94,11 @@ def main():
     for name, remote in [("code", "origin-labs-ai/code.git"), ("transformers", "origin-labs-ai/transformers.git")]:
         mod, un = git_counts(os.path.join(WS, name))
         L.append("| `%s` | %d | %d | `%s` |" % (name, mod, un, remote))
-    L += ["", "> Working tree holds peer-session work - **no commits without operator order.**",
+    L += ["", "> Working tree held peer-session work - **operator ordered commit + push on 2026-11-13.**",
           ">", "> `code/windows` shows tracked-file deletions by design/history: chromix 3,687",
           "> (intentional, integrated browser = Codeix), gsx-cli 2,053 (peer seat refresh in",
-          "> flight - disk has 1,503 files + 2,093 untracked, HEAD recoverable), zenix-cc/codeix",
-          "> renames. Disk intact: 239,227 files, all 9 seats present.", ""]
+          "> flight - disk has 1,503 files + 2,093 untracked, HEAD recoverable), zenix-cc -> zenix",
+          "> and codeix renames. Disk intact: 239,227 files, all 9 seats present.", ""]
 
     # 4. ledger
     L += ["## 4. Phase-0 ledger (master plan)", ""]

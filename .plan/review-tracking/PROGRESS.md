@@ -17,9 +17,13 @@ Fusion full plan (separate, user-assigned) is tracked in `C:\Users\thaku\.claude
 | `arch/` exists | `ls -d code/arch` | EXISTS: `README.md`, `brand.ts`, `windows.json` |
 | `launcher/` exists | `ls -d code/launcher` | EXISTS: `README.md`, `index.html`, `launch.ps1`, `window.json` |
 | `BRAND.md` exists | `ls -d code/BRAND.md` | EXISTS |
-| windows folders on disk | `ls windows/` | `chromix codeix gsx-cli ingot onyx sonar zenix-cc zingma` (8) |
+| windows folders on disk | `ls windows/` | `codeix gsx-cli ingot merger onyx sonar vs-ext zenix zingma` (9) |
 | exe on disk | `ls windows/onyx/*.exe` | **`Onyx.exe`**, `unins000.exe` — **no `CodeFusion.exe`** |
 | DRAFT.md size | `wc -l review-tracking/DRAFT.md` | **511 lines**, 63 `## ` headings |
+
+> **Naming update (2026-11-13, D-29):** the 2026-11-01 snapshot listed `windows/zenix-cc`; the
+> folder is now `windows/zenix` (**Zenix**, `CC` retired). `chromix` is no longer a separate
+> tree — its browser lives inside Codeix.
 
 ---
 
@@ -93,4 +97,4 @@ None. D1–D5 are all resolvable from evidence already gathered.
 1. Read `review-tracking/DRAFT.md` in full (511 lines) — sections 21–23 (Aster rename) are the immediate-action sections.
 2. Read `review-tracking/QODER_REPO_WIKI_RE.md` and verify its claims still hold on disk.
 3. Write `docs/CF_PLAN.md` superseding DRAFT.md (DRAFT.md kept for audit — repo rule).
-4. Discovery plan for the three empty seats (Zingma / Sonar / Zenix CC).
+4. Discovery plan for the three empty seats (Zingma / Sonar / Zenix).

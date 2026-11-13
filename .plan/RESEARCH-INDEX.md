@@ -76,7 +76,7 @@
 - **Source document:** `.plan/review-tracking/DRAFT.md` (145 KB, 64 sections).
 - **Evidence status:** DISK-VERIFIED (registry `arch/windows.json` + gate 13/13 green). NOTE: the
   draft still describes the pre-2026-11-12 state (8 parts incl. Chromix, Onyx->Aster rename
-  pending, Zenix CC) - it is the *research record*, the live truth is `code/arch/` + D-24..D-27.
+  pending, Zenix) - it is the *research record*, the live truth is `code/arch/` + D-24..D-27.
 - **Audit slots:** 1 of 3 done (Operation Clean / CF pass).
 
 ### R-06 · Reverse-engineering research (the 7 seats)

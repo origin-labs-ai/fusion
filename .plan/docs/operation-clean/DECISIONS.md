@@ -306,6 +306,9 @@ operation-clean docs + all `.rea-tmp` scripts + `transformers/PROGRESS.md` + `co
 dumps were deliberately left untouched** — rewriting a quote would falsify evidence. Full backup:
 `.plan/.rea-tmp/rename-sweep-backup-20261112-182006/`.
 
+> **Spelling update (2026-11-13, D-28):** the current product spelling is
+> **`Transformers-Fusion`**; this 2026-11-12 entry preserves its dated spelling as history.
+
 **Trace:**
 - *"Saath me maine code-fusion/ ko code/ me rename kar diya hai and transformers-fusion/ ko
   transformers/ me kyuki dono fusion/ folder ke andar me hai yaani fusion to hai hi! Usi ke
@@ -342,6 +345,9 @@ archive is **reference only** — future docs get redesigned fresh ("sab bas ref
 uthaa raha hu"), so this port defines the pattern for how deleted docs get archived: copy-once,
 never override, keep the deletion history intact. Engine-repo identity recorded alongside:
 TransFormers-Fusion, **formerly known as TransCender** (Inferno = kernel + training engine).
+
+> **Spelling update (2026-11-13, D-28):** current spelling is **`Transformers-Fusion`**; D-30 also
+> fixes the wire identity — `Transformers-FusionIDX` + legacy `TransCenderIDX` only.
 
 **Trace:**
 - *"IDEA! Bhai, .plan/_archive wo waala saara ka saara source yahaa copy kar! … InNova.png ko
@@ -416,3 +422,97 @@ is not touched without an operator decision.
   in-flight changes from earlier sessions, so the rename is applied in its working tree but is
   deliberately **not** committed there - committing it would mix unrelated work into a naming
   commit. `code/` was likewise left untouched.
+
+> **Superseded in part by D-30 (2026-11-13):** the engine `.idx` reader accepts exactly two
+> engine identities - `Transformers-FusionIDX` (current, 22 B) and `TransCenderIDX` (legacy
+> "formerly known as", 15 B) - plus the pre-D-28 capital-F spelling of the current magic
+> (same 22 B, read-only). `SolIDX` is **not** an engine magic; it is reserved for model
+> manifests. D-28's byte-length argument and the writer change remain valid.
+
+
+## D-29 · Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13)
+
+**Rule:** the native Claude Desktop seat is **Zenix** - the `CC` suffix is removed from the
+product name, the folder (`windows/zenix`), the registry entries and every current-state doc.
+The component folders and GitHub repos carry no `-fusion` suffix (`code/`,
+`origin-labs-ai/code`; `transformers/`, `origin-labs-ai/transformers`) - reaffirming D-24 -
+while the product names **CodeFusion** and **Transformers-Fusion** are unchanged (D-28).
+The alias registry lists each accepted spelling exactly once; a repeated variant is a
+documentation defect and is removed.
+
+**Trace:**
+- *"Zenix-CC ab 'Zenix' only reh chuka hai, CC hat gaya hai, ab dono repos me se *-fusion hat
+  gaya hai ... is file me ... 2 baar 'Transformers-Fusion' repeated hai to ek hataa dena,
+  aise-aise jitne bhi jhol hai sab fix kar dena!"*
+
+**Executed (2026-11-13):**
+- Master plan §1: duplicate `Transformers-Fusion` alias removed from the accepted-variants
+  table and the §1.1 alias registry; a path/repo note now states that folders and GitHub
+  repos carry no `-fusion` suffix while product names stay unchanged.
+- Master-plan §16: the D-28 entry's "before" spellings were restored (`TransFormers-Fusion`,
+  `TransFormers-FusionIDX`) after the sweep had rewritten both sides of the arrow.
+- `code/scripts/rebrand/fix-zenix-cc.mjs` -> `fix-zenix.mjs`; `migrate-arch.mjs` reference
+  updated; all `Zenix CC` strings removed from the tooling.
+- `code/BRAND.md`, `code/arch/windows.json`, `code/arch/brand.ts`, `code/launcher/index.html`
+  and `code/windows/zenix/window.json` already use **Zenix** / `windows/zenix`; the new
+  `window.json` is tracked and `windows/zenix/SOURCE/` stays local-only.
+- `.plan/review-tracking/FINAL_REPORT.md` and `PROGRESS.md` carry dated correction notes for
+  their historical `Zenix CC` rows.
+- `.plan/telemetry/gen_dashboard.py` deletion note updated to `zenix-cc -> zenix`; the
+  dashboard is regenerated after the sweep.
+- Historical documents keep historical spellings where they are explicitly history:
+  `.plan/_archive/`, this decision log's older entries, and verbatim operator quotes.
+
+
+## D-30 · Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCenderIDX` only; `SolIDX` is model-manifest-only (operator, 2026-11-13)
+
+**Rule:** a model name is not an engine wire identity. The `.idx` format belongs to the engine,
+so its magic is the engine's own identity:
+
+| Namespace | Accepted | Rejected |
+|---|---|---|
+| Engine `.idx` | `Transformers-FusionIDX` (22 B, current); pre-D-28 capital-F spelling (same 22 B, read-only); `TransCenderIDX` (15 B, the engine's former name - "formerly known as") | `SolIDX` (7 B), `InNovaIDX` (10 B) |
+| Model manifest | `SolIDX` (7 B incl. NUL), reserved and specified - no engine consumer | - |
+
+`SolIDX` is documented as a **model-manifest magic** in `transformers/docs/MODEL_MANIFEST.md`.
+`tracesol` stays as the cosmetic Plotly series name. `Sol` remains the trained model family
+(`sol-4-flash`).
+
+**Trace:**
+- *"ye TransCenderIDX kyu SolIDX banaa? Bhai, Seedha matlab ye tha ki Transformers-FusionIDX /
+  TransCenderIDX same cheej the yaani TF = TC tha, Sol to wo model ka naam socha gaya jo ki train
+  kara jaayega ya fine tune karaa jaayega, ye kya jhol ho gaya!"*
+- *"InNovaIDX bhi nahi rakhna hai naa! Hame TransCenderIDX / Transformers-FusionIDX dono is also
+  known as ya formerly known as bhi daal sakte hai!"*
+
+**The defect.** The 2026-11-12 rename wave (`D-27`, "Sab rename hoyega!") treated `SolIDX` as the
+new name of the `.idx` legacy magic and shipped a 7-byte reader branch. That conflated the engine
+wire namespace with the model namespace, and it made old 10-byte `InNovaIDX` files unreadable.
+The correct equivalence is `Transformers-FusionIDX` = current engine identity and
+`TransCenderIDX` = the same engine's former name; `Sol` names the model, not the file format.
+
+**Executed (2026-11-13):**
+- `transformers/src/codec/quant_format.cpp`: removed the `SolIDX` branch; `TransCenderIDX` is the
+  only legacy engine branch. Writer still emits `Transformers-FusionIDX` (22 B).
+- The pre-D-28 capital-F magic is compared byte-wise (`"Trans"` + `'F'` + `"ormers-FusionIDX"`) so
+  the source tree never carries the old spelling; the reader still accepts it for read compatibility.
+- Reader minimum size raised to **23 B** (15 B legacy magic + 8 B header); the 15 B guard was sized
+  for the retired 7 B magic.
+- Every early return after ownership transfer nulls `data_` as well as `mapped_file_`; the
+  22-byte-magic-only probe exposed a dangling `data_` that made `valid()` return true.
+- `transformers/include/quant/quant_format.h` and
+  `transformers/install_test/include/quant/quant_format.h` comments corrected.
+- `transformers/tests/test_sha256_corrupt.cpp`: **Test 8** asserts `TransCenderIDX` decodes and
+  `SolIDX`/`InNovaIDX` are rejected.
+- Proof: `build-norm/tests/test_sha256_corrupt.exe` -> **28 tests, 0 failures, exit 0**;
+  `transformers/SHA256_TEST_LOG.md` regenerated.
+- Docs: `transformers/README.md` §9 and §12; `transformers/PROGRESS.md` (dated correction bullet,
+  historical entries marked superseded); new `transformers/docs/MODEL_MANIFEST.md`; this entry;
+  master-plan §6.1 note, §10X coverage row and §16 D-30 entry; `.plan/telemetry/TODO-TREE.md`
+  T3.2 closed and T3.5 annotated.
+
+**Why `SolIDX` has a spec but no implementation.** No model-manifest consumer exists in the tree
+today - the only manifest artefacts are `tools/dataset_manifest.schema.json` and the `PackManifest`
+test struct. The project rule is zero dead code and zero stubs, so `SolIDX` is documented as
+**reserved**, not implemented. The first consumer must add a writer, a reader and a regression test
+before the status changes to **implemented**.
