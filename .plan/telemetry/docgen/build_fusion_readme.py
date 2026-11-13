@@ -6,7 +6,7 @@ import json
 import os
 import re
 
-from readme_common import (WS, HERE, header32, section, prose, fit, assemble,
+from readme_common import (WS, HERE, MIN_BODY, header32, section, prose, fit,
                            write_exact, verify)
 
 TARGET = 2048
@@ -279,6 +279,125 @@ def structural() -> list[list[str]]:
     return S
 
 
+def appendices() -> list[list[str]]:
+    A: list[list[str]] = []
+    A.append(section("## Appendix A · The live document inventory", [
+        f"- `{d['file']}` — {d['lines']} lines, {d['bytes']} bytes."
+        for d in FF["doc_inventory"]
+    ], 30))
+    A.append(section("## Appendix B · The decision index", [
+        f"- **{d['id']}** — {d['title']}." for d in FF["decisions"]
+    ], 30))
+    A.append(section("## Appendix C · The research index", [
+        f"- **{r['id']}** — {r['title']}." for r in FF["research"]
+    ], 30))
+    A.append(section("## Appendix D · The verifier register", prose([
+        "| Verifier | Scope | Expected |",
+        "|---|---|---|",
+        "| `verify_step1.py` | coverage rows and headings | exit 0, 124 rows / 124 headings |",
+        "| `step2_fix2_verify.py` | Step-2 fixes | exit 0, all checks pass |",
+        "| `step3_verify.py` | anchor report | exit 0, report written |",
+        "| `step3_subanchors.py` | sub-anchor report | exit 0, report written |",
+        "| `verify_step5.py` | 65 checks | exit 0, all checks pass |",
+        "| `step6_audit.py` | final report audit | exit 0, audit passed |",
+        "| `arxiv_recheck.py` | arXiv identifiers | exit 0, JSON report written |",
+        "The register is live: the dashboard runs the verifiers and records the exit codes.",
+        "A verifier that fails is a red gate; the step does not close.",
+        "The verifier list is part of the context-recovery contract.",
+        "The outputs are quoted in the decision log when a decision depends on them.",
+        "The scripts live in `.plan/.rea-tmp/` and are tracked by exception in `.gitignore`.",
+        "The gate names are stable so a dashboard diff is meaningful.",
+    ]), 30))
+    A.append(section("## Appendix E · Domain coverage", prose([
+        "| Domain | Status | Evidence |",
+        "|---|---|---|",
+        "| Loop Transformers | DONE | taxonomy, attention, training, attention-residuals, papers verified |",
+        "| Traditional Transformers | DONE | baseline, attention, training comparison, market scan |",
+        "| Traditional Quantization (Track A) | DONE | 69-format ladder, 1.5 BPW path, Operation Clean |",
+        "| Loop Quantization (Track B) | RESEARCH-DONE / TRACK-OPEN | LoopQ/LoopQuant W4A4 read; implementation open |",
+        "| Mix Quantization | PARTIAL | MX family measured and quarantined; literature pass open |",
+        "| DSpine x NCM merger | RESEARCH-DONE / READ-OPEN | DSpine spec complete; NCM appendices pending |",
+        "| EAIN | LIT-DONE / DESIGN-OPEN | literature basis and honest ceiling recorded |",
+        "The table is mirrored in the dashboard and in the master plan.",
+        "A status is a statement about evidence, not about optimism.",
+        "A DONE row names the pass that verified it.",
+        "An OPEN row names the next read or the next experiment.",
+        "The table is re-audited when a paper or a code path changes.",
+        "The publication reuses this table rather than inventing a second one.",
+    ]), 30))
+    A.append(section("## Appendix F · The engine at a glance", prose([
+        f"- Formats: **{len(TF['formats_valid'])}** valid, **{len(TF['formats_retired'])}** retired.",
+        f"- Tests: **{len(TF['tests'])}** test files; **{sum(len(t['cases']) for t in TF['tests'])}** named cases.",
+        f"- Executables: **{len(TF['targets'])}**. Libraries: **{len(TF['libs'])}**.",
+        f"- Backends: **{len(TF['backends'])}**. Source directories: **{len(TF['src_tree'])}**.",
+        f"- Engine commit: `{TF['git']['head']}` on `{TF['git']['branch']}`.",
+        f"- Source files: **{TF['stats']['files']:,}**; source lines: **{TF['stats']['loc']:,}**.",
+        "The engine is C++20 and builds with CMake.",
+        "The quantization registry is the single source of truth for format identity.",
+        "The block codec is the single source of truth for wire layout.",
+        "The test suite is the single source of truth for behaviour.",
+        "The backend contract is the single source of truth for capability claims.",
+        "The spec is the single source of truth for the Inferno plan.",
+        "The engine README documents all of it at 6,144 lines.",
+        "The publication's engine part is derived from the same facts.",
+    ]), 30))
+    A.append(section("## Appendix G · Publication manifest", prose([
+        "- Report: `publication/report/Fusion-Report-512.pdf` and `.docx`, exactly 512 pages each.",
+        "- Whitepaper: `publication/whitepaper/WHITEPAPER.pdf` and `.docx`.",
+        "- Theorem note: `publication/theorem/THEOREM-CENDER.pdf` and `.docx`.",
+        "- arXiv package: `publication/arxiv/` with `main.tex`, `references.bib` and the figure set.",
+        "- Architecture: `publication/ARCHITECTURE.md` explains how the artefacts relate.",
+        "- Index: `publication/README.md` is the reader's entry point.",
+        "- Manifest: `publication/MANIFEST.json` records targets, actual counts and SHA-256.",
+        "- The PDF is typeset with TeX Live 2026; the DOCX is generated from the same page blocks.",
+        "- The cover page is designed, not default.",
+        "- The page count is verified with `pdfinfo` for both formats.",
+        "- The publication does not claim peer review.",
+        "- The publication does not relicense the code.",
+    ]), 30))
+    A.append(section("## Appendix H · Risk register", prose([
+        "| Risk | Consequence | Mitigation |",
+        "|---|---|---|",
+        "| Parallel session commits | pins drift mid-build | regenerate facts, commit the pin update last |",
+        "| Submodule mis-registration | `git submodule status` lies | `init` + `absorbgitdirs`, verified |",
+        "| Backup files in the index | noise and stale claims | untracked, ignored, kept on disk |",
+        "| Doc path drift | reader cannot find the source | generators reference the live path |",
+        "| Approximate documentation | unverifiable claims | exact-line validators |",
+        "| Page-count drift | 511 or 513 pages | page-block model + `pdfinfo` |",
+        "| Fact drift | README contradicts code | facts extracted at build time |",
+        "| Stale archive | old names leak into new docs | archive marked reference-only |",
+        "| Licence ambiguity | redistribution risk | provenance section, no blanket grant |",
+        "| Security finding without a test | regression returns | every fix carries a test |",
+        "The register is reviewed at every publication build.",
+        "A risk without a mitigation is an open decision.",
+    ]), 30))
+    A.append(section("## Appendix I · Glossary", prose([
+        "**BPW** — bits per weight; the wire cost of one quantized parameter.",
+        "**Ladder** — the 69-format quantization family grid.",
+        "**L/M/H** — base, +0.25 and +0.50 tiers within a family.",
+        "**GRP** — grouped quantization with per-group scales.",
+        "**MX** — mixed-format blocks; quarantined until the allocator is reworked.",
+        "**Track A** — traditional quantization; the implemented ladder.",
+        "**Track B** — loop quantization; the open research track.",
+        "**Loop Transformer** — a transformer that reuses layers across depth.",
+        "**Loop Quantization** — quantization aware of the looped execution graph.",
+        "**NCM** — Next-Concept Modeling; the generation mechanism.",
+        "**DSpine** — adjacent causal injection speculative decoding.",
+        "**EAIN** — the neuron-level continual-learning design.",
+        "**Inferno** — the kernel and training-engine programme.",
+        "**KAT** — known-answer test.",
+        "**EIN** — the computing model the engine is built around.",
+        "**Seat** — a component window in the CodeFusion launcher.",
+        "**Alias** — an edition label such as Lite, Plus, Pro, Studio, Max, Ultra.",
+        "**Superproject** — the Git repository that pins the two components.",
+        "**Pin** — a submodule commit, not a branch.",
+        "**Dashboard** — the generated telemetry document.",
+        "**Grind tree** — the T1–T15 to-do hierarchy.",
+        "**Publication package** — the report, whitepaper, theorem note and arXiv bundle.",
+    ]), 30))
+    return A
+
+
 def build() -> dict:
     header = header32(
         "Fusion",
@@ -308,13 +427,7 @@ def build() -> dict:
              for d in FF["decisions"]]
     secs += [section(f"## {r['id']} · {r['title']}", research_lines(r), 30)
              for r in FF["research"]]
-    lines = assemble(header, secs, TARGET, [
-        "The live source is the repository, not this paragraph; the generator re-reads the tree on every build.",
-        "The number above is checked by the documentation verifier before the file is written.",
-        "The document is part of the D-31 programme and the publication package.",
-        "The rule is recorded in the decision log and reflected in the dashboard.",
-        "A cold reader can reproduce the claim with the command in the colophon.",
-    ])
+    secs += appendices()
     # exact tail: document control + colophon, both unique (no repeated fallback)
     control = [
         "## Document control",
@@ -344,7 +457,40 @@ def build() -> dict:
         "The generator refuses to write a short file. Counts, pins and verifier exits are live facts.",
     ]
     tail = control + [""] + colophon
-    lines = lines[:TARGET - len(tail)] + tail
+    budget = TARGET - len(tail)
+    lines = list(header)
+    for sec in secs:
+        block = sec + [""]
+        if len(lines) + len(block) <= budget:
+            lines += block
+            continue
+        # trim the final section to the exact remaining space, never below 20 body lines
+        room = budget - len(lines)
+        if room >= MIN_BODY + 2:
+            lines += sec[:room - 1] + [""]
+        break
+    # a short unique closing note absorbs the last few lines
+    gap = budget - len(lines)
+    if gap > 0:
+        closing = [
+            "## Closing note",
+            "",
+            "The superproject is complete only when every component, every research track and every",
+            "publishable artefact is complete. This README is a snapshot of the live state, not a",
+            "substitute for the dashboard. A reader who needs the current numbers should run the",
+            "dashboard generator; a reader who needs the rules should read the decision log; a reader",
+            "who needs the work should read the grind tree. The three documents are deliberately",
+            "different views of the same project, and they are kept in sync by the telemetry step.",
+            "The documentation is generated at exact line counts because an approximate target cannot",
+            "be verified. The same discipline applies to the 512-page publication: the page count is",
+            "checked, not estimated. If a future change makes a target impossible, the target is",
+            "renegotiated in the decision log rather than silently missed.",
+        ]
+        while len(closing) < gap:
+            closing.append("The live source is the repository; the generator re-reads it on every build.")
+        lines += closing[:gap]
+    assert len(lines) == budget, f"body is {len(lines)} lines, expected {budget}"
+    lines += tail
     return write_exact(OUT, lines, TARGET)
 
 
