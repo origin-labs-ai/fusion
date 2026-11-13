@@ -82,8 +82,11 @@ def walk_stats(root: str, exts: tuple[str, ...] | None = None,
 
 def tracked_stats(root: str, repo: str, prefix: str = "") -> dict:
     """Fast stats from ``git ls-files`` (tracked files only)."""
-    out = run(["git", "ls-files", "-z", "--", prefix], repo)
-    names = [n for n in out.split("\0") if n]
+    cmd = ["git", "ls-files", "-z"]
+    if prefix:
+        cmd += ["--", prefix]
+    out = run(cmd, repo)
+    names = [n for n in out.replace("\r", "").split("\0") if n]
     files = 0
     size = 0
     line_count = 0
@@ -169,8 +172,10 @@ def parse_formats() -> tuple[list[dict], list[dict]]:
     for line in enum.group(1).splitlines():
         if "Retired ids" in line:
             in_retired = True
-        for m in re.finditer(r"\b(Q_[A-Za-z0-9_]+)\s*=\s*(\d+)\s*,?\s*(?://\s*(.*))?$", line):
-            name, fid, comment = m.group(1), int(m.group(2)), (m.group(3) or "").strip()
+        cm = re.search(r"//\s*(.*)$", line)
+        comment = cm.group(1).strip() if cm else ""
+        for m in re.finditer(r"\b(Q_[A-Za-z0-9_]+)\s*=\s*(\d+)", line):
+            name, fid = m.group(1), int(m.group(2))
             rec = {"name": name, "id": fid, "comment": comment}
             (retired if in_retired else valid).append(rec)
     # BPW from the comment, then from the canonical name.
