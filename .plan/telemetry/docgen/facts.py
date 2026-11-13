@@ -46,11 +46,16 @@ def run(cmd: list[str], cwd: str) -> str:
         return str(e)
 
 
+TEXT_EXTS = {".cpp", ".h", ".hpp", ".c", ".cu", ".py", ".md", ".json", ".mjs",
+             ".js", ".ts", ".tsx", ".sh", ".ps1", ".bat", ".cmake", ".txt", ".xml",
+             ".yml", ".yaml", ".toml", ".css", ".html", ".svg"}
+
+
 def walk_stats(root: str, exts: tuple[str, ...] | None = None,
-               max_depth: int | None = None) -> dict:
+               max_depth: int | None = None, loc: bool = True) -> dict:
     """Count files / lines / bytes under *root*, skipping generated trees."""
     files = 0
-    loc = 0
+    line_count = 0
     size = 0
     by_ext: dict[str, int] = {}
     base_depth = root.rstrip(os.sep).count(os.sep)
@@ -70,10 +75,30 @@ def walk_stats(root: str, exts: tuple[str, ...] | None = None,
             files += 1
             size += st.st_size
             by_ext[ext] = by_ext.get(ext, 0) + 1
-            if ext in {".cpp", ".h", ".hpp", ".c", ".cu", ".py", ".md", ".json", ".mjs",
-                       ".js", ".ts", ".tsx", ".sh", ".ps1", ".bat", ".cmake", ".txt"}:
-                loc += nlines(p)
-    return {"files": files, "loc": loc, "bytes": size, "by_ext": by_ext}
+            if loc and ext in TEXT_EXTS:
+                line_count += nlines(p)
+    return {"files": files, "loc": line_count, "bytes": size, "by_ext": by_ext}
+
+
+def tracked_stats(root: str, repo: str, prefix: str = "") -> dict:
+    """Fast stats from ``git ls-files`` (tracked files only)."""
+    out = run(["git", "ls-files", "-z", "--", prefix], repo)
+    names = [n for n in out.split("\0") if n]
+    files = 0
+    size = 0
+    line_count = 0
+    by_ext: dict[str, int] = {}
+    for rel in names:
+        p = os.path.join(root, rel.replace("/", os.sep))
+        try:
+            st = os.stat(p)
+        except OSError:
+            continue
+        files += 1
+        size += st.st_size
+        ext = os.path.splitext(rel)[1].lower()
+        by_ext[ext] = by_ext.get(ext, 0) + 1
+    return {"files": files, "loc": line_count, "bytes": size, "by_ext": by_ext}
 
 
 # ------------------------------------------------------------------ .plan facts
@@ -253,21 +278,19 @@ def code_facts() -> dict:
     reg = json.loads(read(os.path.join(CD, "arch", "windows.json")))
     seats = []
     for part in reg.get("parts", []):
-        folder = os.path.join(CD, part["folder"].replace("/", os.sep))
-        st = {"files": 0, "loc": 0, "bytes": 0}
-        if os.path.isdir(folder):
-            st = walk_stats(folder, max_depth=3)
+        prefix = part["folder"].replace("\\", "/") + "/"
+        st = tracked_stats(CD, CD, prefix)
         seats.append({**part, **st})
-    launcher = walk_stats(os.path.join(CD, "launcher"), max_depth=4)
-    scripts = walk_stats(os.path.join(CD, "scripts"), max_depth=3)
-    payloads = walk_stats(os.path.join(CD, "payloads"), max_depth=3)
+    launcher = tracked_stats(CD, CD, "launcher/")
+    scripts = tracked_stats(CD, CD, "scripts/")
+    payloads = tracked_stats(CD, CD, "payloads/")
     return {
         "registry": reg,
         "seats": seats,
         "launcher": launcher,
         "scripts": scripts,
         "payloads": payloads,
-        "stats": walk_stats(CD),
+        "stats": tracked_stats(CD, CD),
         "git": {"head": run(["git", "log", "--oneline", "-1"], CD),
                 "commits": run(["git", "rev-list", "--count", "HEAD"], CD),
                 "branch": run(["git", "rev-parse", "--abbrev-ref", "HEAD"], CD)},
@@ -276,8 +299,15 @@ def code_facts() -> dict:
 
 # --------------------------------------------------------------- fusion facts
 def fusion_facts() -> dict:
+    plan_stats = walk_stats(os.path.join(PLAN, "docs"), exts=(".md",))
+    for sub in ("telemetry",):
+        st = walk_stats(os.path.join(PLAN, sub), exts=(".md", ".py"))
+        for k in ("files", "loc", "bytes"):
+            plan_stats[k] += st[k]
+        for ext, n in st["by_ext"].items():
+            plan_stats["by_ext"][ext] = plan_stats["by_ext"].get(ext, 0) + n
     return {
-        "stats": walk_stats(WS, exts=(".md", ".py", ".json", ".gitignore", ".mjs")),
+        "stats": plan_stats,
         "git": {"head": run(["git", "log", "--oneline", "-1"], WS),
                 "commits": run(["git", "rev-list", "--count", "HEAD"], WS),
                 "branch": run(["git", "rev-parse", "--abbrev-ref", "HEAD"], WS)},
