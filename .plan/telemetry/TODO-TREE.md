@@ -183,21 +183,27 @@ Dashboard checkpoints: after each T-item completion.
 
 ## T14 · Repository hygiene (operator: "jo karna hai fix wo kar de", 2026-11-13)
 
-- [ ] T14.1 Register the submodules properly (`git submodule init` + `absorbgitdirs`; remove the
-      ambiguous `-` status and the nested full `.git` directories)
-- [ ] T14.2 `.gitmodules`: `code` branch `master` -> `main` (the checkout is on `main`)
-- [ ] T14.3 Untrack backup/scratch artifacts (`.bak-*`); add ignore rules; keep files on disk
-- [ ] T14.4 Commit the transformers WIP (84 modified + 89 untracked) and push `code` (ahead 1)
-- [ ] T14.5 Update superproject gitlinks to the new submodule commits and push all three repos
-- [ ] T14.6 Fix documentation path drift (README says `.plan/telemetry/BLUEPRINT.md`; the file is
-      `.plan/BLUEPRINT.md`)
+- [x] T14.1 Register the submodules properly (`git submodule init` + `absorbgitdirs`; remove the
+      ambiguous `-` status and the nested full `.git` directories) - both `.git` entries are files
+      pointing at `.git/modules/<name>`, and `git submodule status` has no `-`.
+- [x] T14.2 `.gitmodules`: `code` branch `master` -> `main` (the checkout is on `main`)
+- [x] T14.3 Untrack backup/scratch artifacts (`.bak-*`); add ignore rules; keep files on disk
+- [x] T14.4 Commit the transformers WIP (84 modified + 89 untracked) and push `code` (ahead 1) -
+      transformers WIP landed in `e63e2b5`; code pushed.
+- [x] T14.5 Update superproject gitlinks to the new submodule commits and push all three repos -
+      `code` 1e72c52e0, `transformers` 2335058, fusion pushed.
+- [x] T14.6 Fix documentation path drift (README says `.plan/telemetry/BLUEPRINT.md`; the file is
+      `.plan/BLUEPRINT.md`) - scan found zero `.plan/telemetry/BLUEPRINT.md` references; the only
+      hit was this TODO entry.
 
 ## T15 · Documentation verification + telemetry
 
-- [ ] T15.1 `wc -l` proof for all three READMEs (2048 / 4096 / 6144)
+- [ ] T15.1 `wc -l` proof for all three READMEs (2048 / 4096 / 6144) - `fusion` 2,048 and `code`
+      4,096 are exact and pushed; `transformers` is 1,694 / 6,144 (T10.3 still in progress).
 - [ ] T15.2 `pdfinfo` proof for both 512-page artifacts
 - [ ] T15.3 Manifest (`docgen/manifest.json`) + dashboard section + TODO checkboxes updated
-- [ ] T15.4 All 7 plan verifiers green after the docs build; regenerate dashboard
+- [x] T15.4 All 7 plan verifiers green after the docs build; regenerate dashboard - 7/7 PASS,
+      `rows=125 headings=125 gaps=13`, code gate 13/13, dashboard regenerated.
 
 **Execution order:** T14 -> T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7 -> T8 -> T10 -> T11 -> T12 -> T13 (T9 and T15 run throughout).
 Dashboard checkpoints: after each T-item completion.
