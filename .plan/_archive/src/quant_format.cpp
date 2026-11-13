@@ -531,17 +531,17 @@ std::vector<Format> QUANTReader::tensor_formats(const std::string& name) const {
 }
 
 // ===========================================================================
-// QUANTIdxWriter
+// QuantIDXWriter
 // ===========================================================================
 
-QUANTIdxWriter::QUANTIdxWriter(const std::string& path)
+QuantIDXWriter::QuantIDXWriter(const std::string& path)
     : file_(path, std::ios::binary) {}
 
-QUANTIdxWriter::~QUANTIdxWriter() {
+QuantIDXWriter::~QuantIDXWriter() {
     if (file_.is_open()) close();
 }
 
-void QUANTIdxWriter::write_idx(uint32_t version, const std::vector<std::string>& tensor_names) {
+void QuantIDXWriter::write_idx(uint32_t version, const std::vector<std::string>& tensor_names) {
     if (!file_.is_open()) return;
     // Header: magic "InNovaIDX" | version | num_tensors
     static const char MAGIC[10] = {'I','n','N','o','v','a','I','D','X','\0'};
@@ -565,15 +565,15 @@ void QUANTIdxWriter::write_idx(uint32_t version, const std::vector<std::string>&
     }
 }
 
-void QUANTIdxWriter::close() {
+void QuantIDXWriter::close() {
     if (file_.is_open()) file_.close();
 }
 
 // ===========================================================================
-// QUANTIdxReader — recompute + fail-fast on corrupt
+// QuantIDXReader — recompute + fail-fast on corrupt
 // ===========================================================================
 
-QUANTIdxReader::QUANTIdxReader(const std::string& path)
+QuantIDXReader::QuantIDXReader(const std::string& path)
     : mapped_file_(nullptr), data_(nullptr), file_size_(0),
       version_(0), num_tensors_(0), checked_(false)
 {
@@ -590,22 +590,22 @@ QUANTIdxReader::QUANTIdxReader(const std::string& path)
     memcpy(&num_tensors_, data_ + off, sizeof(num_tensors_)); off += sizeof(num_tensors_);
 }
 
-QUANTIdxReader::~QUANTIdxReader() {
+QuantIDXReader::~QuantIDXReader() {
     delete mapped_file_;
 }
 
-std::vector<std::string> QUANTIdxReader::read_idx() {
-    if (!data_) throw Error("QUANTIdxReader: invalid idx file");
+std::vector<std::string> QuantIDXReader::read_idx() {
+    if (!data_) throw Error("QuantIDXReader: invalid idx file");
     if (checked_) return names_;
     size_t off = 10 + sizeof(version_) + sizeof(num_tensors_);
     for (uint32_t i = 0; i < num_tensors_; i++) {
         // Fail fast if file is truncated/corrupt structurally
         if (off + sizeof(uint16_t) > file_size_)
-            throw Error("QUANTIdxReader: corrupt idx — truncated before tensor name length at index " + std::to_string(i));
+            throw Error("QuantIDXReader: corrupt idx — truncated before tensor name length at index " + std::to_string(i));
         uint16_t name_len;
         memcpy(&name_len, data_ + off, sizeof(name_len)); off += sizeof(name_len);
         if (off + name_len + 32 > file_size_)
-            throw Error("QUANTIdxReader: corrupt idx — truncated tensor name/hash at index " + std::to_string(i));
+            throw Error("QuantIDXReader: corrupt idx — truncated tensor name/hash at index " + std::to_string(i));
         std::string name((const char*)(data_ + off), name_len);
         off += name_len;
         SHA256Hash stored;
@@ -616,7 +616,7 @@ std::vector<std::string> QUANTIdxReader::read_idx() {
         if (memcmp(recomputed.bytes, stored.bytes, 32) != 0) {
             // Report exactly which tensor name is corrupt
             std::string disp = name.empty() ? std::string("<empty>") : name;
-            throw Error("QUANTIdxReader: corrupt idx — name hash mismatch for tensor \"" + disp +
+            throw Error("QuantIDXReader: corrupt idx — name hash mismatch for tensor \"" + disp +
                         "\" at index " + std::to_string(i));
         }
         names_.push_back(name);

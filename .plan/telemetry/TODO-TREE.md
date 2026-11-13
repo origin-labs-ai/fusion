@@ -71,7 +71,7 @@
       writer assert-validity was documented but never
       implemented → FIXED (write_block + write_format_table throw on invalid/retired ids);
       MoE format-table label bug LIVE at moe_model.cpp:414 (Q_8 label over raw FP32) → FIXED
-      (writes Q_32, payload truth); QUANTIdxReader truncated-header overread → FIXED (per-magic
+      (writes Q_32, payload truth); QuantIDXReader truncated-header overread → FIXED (per-magic
       size gates 30/23 + header-bounds guard). Regression: `test_sha256_corrupt` Test 7
       (23/0 pass). Remaining audit items 2–10 (quant_import/adapter paths, benches, inferno
       writer, install_test dup header, MoE/production label reads) are separate to-dos.
@@ -125,11 +125,15 @@
 
 **Execution order:** T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 (T9 runs throughout).
 Dashboard checkpoints: after each T-item completion.
-## T10 · READMEs to publishable depth (operator targets, 2026-11-12)
+## T10 · READMEs to publishable depth (operator targets, D-31 2026-11-13)
 
-- [ ] T10.1 `fusion/README.md` -> **4,096 LOC** (superproject face; average code snippets allowed)
-- [ ] T10.2 `code/README.md` -> **2,048 LOC** (average code snippets)
-- [ ] T10.3 `transformers/README.md` -> **6,144 LOC** (average code snippets) - IN PROGRESS
+> **EXACT targets (D-31):** `fusion` **2,048** · `code` **4,096** · `transformers` **6,144** LOC.
+> `wc -l` must equal the target exactly. Visual reference: `origin-router/README.md` (centred
+> header, SVG logo, shields.io badges, nav links, emoji sections, tables, minimal snippets).
+
+- [ ] T10.1 `fusion/README.md` -> **2,048 LOC** (superproject face; minimal snippets)
+- [ ] T10.2 `code/README.md` -> **4,096 LOC** (CodeFusion; minimal snippets)
+- [ ] T10.3 `transformers/README.md` -> **6,144 LOC** (engine; minimal snippets) - IN PROGRESS
   - [x] T10.3a **Generator + strict validator** (`.plan/telemetry/build_tf_readme.py`) - builds from
         live extraction, **refuses to write unless every section carries 30 narrative lines**;
         tables/code do not count as narrative. No padded blanks, no filler.
@@ -148,6 +152,11 @@ Dashboard checkpoints: after each T-item completion.
         sections 151-192
 - [ ] T10.4 Standard: "every detail, opened up" - operator will run research audit x3 for
       publishability; docs must survive that scrutiny.
+- [ ] T10.5 Style pass: SVG logo per repo + shields.io badges + centred header + emoji nav,
+      matching the `origin-router` README's alignment and tone.
+- [ ] T10.6 Exactness validator: each generator asserts `wc -l == target`, zero placeholder
+      markers, zero blank-padding runs; failure means no write.
+- [ ] T10.7 Commit the generators under `.plan/telemetry/docgen/` (deterministic, live-tree facts).
 ## T11 · _archive mining -> .plan/ (operator: "wahan se bhi saara docs uthaana hai")
 
 - [ ] T11.1 Inventory `.plan/_archive` (md/pdf/docx counts, duplicate detection)
@@ -164,8 +173,31 @@ Dashboard checkpoints: after each T-item completion.
 ## T13 · Publishable research package (operator-led; support on request)
 
 - [ ] T13.1 Research audit x3 for publishability (operator is running this)
-- [ ] T13.2 Research report PDF + DOCX - same data, two extensions, 512 pages total
-      (generation support when the operator returns with content)
+- [ ] T13.2 Research report **PDF + DOCX** - same page-block model, **exactly 512 pages each**,
+      designed cover page, TeX typesetting for the PDF, `python-docx` for the DOCX (D-31)
+  - [ ] T13.2a Cover + title page + document-control page + manual TOC (looks-first)
+  - [ ] T13.2b Body: superproject, D-01..D-30, engine, quantization ladder, seats, research,
+        operations, roadmap
+  - [ ] T13.2c Appendix: annotated source-file cards fill the page count to exactly 512
+  - [ ] T13.2d Verify with `pdfinfo` (PDF) and Word COM -> `pdfinfo` (DOCX); both must read 512
 
-**Execution order:** T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7 -> T8 -> T10 -> T11 -> T12 (T9 runs throughout; T13 when the operator returns).
+## T14 · Repository hygiene (operator: "jo karna hai fix wo kar de", 2026-11-13)
+
+- [ ] T14.1 Register the submodules properly (`git submodule init` + `absorbgitdirs`; remove the
+      ambiguous `-` status and the nested full `.git` directories)
+- [ ] T14.2 `.gitmodules`: `code` branch `master` -> `main` (the checkout is on `main`)
+- [ ] T14.3 Untrack backup/scratch artifacts (`.bak-*`); add ignore rules; keep files on disk
+- [ ] T14.4 Commit the transformers WIP (84 modified + 89 untracked) and push `code` (ahead 1)
+- [ ] T14.5 Update superproject gitlinks to the new submodule commits and push all three repos
+- [ ] T14.6 Fix documentation path drift (README says `.plan/telemetry/BLUEPRINT.md`; the file is
+      `.plan/BLUEPRINT.md`)
+
+## T15 · Documentation verification + telemetry
+
+- [ ] T15.1 `wc -l` proof for all three READMEs (2048 / 4096 / 6144)
+- [ ] T15.2 `pdfinfo` proof for both 512-page artifacts
+- [ ] T15.3 Manifest (`docgen/manifest.json`) + dashboard section + TODO checkboxes updated
+- [ ] T15.4 All 7 plan verifiers green after the docs build; regenerate dashboard
+
+**Execution order:** T14 -> T1 -> T2 -> T3 -> T4 -> T5 -> T6 -> T7 -> T8 -> T10 -> T11 -> T12 -> T13 (T9 and T15 run throughout).
 Dashboard checkpoints: after each T-item completion.

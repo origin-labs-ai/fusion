@@ -4953,7 +4953,7 @@ The repository's hash-indexing test log is preserved as evidence of the verifica
 
 | Test | Status |
 |---|---|
-| QUANTIdx write and read | PASSED |
+| QuantIDX write and read | PASSED |
 | SHA256 corrupt detection (one byte) | PASSED |
 | TranscenderIDX magic header | PASSED |
 | Truncated idx file detection | PASSED |

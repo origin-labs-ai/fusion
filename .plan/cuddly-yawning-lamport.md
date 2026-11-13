@@ -212,7 +212,7 @@ QUANT_HAVE_METAL/QUANT_VULKAN_TYPES_H etc. (#define gates); **environment variab
 (src/core/random.cpp), QUANT_PAGED_KV_DEBUG (src/model/kv_cache.cpp), QUANT_SKIP_FULL/QUANT_SKIP_GLA
 (qwen35_engine.cpp) — env names stay as-is.
 **RENAME (class/type names ~60 uses):** `QUANTReader`→`QuantReader`, `QUANTWriter`→`QuantWriter`,
-`QUANTHeader`→`QuantHeader`, `QUANTWeight`→`QuantWeight` (native_weight.h), `QUANTIdxWriter`/`QUANTHeader`
+`QUANTHeader`→`QuantHeader`, `QUANTWeight`→`QuantWeight` (native_weight.h), `QuantIDXWriter`/`QUANTHeader`
 in quant_format.cpp, `ExternalFormat::QUANT`→`Quant` (adapter_core.cpp:115,117,135,151 +
 test_adapter_bridges.cpp:64). Namespace `quant` lowercase already fine.
 **RENAME (prose/strings, ~100+):** comments in adapter headers/srcs, printf/argv strings in

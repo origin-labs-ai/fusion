@@ -478,6 +478,10 @@ so its magic is the engine's own identity:
 `tracesol` stays as the cosmetic Plotly series name. `Sol` remains the trained model family
 (`sol-4-flash`).
 
+**Legacy names.** `InNova` (the pre-rename model family, now `Sol` / `sol-4-flash`) and
+`InNovaIDX` (the pre-rename wire magic, now retired) are historical names only. They are never
+current identifiers, and `InNovaIDX` stays rejected by the engine `.idx` reader.
+
 **Trace:**
 - *"ye TransCenderIDX kyu SolIDX banaa? Bhai, Seedha matlab ye tha ki Transformers-FusionIDX /
   TransCenderIDX same cheej the yaani TF = TC tha, Sol to wo model ka naam socha gaya jo ki train
@@ -516,3 +520,46 @@ today - the only manifest artefacts are `tools/dataset_manifest.schema.json` and
 test struct. The project rule is zero dead code and zero stubs, so `SolIDX` is documented as
 **reserved**, not implemented. The first consumer must add a writer, a reader and a regression test
 before the status changes to **implemented**.
+
+---
+
+## D-31 · Exact documentation targets: 2048 / 4096 / 6144 LOC + a 512-page DOCX and PDF (operator, 2026-11-13)
+
+**Rule:** the three project READMEs are built to **exact** line counts, and the publishable
+research package is a **512-page** document in both `.docx` and `.pdf`:
+
+| Repository | README target | Exactness |
+|---|---|---|
+| `fusion/` (superproject) | **2,048 LOC** | `wc -l` must equal 2,048 |
+| `code/` (CodeFusion) | **4,096 LOC** | `wc -l` must equal 4,096 |
+| `transformers/` (Transformers-Fusion) | **6,144 LOC** | `wc -l` must equal 6,144 |
+
+This supersedes the T10 mapping recorded on 2026-11-12 (which had `fusion` at 4,096 and `code` at
+2,048). The operator's words on 2026-11-13: *"CodeFusion repo me 4096 LOCs ka README banega,
+Transfoemers-Fusion repo me 6144 LOCs ka and Fusion me 2048 LOCs ka, exact! Bhai, mera exact matlab
+exact hi hota hai."*
+
+**Format rule.** The visual reference is
+`C:\Users\thaku\Workspaces\side-projects\origin-router\README.md`: centred header with an SVG logo,
+one-line pitch, emoji navigation links, `shields.io` badges (`style=flat-square`), horizontal rules,
+emoji-headed sections, tables, short command snippets and a licence/credits footer. Code snippets
+stay **average/minimal** - a command, a call shape or a small type, never a wall of source.
+
+**Page rule.** The 512-page package ships as **one document, two formats**: `PDF` typeset with TeX
+Live 2026 (cover page, part dividers, running headers, page numbers, tables, callouts) and `DOCX`
+generated with `python-docx` from the same page-block model. Each format **must** contain exactly
+512 pages; 512 is not a target range.
+
+**Telemetry rule.** Every generator writes a machine-readable manifest (target count, actual count,
+sha256, timestamp, source commit) and the dashboard gains a documentation status section. The
+generators live in `.plan/telemetry/docgen/`, are deterministic, read facts from the live tree, and
+refuse to write a file whose count is off by even one line or one page.
+
+**Trace:**
+- *"Jo karna hai fix wo kar de, uske baad 512 page ka .docx and .pdf banayenge isi knowledge ke
+  base par!"*
+- *"Code snippets average hi rahenge, minimal level!"*
+- *"Mast se cover page / main page / first page ke saath banana, TeX bhi installed hai .pdf banane
+  ke liye! Python bhi hai! Look wisse bhi jagah hona chahiye!"*
+- Implementation: `.plan/telemetry/TODO-TREE.md` T10 (READMEs), T13.2 (512-page package), T14
+  (hygiene) and T15 (verification).

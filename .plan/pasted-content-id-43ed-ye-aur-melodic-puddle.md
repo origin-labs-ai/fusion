@@ -58,7 +58,7 @@ Plus: it takes decisions **according to the context**, and it **learns from its 
 
 ### Hard technical goal
 
-> Use `code-fusion` so that a **bad dense DeepSeek V4.1 Flash** scores **90%+ on Terminal-Bench-4.0-style benchmarks**.
+> Use `code-fusion` so that **DeepSeek V4.1 Flash** scores **90%+ on Terminal-Bench-4.0-style benchmarks**.
 
 ---
 
@@ -114,7 +114,7 @@ Saved verbatim so nothing is ever lost to a spelling difference again.
 | Thing | Aliases |
 |---|---|
 | The trained model | **`sol-4-flash`** · "Sol 4 Flash" · "Sol" |
-| The 27B benchmark model | **DeepSeek V4.1 Flash** · "the bad 27B dense DeepSeek V4.1 Flash" · `deepseek-v4.1-flash` |
+| The benchmark model | **DeepSeek V4.1 Flash** · `deepseek-v4.1-flash` |
 | The ARC-AGI-3 reference model | **Astra** · **GPT-6** · ChatGPT · (once typed **"Askta"** by mistake — corrected to **Astra**) |
 
 **Neurons**
@@ -2129,7 +2129,8 @@ SPEC-INFERNO §0.3 / §11 and Appendix E/O define 26 modality types that must ea
 | OC-DECISIONS | Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12) | covered | - | D-27. Reminder note sits at the top of every implement-facing doc; dashboard carries the GOAL LINE. |
 | OC-DECISIONS | Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (operator, 2026-11-13) | covered | - | D-28. Sweep completed 2026-11-13 across the working trees (docs, code, build scripts, CI, benches, tests); writer magic lowered to `Transformers-FusionIDX` while the reader still accepts the pre-D-28 spelling, so existing `.idx` files keep decoding. `DECISIONS.md` keeps the historical spelling on purpose. |
 | OC-DECISIONS | Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13) | covered | - | D-29. `Zenix-CC` -> `Zenix` across folder, registry and current-state docs; duplicate `Transformers-Fusion` alias removed from §1 and §1.1; the folder/repo `-fusion` rule is reaffirmed without renaming product vocabulary. |
-| OC-DECISIONS | Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCenderIDX` only; `SolIDX` is model-manifest-only (operator, 2026-11-13) | covered | - | D-30. `SolIDX` and `InNovaIDX` are rejected by `QUANTIdxReader`; `TransCenderIDX` is the legacy "formerly known as" alias; `SolIDX` is specified separately in `transformers/docs/MODEL_MANIFEST.md`; Test 8 asserts the accept/reject split (28 tests, 0 failures). |
+| OC-DECISIONS | Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCenderIDX` only; `SolIDX` is model-manifest-only (operator, 2026-11-13) | covered | - | D-30. `SolIDX` and `InNovaIDX` are rejected by `QuantIDXReader`; `TransCenderIDX` is the legacy "formerly known as" alias; `SolIDX` is specified separately in `transformers/docs/MODEL_MANIFEST.md`; Test 8 asserts the accept/reject split (28 tests, 0 failures). `InNova` (pre-rename model family, now `Sol` / `sol-4-flash`) and `InNovaIDX` (retired wire magic) are documented legacy names. |
+| OC-DECISIONS | Exact documentation targets: 2048 / 4096 / 6144 LOC + a 512-page DOCX and PDF (operator, 2026-11-13) | covered | - | D-31. Exact README targets: `fusion` 2,048 · `code` 4,096 · `transformers` 6,144 LOC; one 512-page package in both PDF (TeX Live 2026) and DOCX (`python-docx`); generators under `.plan/telemetry/docgen/` write manifests and refuse off-by-one output. Supersedes the 2026-11-12 T10 mapping. |
 | OC-WORKTREE | `Modified files (12) — dispositions` | **partial** | **GAP-10** | The counts drifted: PROGRESS.md now records **24 modified + 90 untracked**, not 12. |
 | OC-WORKTREE | `Untracked files (18+) — dispositions` | **partial** | **GAP-10** | Same drift; the 3 engine proof tests are among the untracked and they are now registered. |
 | OC-WORKTREE | `What P0.0 must do (in order)` | **covered** | — | §11 Phase 1 commit hygiene. |
@@ -3134,6 +3135,25 @@ today — the only manifest artefacts are `tools/dataset_manifest.schema.json` a
 test struct. The project rule is zero dead code and zero stubs, so the format is documented as
 **reserved**, not implemented. The first consumer must add a writer, a reader and a regression test
 before the status changes to **implemented**.
+
+### 2026-11-13 — exact documentation targets: 2048 / 4096 / 6144 LOC + a 512-page PDF and DOCX (D-31)
+
+**Ruling (D-31).** The three project READMEs are built to exact line counts, and the publishable
+research package is exactly 512 pages in both formats:
+
+| Repository | README target |
+|---|---|
+| `fusion/` (superproject) | **2,048 LOC** |
+| `code/` (CodeFusion) | **4,096 LOC** |
+| `transformers/` (Transformers-Fusion) | **6,144 LOC** |
+
+This supersedes the 2026-11-12 T10 mapping (`fusion` 4,096 / `code` 2,048). The visual reference is
+`origin-router/README.md` (centred header, SVG logo, shields.io badges, emoji navigation, tables,
+minimal snippets). The 512-page package ships as **one document, two formats**: PDF typeset with TeX
+Live 2026 and DOCX generated with `python-docx`; both must contain exactly 512 pages. Every generator
+writes a machine-readable manifest (target, actual, sha256, timestamp, source commit) and refuses to
+write output that is off by one line or one page. Implementation: `TODO-TREE.md` T10, T13.2, T14 and
+T15; generators under `.plan/telemetry/docgen/`.
 
 ### 2026-11-13 (grind pass) — T1.1 closed: the G/S design note lands as §5c.6
 

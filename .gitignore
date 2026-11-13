@@ -17,3 +17,7 @@ graphify-out/
 
 # Nested repos are submodules; their internals are not tracked from here.
 # (gitlinks for code/ and transformers/ ARE recorded - do not ignore them.)
+
+# Backups are history, not knowledge. Git already carries history; these stay on disk.
+*.bak-*
+*.bak

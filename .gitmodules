@@ -5,4 +5,4 @@
 [submodule "code"]
 	path = code
 	url = https://github.com/origin-labs-ai/code.git
-	branch = master
+	branch = main

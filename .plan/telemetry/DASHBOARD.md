@@ -4,21 +4,21 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-13 17:11:14** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-13 17:43:12** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `174a0ab Complete the D-28 naming sweep: TransFormers -> Transformers across .plan (9 files), log the executed state, map the new D-28 heading in the 10X coverage table, regen dashboard`
-- branch: `## main` (dirty entries: 12)
-- submodule `code`: ## main...origin/main [ahead 1]
-- submodule `transformers`: ## main...origin/main [ahead 2]
+- HEAD: `75e0e14 docs(plan): D-30 wire-magic correction, D-29 Zenix cleanup, dashboard regen`
+- branch: `## main` (dirty entries: 18)
+- submodule `code`: ## main...origin/main
+- submodule `transformers`: ## main...origin/main
 - push: operator-ordered 2026-11-13 (commit + push all three repos)
 
 ## 1. Plan verifiers (live run)
 
 | Verifier | Exit | Verdict |
 |---|---|---|
-| `verify_step1.py` | 0 | **PASS**   rows=124  headings=124  gaps=13 |
+| `verify_step1.py` | 1 | **FAIL**   - every source heading has a row  (1 unmapped) |
 | `step2_fix2_verify.py` | 0 | **PASS** STEP 2 ALL CHECKS PASSED |
 | `step3_verify.py` | 0 | **PASS** report     : C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_anc |
 | `step3_subanchors.py` | 0 | **PASS** wrote C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_subanchors |
@@ -26,7 +26,7 @@
 | `step6_audit.py` | 0 | **PASS** STEP 6 AUDIT PASSED |
 | `arxiv_recheck.py` | 0 | **PASS** report: .plan/.rea-tmp/arxiv_recheck.json |
 
-**Gate: ALL GREEN**
+**Gate: RED**
 
 ## 2. Code repo gate
 
@@ -37,7 +37,7 @@ check-consistency: exit=0 **13/13 checks passed**
 | Repo | Modified | Untracked | Remote |
 |---|---|---|---|
 | `code` | 0 | 0 | `origin-labs-ai/code.git` |
-| `transformers` | 84 | 89 | `origin-labs-ai/transformers.git` |
+| `transformers` | 0 | 0 | `origin-labs-ai/transformers.git` |
 
 > Working tree held peer-session work - **operator ordered commit + push on 2026-11-13.**
 >
