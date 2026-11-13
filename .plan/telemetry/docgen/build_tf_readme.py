@@ -403,14 +403,18 @@ FAMILY_NOTE = {
 
 def tier_of(name: str) -> str:
     if name.endswith("_K_H"):
-        return "H tier (base + 0.50 BPW)"
+        return "H (base + 0.50 BPW)"
     if name.endswith("_K_M"):
-        return "M tier (base + 0.25 BPW)"
+        return "M (base + 0.25 BPW)"
     if "_MX_" in name:
-        return "MX tier at a .50 offset"
+        return "MX (a .50 offset)"
     if "_G_" in name:
-        return "grouped base tier at an exact integer BPW"
-    return "L tier (exact integer BPW)"
+        return "grouped base (an exact integer BPW)"
+    return "L (exact integer BPW)"
+
+
+def lit(x: float) -> str:
+    return f"{x:.1f}" if x == int(x) else f"{x:g}"
 
 
 def layout_lines(desc: str) -> list[str]:
@@ -459,7 +463,7 @@ def fmt_lines(r: dict, idx: int) -> list[str]:
         f"`{name}` is format id `{r['id']}` in the `quant::Format` enum (`include/quant/types.h`).",
         f"The canonical spelling is `{name}`; there is no legacy alias in the current enum.",
         f"The nominal BPW is `{bpw}` and the wire BPW is `{bpw}`; the two agree by the ladder rule.",
-        f"The tier is the {tier_of(name)}.",
+        f"The tier is {tier_of(name)}.",
         f"The family is the {FAMILY_NOTE.get(fam, fam)}.",
         f"The registry description is: {desc}" if desc else
         "The registry does not carry a separate description; the enum comment is the record.",
@@ -468,7 +472,7 @@ def fmt_lines(r: dict, idx: int) -> list[str]:
         "The format occupies one of the 105 id slots; 36 other slots are retired.",
         f"A writer emits id `{r['id']}`; a reader that predates the format must reject or remap it.",
         f"`quant::format_name(quant::Format::{name})` returns the literal string `{name}`.",
-        f"`quant::format_bits(quant::Format::{name})` returns `{bpw}f`.",
+        f"`quant::format_bits(quant::Format::{name})` returns `{lit(r['bpw'])}f`.",
         f"`quant::format_is_valid(quant::Format::{name})` is true in the current registry.",
         "The format is base, grouped or mixed in exactly one way; the helpers do not overlap.",
         f"The format name is referenced {r.get('refs', 0)} times across `src/`, `include/` and `tests/`.",
