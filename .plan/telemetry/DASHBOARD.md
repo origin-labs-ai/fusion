@@ -4,12 +4,12 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-13 17:43:12** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-13 17:46:58** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `75e0e14 docs(plan): D-30 wire-magic correction, D-29 Zenix cleanup, dashboard regen`
-- branch: `## main` (dirty entries: 18)
+- HEAD: `0ec63a9 docs(plan): finish D-30/D-31 cleanup, QuantIDX rename, README merge, repo hygiene`
+- branch: `## main` (dirty entries: 0)
 - submodule `code`: ## main...origin/main
 - submodule `transformers`: ## main...origin/main
 - push: operator-ordered 2026-11-13 (commit + push all three repos)
@@ -18,7 +18,7 @@
 
 | Verifier | Exit | Verdict |
 |---|---|---|
-| `verify_step1.py` | 1 | **FAIL**   - every source heading has a row  (1 unmapped) |
+| `verify_step1.py` | 0 | **PASS**   rows=125  headings=125  gaps=13 |
 | `step2_fix2_verify.py` | 0 | **PASS** STEP 2 ALL CHECKS PASSED |
 | `step3_verify.py` | 0 | **PASS** report     : C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_anc |
 | `step3_subanchors.py` | 0 | **PASS** wrote C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_subanchors |
@@ -26,7 +26,7 @@
 | `step6_audit.py` | 0 | **PASS** STEP 6 AUDIT PASSED |
 | `arxiv_recheck.py` | 0 | **PASS** report: .plan/.rea-tmp/arxiv_recheck.json |
 
-**Gate: RED**
+**Gate: ALL GREEN**
 
 ## 2. Code repo gate
 
