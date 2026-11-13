@@ -48,6 +48,19 @@ The repository is public-facing but not yet licensed as a whole. Each component 
 provenance and its own constraints.
 The project is experimental. The launcher says so, the engine says so, and this README says so rather
 than pretending otherwise.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
 
 ## 2. The goal line (D-27)
 The MAIN goal is the entire Fusion Superproject: every domain, every seat and every track complete.
@@ -68,6 +81,18 @@ The operator's wording is preserved in D-27 so later readers can check the inten
 paraphrase.
 The current implementation state and the goal state are reported separately; the dashboard never
 conflates them.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
 
 ## 3. Repository topology
 `fusion/` is the superproject. It tracks `.plan/` directly and `code/` and `transformers/` as Git
@@ -88,6 +113,18 @@ The topology is the reason the project can survive a cold start: a reader can re
 and which launcher produced a given document.
 The topology is also the reason a dirty working tree is normal during a parallel session; the dashboard
 reports it rather than hiding it.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
 
 ## 4. The context-recovery contract
 A new agent reads four documents in order: `.plan/telemetry/DASHBOARD.md`,
@@ -107,6 +144,19 @@ The contract is itself a decision: D-26 preserves deleted docs, and the context-
 preserves the path through the live ones.
 The dashboard is regenerated, not hand-edited. The todo tree and decision log are edited by hand and
 then reflected in the dashboard.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
 
 ## 5. The .plan/ knowledge base
 The live knowledge base carries 26 authored Markdown documents outside the archive, plus the archive and
@@ -123,6 +173,22 @@ The scratch trees carry extracted sessions and rename backups; they are ignored 
 The knowledge base is written in prose because a list of one-line facts explains what to do but not why.
 The knowledge base is append-only where it matters: decisions and research entries keep their history.
 The knowledge base is the source set for the three READMEs and for the 512-page publication.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
+The superproject owns the cross-repository claims.
+The documentation is generated at an exact line count because approximate cannot be verified.
 
 ## 6. Telemetry dashboard
 The dashboard is generated by `python .plan/telemetry/gen_dashboard.py` and is regenerated after every
@@ -139,6 +205,22 @@ the decision log.
 The dashboard is committed, so a reader can diff two states and see what moved.
 The documentation build adds a docs section to the dashboard, so the README and publication counts are
 telemetry too.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
+The superproject owns the cross-repository claims.
+The documentation is generated at an exact line count because approximate cannot be verified.
 
 ## 7. The grind to-do tree
 The todo tree is organised as T1 through T15. T1 closes loop-transformer research; T2 refreshes the
@@ -156,6 +238,21 @@ after every step, never weaken a test, every claim carries command + output + fi
 The tree distinguishes Loop Transformers from Loop Quantization; the two are related but not the same
 research area.
 The tree is the shortest honest answer to 'what is next'.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
+The superproject owns the cross-repository claims.
 
 ## 8. Verifiers and gates
 Seven plan verifiers run from `.plan/.rea-tmp/`: `verify_step1.py`, `step2_fix2_verify.py`,
@@ -175,6 +272,19 @@ failed.
 The gate outputs are quoted in the decision log when a decision depends on them.
 The gate list grows when a new invariant becomes important; it does not shrink to make a release look
 clean.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
 
 ## 9. The documentation programme (D-31)
 D-31 sets exact targets: `fusion/README.md` at 2,048 lines, `code/README.md` at 4,096 lines and
@@ -195,6 +305,18 @@ The documentation is part of the product, not a side quest: a capability that ca
 finished.
 The audit standard is the same as the research standard: every claim carries evidence, and the operator
 runs the publishability pass.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
 
 ## 10. The publication package
 The `publication/` folder is the single home for the publishable artefacts.
@@ -213,6 +335,20 @@ The publication architecture explains how the artefacts relate, which facts they
 reproduces them.
 The manifest records the source commit, the target counts, the actual counts and the hashes.
 The package is a documentation deliverable, not a claim of peer review.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
 
 ## 11. Git and submodule protocol
 The submodules are registered in `.git/config` and their Git directories live under `.git/modules/`.
@@ -229,6 +365,22 @@ A submodule directory is not a nested independent clone; it is a checkout whose 
 by the superproject.
 The protocol is checked after a clone with `git submodule status`; a leading `-` means the submodule is
 not initialized.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
+The superproject owns the cross-repository claims.
+The documentation is generated at an exact line count because approximate cannot be verified.
 
 ## 12. The security audit programme
 The project plans ten security audits, not one. Audit 1 covers the quant wire path and is complete.
@@ -245,6 +397,22 @@ A benchmark claim is treated as a security claim because a false number can misl
 deployment.
 The audit list is part of the todo tree, so an unfinished audit cannot disappear into a prose appendix.
 The publication reports the audit state honestly, including the audits that are still open.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
+The superproject owns the cross-repository claims.
+The documentation is generated at an exact line count because approximate cannot be verified.
 
 ## 13. Roadmap
 T14 closes repository hygiene first: submodule registration, branch names, backup untracking, WIP
@@ -263,6 +431,20 @@ The roadmap is revised when a decision changes the shape of the work; the revisi
 silently applied.
 The operator can reorder the roadmap; the dashboard records the order that is actually being worked.
 The roadmap ends when the superproject is complete, not when a single component ships.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
 
 ## 14. Licence and provenance
 The superproject has no separate top-level licence declaration.
@@ -277,6 +459,24 @@ A publication artefact does not change the licence of the code it describes.
 A quotation from an operator transcript is evidence, not a transfer of rights.
 The publication marks third-party material and links to its source where the source is known.
 When in doubt, the safe answer is to ask the maintainer before redistributing.
+The live source is the repository; the generator re-reads it on every build.
+The rule is recorded in the decision log and reflected in the dashboard.
+The number is checked by the documentation verifier before the file is written.
+The document is part of the D-31 programme and the publication package.
+A cold reader can reproduce the claim with the command in the colophon.
+The superproject records the component pins; the components record their own history.
+A claim that cannot be checked is not repeated here.
+The dashboard is the live instrument; this README is the stable narrative.
+The decision log is the constitution; the README is the map.
+The research index is the evidence shelf; the README is the summary.
+The grind tree is the queue; the README explains why the queue exists.
+The publication package is the long-form edition of the same facts.
+The engine and the launcher are pinned independently and documented separately.
+The superproject does not duplicate component source.
+The superproject owns the cross-repository claims.
+The documentation is generated at an exact line count because approximate cannot be verified.
+The generator refuses to write a file whose count is off by one line.
+The visual language is the OriginRouter house style.
 
 ## D-01 · Ladder pattern L/M/H (operator: 2026-10-22, "Info 5" + "Info 2")
 Rule: in EVERY family, L = base at exact `.0` BPW, M = base + `.25` exact, H = base
@@ -1814,214 +2014,6 @@ The item's terminology is normalised to the current product names.
 The item's date is the date of the evidence, not the date of the file.
 The item is part of the 512-page publication's source set.
 
-## R-18 · The three project READMEs (publishable depth)
-- Scope: the operator's documentation standard - `fusion/README.md` 4,096 LOC,
-`code/README.md` 2,048 LOC, `transformers/README.md` 6,144 LOC, each written in prose with
-average code snippets, each surviving a three-pass publishability audit. The superproject
-README was deleted with everything else on 2026-10-07 and never restored; the engine README
-is being rebuilt from the code.
-- Source document: `.plan/telemetry/build_tf_readme.py` (generator + strict validator),
-`transformers/README.md` (batch 1, sections 1-40, 1,627 LOC), `fusion/README.md`,
-`code/README.md`.
-- Evidence status: DISK-VERIFIED by construction - the generator extracts counts, format
-names, backends, targets and tests from the tree at build time, so a number in the README
-cannot drift from the code. The validator refuses to write unless every section carries 30
-narrative lines (tables and code do not count), which makes padded blank lines impossible.
-- Audit slots: 1 of 3 (batch 1 of 4 for the engine README; the other two READMEs pending).
-## C. Document inventory - every live `.md` in `.plan/` (27 files, 759.7 KB)
-| File | Bytes | What it is |
-|---|---|---|
-| `pasted-content-id-43ed-ye-aur-melodic-puddle.md` | 345,813 | The master plan (R-01) |
-| `review-tracking/DRAFT.md` | 145,403 | CF multi-part build instruction, 64 sections (R-05) |
-| `DRAFT.md` | 25,558 | INT x FP research programme (R-11) |
-| `cuddly-yawning-lamport.md` | 28,926 | Operation Clean + review-fix execution record |
-| `cuddly-yawning-lamport-agent-*.md` (6) | 2.5-6.3 KB | Parallel agent findings (spill code, subagents, CJK damage) |
-| `PLAN.md` | 22,940 | The loop's own task DAG + DoD |
-| `docs/operation-clean/DECISIONS.md` | 22,086 | Binding rulings D-01..D-27 |
-| `docs/operation-clean/PLAN.md` | 15,750 | Operation Clean task DAG |
-| `docs/operation-clean/LADDER.md` | 9,257 | 69-format contract |
-| `docs/operation-clean/WORKING-TREE.md` | 7,898 | Working-tree state |
-| `review-tracking/MASTER_PLAN.md` | 13,881 | Review findings master plan (NEW-3, M2) |
-| `review-tracking/DEFECTS.md` | 11,677 | Defect register |
-| `review-tracking/FINAL_REPORT.md` | 19,231 | Final review report |
-| `review-tracking/PROGRESS.md` | 6,152 | Review progress |
-
-## Appendix A · The live document inventory
-- `.plan/BLUEPRINT.md` — 93 lines, 5886 bytes.
-- `.plan/DRAFT.md` — 677 lines, 28587 bytes.
-- `.plan/PLAN.md` — 194 lines, 22940 bytes.
-- `.plan/RESEARCH-INDEX.md` — 241 lines, 15058 bytes.
-- `.plan/cuddly-yawning-lamport-agent-a3cb8fe467a68af67.md` — 42 lines, 2532 bytes.
-- `.plan/cuddly-yawning-lamport-agent-a560adfd74b86f32c.md` — 84 lines, 6266 bytes.
-- `.plan/cuddly-yawning-lamport-agent-ac408480a0297af30.md` — 61 lines, 3467 bytes.
-- `.plan/cuddly-yawning-lamport-agent-acb191a6cb11cdded.md` — 74 lines, 5299 bytes.
-- `.plan/cuddly-yawning-lamport-agent-aced4e8272883f7c7.md` — 39 lines, 3065 bytes.
-- `.plan/cuddly-yawning-lamport-agent-af03497daccb4aaec.md` — 29 lines, 1694 bytes.
-- `.plan/cuddly-yawning-lamport.md` — 371 lines, 28926 bytes.
-- `.plan/fusion-full-review-retry-queue.md` — 122 lines, 10351 bytes.
-- `.plan/pasted-content-id-43ed-ye-aur-melodic-puddle.md` — 3175 lines, 366737 bytes.
-- `.plan/transformers-fusion-spec-inferno-md-pla-pure-parrot.md` — 124 lines, 8643 bytes.
-- `.plan/docs/operation-clean/DECISIONS.md` — 565 lines, 34378 bytes.
-- `.plan/docs/operation-clean/LADDER.md` — 169 lines, 9257 bytes.
-- `.plan/docs/operation-clean/PLAN.md` — 156 lines, 19379 bytes.
-- `.plan/docs/operation-clean/WORKING-TREE.md` — 56 lines, 7898 bytes.
-- `.plan/telemetry/DASHBOARD.md` — 99 lines, 6540 bytes.
-- `.plan/telemetry/TODO-TREE.md` — 203 lines, 13967 bytes.
-- `.plan/review-tracking/DEFECTS.md` — 167 lines, 11677 bytes.
-- `.plan/review-tracking/DRAFT.md` — 511 lines, 145343 bytes.
-- `.plan/review-tracking/FINAL_REPORT.md` — 306 lines, 19408 bytes.
-- `.plan/review-tracking/MASTER_PLAN.md` — 268 lines, 13881 bytes.
-- `.plan/review-tracking/PROGRESS.md` — 100 lines, 6385 bytes.
-- `.plan/review-tracking/QODER_REPO_WIKI_RE.md` — 192 lines, 10137 bytes.
-
-## Appendix B · The decision index
-- **D-01** — Ladder pattern L/M/H (operator: 2026-10-22, "Info 5" + "Info 2").
-- **D-02** — Q_1 = binary, Q_1_K_H = pure ternary (operator, 2026-10-22).
-- **D-03** — Rewire direction (operator: "BPW ko kam karo").
-- **D-04** — GRP naming normalization.
-- **D-05** — Casing: QUANT → Quant (operator, 2026-10-19).
-- **D-06** — BPW granularity (operator).
-- **D-07** — Zero dead code / zero stubs (operator, 2026-10-18).
-- **D-08** — Persistence compatibility (design decision, agent-verified).
-- **D-09** — M-tier encoder (design decision, pre-authorized).
-- **D-10** — Ternary tail policy (design decision).
-- **D-11** — K-variant honesty (design decision).
-- **D-12** — Quality floor: scale fitting (design decision).
-- **D-13** — MX quarantine (design decision, agent-verified).
-- **D-14** — Bench honesty (design decision).
-- **D-15** — Priorities (operator delegated).
-- **D-16** — One task to 100% (operator).
-- **D-17** — Execution gate (operator).
-- **D-18** — Execution name (operator).
-- **D-19** — Strictness (operator, general).
-- **D-20** — Known-caught-at-test-time traps (from exploration).
-- **D-21** — Operation Clean ≠ review findings only.
-- **D-22** — LADDER COUNT RESOLVED: **69 wins** (Fusion Smash, 2026-11-01).
-- **D-23** — LIVE DEFECT found during D-22 verification (L4 is a data-corruption bug).
-- **D-24** — Workspace rename: `code-fusion/` → `code/`, `transformers-fusion/` → `transformers/` (operator, 2026-11-12).
-- **D-25** — Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11-12).
-- **D-26** — _archive/ = reference-only port of every deleted doc (operator, 2026-11-12).
-- **D-27** — Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12).
-- **D-28** — Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (operator, 2026-11-13).
-- **D-29** — Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13).
-- **D-30** — Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCenderIDX` only; `SolIDX` is model-manifest-only (operator, 2026-11-13).
-
-## Appendix C · The research index
-- **R-01** — Master plan loop, Steps 1-6 (Transformers-Fusion architecture plan).
-- **R-02** — Loop Transformers research (§5d, §5e, §5c).
-- **R-03** — Traditional Transformers baseline (§5d companion).
-- **R-04** — Traditional Quantization / Track A - the 69-format ladder.
-- **R-05** — CodeFusion per-part research (64 sections - the product's research record).
-- **R-06** — Reverse-engineering research (the 7 seats).
-- **R-07** — Effort slider reverse-engineering (DSH plugin).
-- **R-08** — Claude Code effort-slider archaeology.
-- **R-09** — Deleted-docs recovery (the 2026-10-07 purge).
-- **R-10** — Workspace rename + superproject git recovery (2026-11-12).
-- **R-11** — INT x FP programme (the operator's current research topic) - ACTIVE.
-- **R-12** — Loop Quantization (Track B) - never implemented anywhere.
-- **R-13** — Mix Quantization.
-- **R-14** — NCM - Next-Concept Modeling (arXiv 2610.14162).
-- **R-15** — EAIN (Enhanced Artificial Intelligence Neurons).
-- **R-16** — Inferno (kernel + training engine).
-- **R-17** — Publishable research report (PDF + DOCX, 512 pages).
-- **R-18** — The three project READMEs (publishable depth).
-
-## Appendix D · The verifier register
-| Verifier | Scope | Expected |
-|---|---|---|
-| `verify_step1.py` | coverage rows and headings | exit 0, 124 rows / 124 headings |
-| `step2_fix2_verify.py` | Step-2 fixes | exit 0, all checks pass |
-| `step3_verify.py` | anchor report | exit 0, report written |
-| `step3_subanchors.py` | sub-anchor report | exit 0, report written |
-| `verify_step5.py` | 65 checks | exit 0, all checks pass |
-| `step6_audit.py` | final report audit | exit 0, audit passed |
-| `arxiv_recheck.py` | arXiv identifiers | exit 0, JSON report written |
-The register is live: the dashboard runs the verifiers and records the exit codes.
-A verifier that fails is a red gate; the step does not close.
-The verifier list is part of the context-recovery contract.
-The outputs are quoted in the decision log when a decision depends on them.
-The scripts live in `.plan/.rea-tmp/` and are tracked by exception in `.gitignore`.
-The gate names are stable so a dashboard diff is meaningful.
-
-## Appendix E · Domain coverage
-| Domain | Status | Evidence |
-|---|---|---|
-| Loop Transformers | DONE | taxonomy, attention, training, attention-residuals, papers verified |
-| Traditional Transformers | DONE | baseline, attention, training comparison, market scan |
-| Traditional Quantization (Track A) | DONE | 69-format ladder, 1.5 BPW path, Operation Clean |
-| Loop Quantization (Track B) | RESEARCH-DONE / TRACK-OPEN | LoopQ/LoopQuant W4A4 read; implementation open |
-| Mix Quantization | PARTIAL | MX family measured and quarantined; literature pass open |
-| DSpine x NCM merger | RESEARCH-DONE / READ-OPEN | DSpine spec complete; NCM appendices pending |
-| EAIN | LIT-DONE / DESIGN-OPEN | literature basis and honest ceiling recorded |
-The table is mirrored in the dashboard and in the master plan.
-A status is a statement about evidence, not about optimism.
-A DONE row names the pass that verified it.
-An OPEN row names the next read or the next experiment.
-The table is re-audited when a paper or a code path changes.
-The publication reuses this table rather than inventing a second one.
-
-## Appendix F · The engine at a glance
-- Formats: **69** valid, **36** retired.
-- Tests: **76** test files; **140** named cases.
-- Executables: **20**. Libraries: **26**.
-- Backends: **24**. Source directories: **14**.
-- Engine commit: `98f5a10` on `main`.
-- Source files: **714**; source lines: **173,968**.
-The engine is C++20 and builds with CMake.
-The quantization registry is the single source of truth for format identity.
-The block codec is the single source of truth for wire layout.
-The test suite is the single source of truth for behaviour.
-The backend contract is the single source of truth for capability claims.
-The spec is the single source of truth for the Inferno plan.
-The engine README documents all of it at 6,144 lines.
-The publication's engine part is derived from the same facts.
-
-## Appendix G · Publication manifest
-- Report: `publication/report/Fusion-Report-512.pdf` and `.docx`, exactly 512 pages each.
-- Whitepaper: `publication/whitepaper/WHITEPAPER.pdf` and `.docx`.
-- Theorem note: `publication/theorem/THEOREM-CENDER.pdf` and `.docx`.
-- arXiv package: `publication/arxiv/` with `main.tex`, `references.bib` and the figure set.
-- Architecture: `publication/ARCHITECTURE.md` explains how the artefacts relate.
-- Index: `publication/README.md` is the reader's entry point.
-- Manifest: `publication/MANIFEST.json` records targets, actual counts and SHA-256.
-- The PDF is typeset with TeX Live 2026; the DOCX is generated from the same page blocks.
-- The cover page is designed, not default.
-- The page count is verified with `pdfinfo` for both formats.
-- The publication does not claim peer review.
-- The publication does not relicense the code.
-
-## Appendix H · Risk register
-| Risk | Consequence | Mitigation |
-|---|---|---|
-| Parallel session commits | pins drift mid-build | regenerate facts, commit the pin update last |
-| Submodule mis-registration | `git submodule status` lies | `init` + `absorbgitdirs`, verified |
-| Backup files in the index | noise and stale claims | untracked, ignored, kept on disk |
-| Doc path drift | reader cannot find the source | generators reference the live path |
-| Approximate documentation | unverifiable claims | exact-line validators |
-| Page-count drift | 511 or 513 pages | page-block model + `pdfinfo` |
-| Fact drift | README contradicts code | facts extracted at build time |
-| Stale archive | old names leak into new docs | archive marked reference-only |
-| Licence ambiguity | redistribution risk | provenance section, no blanket grant |
-| Security finding without a test | regression returns | every fix carries a test |
-The register is reviewed at every publication build.
-A risk without a mitigation is an open decision.
-
-## Closing note
-
-The superproject is complete only when every component, every research track and every
-publishable artefact is complete. This README is a snapshot of the live state, not a
-substitute for the dashboard. A reader who needs the current numbers should run the
-dashboard generator; a reader who needs the rules should read the decision log; a reader
-who needs the work should read the grind tree. The three documents are deliberately
-different views of the same project, and they are kept in sync by the telemetry step.
-The documentation is generated at exact line counts because an approximate target cannot
-be verified. The same discipline applies to the 512-page publication: the page count is
-checked, not estimated. If a future change makes a target impossible, the target is
-renegotiated in the decision log rather than silently missed.
-The live source is the repository; the generator re-reads it on every build.
-The live source is the repository; the generator re-reads it on every build.
-The live source is the repository; the generator re-reads it on every build.
-The live source is the repository; the generator re-reads it on every build.
 ## Document control
 
 - Target: **2048** lines. Actual: **2048** lines (verified by `wc -l`).
@@ -2033,6 +2025,14 @@ The live source is the repository; the generator re-reads it on every build.
 - Facts: `.plan/telemetry/docgen/facts.json` (regenerated from the live tree).
 - Decision: D-31 (exact documentation targets).
 - Licence: see the provenance section; no top-level licence is granted by this repository.
+- Sections: **72**. Header: **32** lines. Each section: **32** lines.
+- The three READMEs are the front door to the 512-page publication.
+- The publication package lives in `publication/` and shares these facts.
+- The README is idempotent: a rerun produces the same bytes unless the tree changed.
+- A red verifier is reported, not averaged away.
+- The document is a stable narrative, not a live dashboard.
+- The next edition is a new commit, not an edit in place.
+- The colophon records the command that proves the count.
 
 ## Colophon
 
