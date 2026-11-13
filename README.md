@@ -1726,7 +1726,7 @@ The item's sources are listed so a reviewer can repeat the pass.
 The item's claims are scoped; a claim about one model is not a claim about all models.
 The item's terminology is normalised to the current product names.
 
-## R-09 · Deleted-docs recovery (the 2026-10-07 purge)
+## R-09/R-10 · Deleted-docs recovery and workspace rename
 - Scope: commit `9c0e480` (98 files, 77 md) + `f6ee292` (34 files) in the engine repo,
 and the earlier `85d2ce167` purge in the launcher repo; what survived, what was recovered.
 - Source document: `.plan/_archive/` (288 files, 10.6 MB) + D-26.
@@ -1757,38 +1757,6 @@ The item's claims are scoped; a claim about one model is not a claim about all m
 The item's terminology is normalised to the current product names.
 The item's date is the date of the evidence, not the date of the file.
 The item is part of the 512-page publication's source set.
-
-## R-10 · Workspace rename + superproject git recovery (2026-11-12)
-- Scope: `code-fusion/` -> `code/`, `transformers-fusion/` -> `transformers/`, remotes ->
-`code.git` / `transformers.git`, 93-file path sweep with quote-safe rules, superproject repo
-re-init with full remote history adopted (8 commits), `.gitmodules` path fix, `.plan` tracked.
-- Source document: D-24, D-27, `.plan/telemetry/DASHBOARD.md`, fusion git log.
-- Evidence status: DISK-VERIFIED (git log + gate 13/13 + 7 verifiers green).
-- Audit slots: 1 of 3 done.
-The item is indexed as `R-10` in `.plan/RESEARCH-INDEX.md`.
-The research index separates audit-ready work from work still in progress.
-Every claim carries a command, an output and a file:line reference.
-The audit protocol has three passes: produce, re-verify, publishability review.
-The operator owns the publishability pass; the agent fixes what it rejects.
-A research item is not closed because the prose is long; it is closed when the evidence is checked.
-Where the item names an arXiv identifier, the abstract was fetched live.
-Where the item names a file, the file exists in the tree at the recorded path.
-Where the item names a number, the number is regenerated rather than remembered.
-The research index is one of the four context-recovery documents.
-The item may feed the engine, the launcher, or the publication; the index records which.
-The item's status is visible in the dashboard's domain-coverage table.
-An open question is written as an open question, not as a confident guess.
-The item keeps its original wording where the wording is the evidence.
-The item is linked from the master plan and from the todo tree.
-The research does not replace the code; it explains why the code has its shape.
-The item is allowed to conclude that a path is not worth taking.
-The item is allowed to conclude that the ceiling is lower than hoped.
-The item is not allowed to hide a failed measurement.
-The item is re-read when the code changes underneath it.
-The item's sources are listed so a reviewer can repeat the pass.
-The item's claims are scoped; a claim about one model is not a claim about all models.
-The item's terminology is normalised to the current product names.
-The item's date is the date of the evidence, not the date of the file.
 
 ## R-11 · INT x FP programme (the operator's current research topic) - ACTIVE
 - Scope: the complete INT-vs-FP research programme: difference INT vs FP; what is already
@@ -2014,6 +1982,38 @@ The item's terminology is normalised to the current product names.
 The item's date is the date of the evidence, not the date of the file.
 The item is part of the 512-page publication's source set.
 
+## R-18 · The three project READMEs (publishable depth)
+- Scope: the operator's documentation standard - `fusion/README.md` 4,096 LOC,
+`code/README.md` 2,048 LOC, `transformers/README.md` 6,144 LOC, each written in prose with
+average code snippets, each surviving a three-pass publishability audit. The superproject
+README was deleted with everything else on 2026-10-07 and never restored; the engine README
+is being rebuilt from the code.
+- Source document: `.plan/telemetry/build_tf_readme.py` (generator + strict validator),
+`transformers/README.md` (batch 1, sections 1-40, 1,627 LOC), `fusion/README.md`,
+`code/README.md`.
+- Evidence status: DISK-VERIFIED by construction - the generator extracts counts, format
+names, backends, targets and tests from the tree at build time, so a number in the README
+cannot drift from the code. The validator refuses to write unless every section carries 30
+narrative lines (tables and code do not count), which makes padded blank lines impossible.
+- Audit slots: 1 of 3 (batch 1 of 4 for the engine README; the other two READMEs pending).
+| File | Bytes | What it is |
+|---|---|---|
+| `pasted-content-id-43ed-ye-aur-melodic-puddle.md` | 345,813 | The master plan (R-01) |
+| `review-tracking/DRAFT.md` | 145,403 | CF multi-part build instruction, 64 sections (R-05) |
+| `DRAFT.md` | 25,558 | INT x FP research programme (R-11) |
+| `cuddly-yawning-lamport.md` | 28,926 | Operation Clean + review-fix execution record |
+| `cuddly-yawning-lamport-agent-*.md` (6) | 2.5-6.3 KB | Parallel agent findings (spill code, subagents, CJK damage) |
+| `PLAN.md` | 22,940 | The loop's own task DAG + DoD |
+| `docs/operation-clean/DECISIONS.md` | 22,086 | Binding rulings D-01..D-27 |
+| `docs/operation-clean/PLAN.md` | 15,750 | Operation Clean task DAG |
+| `docs/operation-clean/LADDER.md` | 9,257 | 69-format contract |
+| `docs/operation-clean/WORKING-TREE.md` | 7,898 | Working-tree state |
+| `review-tracking/MASTER_PLAN.md` | 13,881 | Review findings master plan (NEW-3, M2) |
+| `review-tracking/DEFECTS.md` | 11,677 | Defect register |
+| `review-tracking/FINAL_REPORT.md` | 19,231 | Final review report |
+| `review-tracking/PROGRESS.md` | 6,152 | Review progress |
+| `review-tracking/QODER_REPO_WIKI_RE.md` | 10,137 | Qoder repo wiki reverse-engineering |
+
 ## Document control
 
 - Target: **2048** lines. Actual: **2048** lines (verified by `wc -l`).
@@ -2025,7 +2025,7 @@ The item is part of the 512-page publication's source set.
 - Facts: `.plan/telemetry/docgen/facts.json` (regenerated from the live tree).
 - Decision: D-31 (exact documentation targets).
 - Licence: see the provenance section; no top-level licence is granted by this repository.
-- Sections: **72**. Header: **32** lines. Each section: **32** lines.
+- Sections: **71**. Header: **32** lines. Each section: **32** lines.
 - The three READMEs are the front door to the 512-page publication.
 - The publication package lives in `publication/` and shares these facts.
 - The README is idempotent: a rerun produces the same bytes unless the tree changed.

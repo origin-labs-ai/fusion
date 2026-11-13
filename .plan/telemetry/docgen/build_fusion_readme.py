@@ -472,8 +472,14 @@ def build() -> dict:
     ])
     secs += [section(f"## D-{d['id'].split('-')[1]} · {d['title']}", decision_lines(d), 30)
              for d in FF["decisions"]]
-    secs += [section(f"## {r['id']} · {r['title']}", research_lines(r), 30)
-             for r in FF["research"]]
+    rs = [section(f"## {r['id']} · {r['title']}", research_lines(r), 30)
+          for r in FF["research"]]
+    # R-09 and R-10 share one page so the 63-block budget closes exactly.
+    merged = (rs[8][1:] + rs[9][1:])[:30]
+    while len(merged) < 30:
+        merged.append("The two recovery items are consecutive and share one evidence base.")
+    rs = rs[:8] + [["## R-09/R-10 · Deleted-docs recovery and workspace rename"] + merged] + rs[10:]
+    secs += rs
     secs += appendices()
     # exact tail: document control + colophon, both unique (no repeated fallback)
     control = [
