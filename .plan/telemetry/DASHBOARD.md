@@ -4,12 +4,12 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-13 17:46:58** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-13 17:53:43** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `0ec63a9 docs(plan): finish D-30/D-31 cleanup, QuantIDX rename, README merge, repo hygiene`
-- branch: `## main` (dirty entries: 0)
+- HEAD: `064255d feat(docgen): add shared README helper from the peer session`
+- branch: `## main` (dirty entries: 1)
 - submodule `code`: ## main...origin/main
 - submodule `transformers`: ## main...origin/main
 - push: operator-ordered 2026-11-13 (commit + push all three repos)
