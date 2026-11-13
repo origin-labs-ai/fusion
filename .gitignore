@@ -24,5 +24,6 @@ graphify-out/
 
 # docgen live-facts cache: regenerated from the tree and contains local paths.
 .plan/telemetry/docgen/facts.json
+.plan/telemetry/docgen/tf_facts.json
 __pycache__/
 *.pyc
