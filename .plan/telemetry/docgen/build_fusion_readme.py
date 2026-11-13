@@ -284,9 +284,7 @@ def build() -> dict:
         "Fusion",
         "One superproject. Two components. One exact goal.",
         [
-            "Fusion is the umbrella over the Transformers-Fusion C++20 engine and the CodeFusion Windows workspace. It owns the plan, the decision log, the telemetry and the publishable documentation.",
-            "The engine carries the numbers; the launcher carries the product; the superproject carries the evidence that the two still agree.",
-            "This README is generated at exactly 2,048 lines from the live tree. Every count below is reproducible with the command in the colophon.",
+            "Fusion is the umbrella over the Transformers-Fusion C++20 engine and the CodeFusion Windows workspace. It owns the plan, the decision log, the telemetry and the publishable documentation. The engine carries the numbers; the launcher carries the product; the superproject carries the evidence that the two still agree. This README is generated at exactly 2,048 lines from the live tree.",
         ],
         '<a href="#-what-fusion-is"><b>Overview</b></a> • <a href="#-the-goal-line-d-27"><b>Goal</b></a> • '
         '<a href="#-repository-topology"><b>Topology</b></a> • <a href="#-telemetry-dashboard"><b>Telemetry</b></a> • '
@@ -317,7 +315,20 @@ def build() -> dict:
         "The rule is recorded in the decision log and reflected in the dashboard.",
         "A cold reader can reproduce the claim with the command in the colophon.",
     ])
-    # exact tail: colophon block
+    # exact tail: document control + colophon, both unique (no repeated fallback)
+    control = [
+        "## Document control",
+        "",
+        f"- Target: **{TARGET}** lines. Actual: **{TARGET}** lines (verified by `wc -l`).",
+        f"- Source commit: `{FF['git']['head']}` on `{FF['git']['branch']}`.",
+        f"- Knowledge base: `{len(FF['doc_inventory'])}` authored Markdown documents in `.plan/`.",
+        f"- Research items: `{len(FF['research'])}`. Decisions: `{len(FF['decisions'])}`.",
+        f"- Component pins: `transformers` and `code`, recorded in `.gitmodules`.",
+        "- Generator: `.plan/telemetry/docgen/build_fusion_readme.py`.",
+        "- Facts: `.plan/telemetry/docgen/facts.json` (regenerated from the live tree).",
+        "- Decision: D-31 (exact documentation targets).",
+        "- Licence: see the provenance section; no top-level licence is granted by this repository.",
+    ]
     colophon = [
         "## Colophon",
         "",
@@ -332,8 +343,8 @@ def build() -> dict:
         "",
         "The generator refuses to write a short file. Counts, pins and verifier exits are live facts.",
     ]
-    # replace the last 14 lines with the colophon so the total stays exact
-    lines = lines[:TARGET - len(colophon)] + colophon
+    tail = control + [""] + colophon
+    lines = lines[:TARGET - len(tail)] + tail
     return write_exact(OUT, lines, TARGET)
 
 

@@ -62,12 +62,12 @@ def header32(name: str, tagline: str, pitch: list[str], nav: str,
              badges: list[str], logo: str, status: str) -> list[str]:
     """Exactly 32 lines: centred identity block + rule + status + rule."""
     assert len(badges) == 8, f"{name}: need 8 badges, got {len(badges)}"
-    pitch_lines: list[str] = []
-    for p in pitch:
-        pitch_lines.extend(wrap(p, 96))
+    pitch_lines: list[str] = wrap(" ".join(pitch), 110)
     while len(pitch_lines) < 3:
         pitch_lines.append("Every number in this document is generated from the live tree "
                            "by `.plan/telemetry/docgen/`.")
+    if len(pitch_lines) > 3:
+        pitch_lines = pitch_lines[:3]
     L = [
         '<div align="center">',
         f'  <img src="{logo}" alt="{name}" width="96" />',
