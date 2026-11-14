@@ -43,6 +43,32 @@ UNICODE = {
 }
 
 
+CODE_UNICODE = {
+    "\u2014": "--",
+    "\u2013": "-",
+    "\u00d7": "x",
+    "\u00b7": ".",
+    "\u2192": "->",
+    "\u2190": "<-",
+    "\u2264": "<=",
+    "\u2265": ">=",
+    "\u00b1": "+/-",
+    "\u00b0": "deg",
+    "\u2026": "...",
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u201c": '"',
+    "\u201d": '"',
+    "\u00a0": " ",
+}
+
+
+def code_clean(text: str) -> str:
+    for k, v in CODE_UNICODE.items():
+        text = text.replace(k, v)
+    return "".join(ch if ord(ch) < 128 else "" for ch in text)
+
+
 def clean_unicode(text: str) -> str:
     for k, v in UNICODE.items():
         text = text.replace(k, v)
@@ -50,20 +76,28 @@ def clean_unicode(text: str) -> str:
 
 
 def esc(text: str) -> str:
-    text = clean_unicode(text)
     return "".join(SPECIAL.get(ch, ch) for ch in text)
 
 
 def inline(text: str) -> str:
-    """Escape text, then apply inline markup via token placeholders."""
-    text = clean_unicode(text)
-    tokens: list[str] = []
+    """Escape text, then apply inline markup via two token pools."""
+    utokens: list[str] = []
+    ctokens: list[str] = []
+
+    def uni(m: re.Match) -> str:
+        utokens.append(UNICODE[m.group(0)])
+        return f"@@U{len(utokens) - 1}@@"
 
     def code(m: re.Match) -> str:
-        tokens.append(r"\texttt{" + esc(m.group(1)) + "}")
-        return f"@@T{len(tokens) - 1}@@"
+        ctokens.append(r"\texttt{" + esc(code_clean(m.group(1))) + "}")
+        return f"@@T{len(ctokens) - 1}@@"
 
     text = re.sub(r"`([^`]*)`", code, text)
+
+    pattern = "[" + "".join(re.escape(k) for k in UNICODE) + "]"
+    text = re.sub(pattern, uni, text)
+    text = "".join(ch if ord(ch) < 128 else "" for ch in text)
+
     text = esc(text)
     text = re.sub(r"\*\*([^*]+)\*\*", r"\\textbf{\1}", text)
     text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"\\emph{\1}", text)
@@ -75,7 +109,9 @@ def inline(text: str) -> str:
         return label
 
     text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link, text)
-    for i, tok in enumerate(tokens):
+    for i, tok in enumerate(utokens):
+        text = text.replace(f"@@U{i}@@", tok)
+    for i, tok in enumerate(ctokens):
         text = text.replace(f"@@T{i}@@", tok)
     return text
 
@@ -91,20 +127,35 @@ def table(lines: list[str]) -> list[str]:
         header, body = rows[0], rows[1:]
     ncols = max(len(r) for r in rows)
     header += [""] * (ncols - len(header))
-    spec = " ".join([r">{\raggedright\arraybackslash}X"] * ncols)
+    weights = []
+    for c in range(ncols):
+        longest = max((len(r[c]) if c < len(r) else 0) for r in rows)
+        weights.append(max(3.0, float(longest)) ** 0.65)
+    total = sum(weights)
+    spec = " ".join(
+        r">{\raggedright\arraybackslash}p{\dimexpr %.4f\linewidth-2\tabcolsep\relax}"
+        % (w / total)
+        for w in weights)
+    longest_cell = max((len(c) for r in rows for c in r), default=0)
+    if longest_cell > 140:
+        size = "tiny"
+    elif longest_cell > 80:
+        size = "scriptsize"
+    else:
+        size = "footnotesize"
 
     def row(cells: list[str]) -> str:
         cells = cells + [""] * (ncols - len(cells))
         return " & ".join(inline(c) for c in cells) + r" \\"
 
-    out = [r"\begingroup\footnotesize",
-           r"\begin{tabularx}{\linewidth}{" + spec + "}",
+    out = [r"\begingroup\%s" % size,
+           r"\begin{tabular}{" + spec + "}",
            r"\toprule",
            row(header),
            r"\midrule"]
     for r in body:
         out.append(row(r))
-    out += [r"\bottomrule", r"\end{tabularx}", r"\endgroup"]
+    out += [r"\bottomrule", r"\end{tabular}", r"\endgroup"]
     return out
 
 
@@ -127,9 +178,11 @@ def convert(md_lines: list[str]) -> str:
                 code.append(md_lines[i].rstrip())
                 i += 1
             i += 1
-            out.append(r"\begin{Verbatim}[breaklines=true,fontsize=\footnotesize,frame=single,rulecolor=\color{rule}]")
-            out.extend(code)
+            out.append(r"\vspace{3pt}")
+            out.append(r"\begin{Verbatim}[fontsize=\footnotesize,frame=single,rulecolor=\color{rule}]")
+            out.extend(code_clean(c) for c in code)
             out.append(r"\end{Verbatim}")
+            out.append(r"\vspace{3pt}")
             continue
         if line.lstrip().startswith("|"):
             block = []
@@ -165,7 +218,16 @@ def convert(md_lines: list[str]) -> str:
             out.append("\\" + cmd + "{" + inline(text) + "}")
             i += 1
             continue
-        # ordinary paragraph line: keep lines separate, ragged right
-        out.append(inline(line) + r"\par")
+        # ordinary prose: merge hard-wrapped physical lines back into sentences
+        para = [line.strip()]
         i += 1
+        while i < n and not re.search(r"[.!?:;]`?$", para[-1]):
+            nxt = md_lines[i].rstrip()
+            if (not nxt.strip() or nxt.lstrip().startswith(("```", "|", ">", "#"))
+                    or re.match(r"^\s*[-*]\s+", nxt)
+                    or re.match(r"^\s*\d+\.\s+", nxt)):
+                break
+            para.append(nxt.strip())
+            i += 1
+        out.append(inline(" ".join(para)) + r"\par")
     return "\n".join(out)

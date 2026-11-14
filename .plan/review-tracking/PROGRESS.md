@@ -25,6 +25,10 @@ Fusion full plan (separate, user-assigned) is tracked in `C:\Users\thaku\.claude
 > folder is now `windows/zenix` (**Zenix**, `CC` retired). `chromix` is no longer a separate
 > tree — its browser lives inside Codeix.
 
+> **Path update (2026-11-14, D-24):** findings below written before 2026-11-12 reference
+> `code-fusion/…` paths (e.g. `code-fusion/BRAND.md:60`); the tree was renamed
+> `code-fusion/` → `code/` (D-24). Read those as their `code/` equivalents.
+
 ---
 
 ## DRIFT FINDINGS (all verified today, file:line)

@@ -4,12 +4,12 @@
 
 > **CONTEXT-RECOVERY (one-shot handoff):** read this file -> `.plan/telemetry/TODO-TREE.md` -> `.plan/docs/operation-clean/DECISIONS.md` -> OPERATOR REMINDER at the top of the master plan. Full workflow: `.plan/BLUEPRINT.md`.
 
-> Generated: **2026-11-13 18:13:45** - regen: `python .plan/telemetry/gen_dashboard.py`
+> Generated: **2026-11-14 17:56:38** - regen: `python .plan/telemetry/gen_dashboard.py`
 
 ## 0. Superproject git (fusion repo)
 
-- HEAD: `683bbf2 docs(readme): sync Fusion README and builder wording (peer session)`
-- branch: `## main` (dirty entries: 0)
+- HEAD: `465e975 feat(publication): add md2tex and publication-facts build scripts (peer session)`
+- branch: `## main` (dirty entries: 42)
 - submodule `code`: ## main...origin/main
 - submodule `transformers`: ## main...origin/main
 - push: operator-ordered 2026-11-13 (commit + push all three repos)
@@ -18,15 +18,15 @@
 
 | Verifier | Exit | Verdict |
 |---|---|---|
-| `verify_step1.py` | 0 | **PASS**   rows=125  headings=125  gaps=13 |
+| `verify_step1.py` | 0 | **PASS**   rows=129  headings=129  gaps=13 |
 | `step2_fix2_verify.py` | 0 | **PASS** STEP 2 ALL CHECKS PASSED |
-| `step3_verify.py` | 0 | **PASS** report     : C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_anc |
-| `step3_subanchors.py` | 0 | **PASS** wrote C:\Users\thaku\Workspaces\fusion\.plan\.rea-tmp\step3_subanchors |
+| `step3_verify.py` | 1 | **FAIL** ValueError: path is on mount '\\\\.\\nul', start on mount 'C:' |
+| `step3_subanchors.py` | 1 | **FAIL** ValueError: path is on mount '\\\\.\\nul', start on mount 'C:' |
 | `verify_step5.py` | 0 | **PASS** STEP 5 ALL CHECKS PASSED  (65 checks) |
 | `step6_audit.py` | 0 | **PASS** STEP 6 AUDIT PASSED |
 | `arxiv_recheck.py` | 0 | **PASS** report: .plan/.rea-tmp/arxiv_recheck.json |
 
-**Gate: ALL GREEN**
+**Gate: RED**
 
 ## 2. Code repo gate
 
@@ -36,8 +36,8 @@ check-consistency: exit=0 **13/13 checks passed**
 
 | Repo | Modified | Untracked | Remote |
 |---|---|---|---|
-| `code` | 0 | 0 | `origin-labs-ai/code.git` |
-| `transformers` | 0 | 0 | `origin-labs-ai/transformers.git` |
+| `code` | 5 | 0 | `origin-labs-ai/code.git` |
+| `transformers` | 7 | 4 | `origin-labs-ai/transformers.git` |
 
 > Working tree held peer-session work - **operator ordered commit + push on 2026-11-13.**
 >

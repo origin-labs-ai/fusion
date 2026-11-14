@@ -1,0 +1,136 @@
+% Fusion Superproject Technical Report — hand-authored (2026-11-14 round)
+\documentclass[10pt]{report}
+\usepackage[a4paper,margin=1.25cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{needspace}
+\usepackage{fvextra}
+\usepackage[table]{xcolor}
+\usepackage{etoolbox}
+\definecolor{fusionblue}{RGB}{43,127,255}
+\definecolor{fusionteal}{RGB}{0,150,136}
+\definecolor{fusionamber}{RGB}{245,158,11}
+\definecolor{fusiondark}{RGB}{30,41,59}
+\definecolor{fusionred}{RGB}{239,68,68}
+\AtBeginEnvironment{tabular}{\rowcolors{2}{fusionblue!7}{white}\small}
+\AtBeginEnvironment{longtable}{\rowcolors{2}{fusionteal!6}{white}\small}
+\usepackage{titlesec}
+\titleformat{\chapter}{\color{fusiondark}\Large\bfseries}{Chapter \thechapter}{1em}{}
+\titleformat{\section}{\color{fusionblue}\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\color{fusionteal}\normalsize\bfseries}{\thesubsection}{1em}{}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\input{theoremenvs}
+\newenvironment{smallverbatim}
+  {\fontsize{5.0}{5.8}\selectfont\verbatim}
+  {\endverbatim\vspace{2pt}}
+
+\title{\Huge Fusion\\[8pt]\LARGE Superproject Technical Report\\[4pt]
+\large The engine, the launcher, the ladder and the theorems}
+\author{Fusion Superproject}
+\date{2026-11-14 --- hand-authored edition}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\ipart}[1]{\par\vspace{16pt}\begin{center}{\color{fusiondark}\Huge\bfseries PART --- #1}\par\end{center}\vspace{8pt}\stepcounter{part}\addcontentsline{toc}{part}{Part \thepart: #1}}
+\begin{document}
+\fontsize{9.0}{10.8}\selectfont
+\setlength{\parskip}{0pt}
+\setlength{\itemsep}{0pt}
+
+
+% ============ COVER ============
+\begin{titlepage}
+\pagecolor{fusiondark}
+\centering
+\vspace*{4cm}
+{\color{white}\Huge\bfseries FUSION\par}
+\vspace{16pt}
+{\color{fusionamber}\LARGE Superproject Technical Report\par}
+\vspace{10pt}
+{\color{white}\large The engine, the launcher, the quantization ladder, the theorems\par}
+\vspace{26pt}
+{\color{fusionteal}\rule{0.7\textwidth}{2.5pt}}
+\vspace{26pt}
+{\color{white}\large Fusion Superproject --- 2026-11-14\par}
+\vspace{34pt}
+{\color{white}\textbf{Edition:} Hand-authored (operator round, 2026-11-14)}\par
+\vspace{7pt}
+{\color{white}\textbf{Engine pin:} 28373ed (transformers, main)}\par
+\vspace{7pt}
+{\color{white}\textbf{Launcher pin:} 1e72c52e0 (code, main)}\par
+\vspace{7pt}
+{\color{white}\textbf{Formats:} 69 live, name == nominal == wire BPW}\par
+\vspace{7pt}
+{\color{white}\textbf{Goal:} the entire superproject; side goal exact 1.0 BPW}\par
+\vspace{7pt}
+{\color{white}\textbf{Note:} pages grow with real content, not padding}\par
+\vspace{7pt}
+\vspace{40pt}
+{\color{fusionamber}\itshape Generated from the live tree. Every count reproducible.}\par
+\vfill
+\end{titlepage}
+\pagecolor{white}
+
+% ============ FRONT MATTER ============
+\pagenumbering{roman}
+\tableofcontents
+
+% ============ BODY ============
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\ipart{The Superproject}
+\input{b01_super}
+\input{b02_decisions}
+
+\ipart{The Engine}
+\input{b03_engine}
+\input{b04_codec}
+
+\ipart{The Ladder and the Mathematics}
+\input{b05_ladder}
+\input{b06_math}
+
+\ipart{The Theorems}
+\input{b07_theorems}
+
+\ipart{The Research}
+\input{b08_research}
+
+\ipart{The Launcher}
+\input{b09_launcher}
+
+\ipart{Operations}
+\input{b10_ops}
+
+\ipart{Why This Engine, the Gates and the Structure}
+\input{b11_why}
+\input{b12_gs}
+\input{b13_attention}
+\input{b14_loop}
+\input{b16_theory}
+\input{bI_landscape}
+\input{b15_charts}
+
+\appendix
+\ipart{Appendices}
+\input{bA_formats}
+\input{bH_reference}
+\input{bC_ledgers}
+\input{bE_catalogs}
+\input{bF_appendix}
+\input{bG_appendix}
+
+\input{bD_colophon}
+
+\end{document}

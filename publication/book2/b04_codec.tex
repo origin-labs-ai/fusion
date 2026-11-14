@@ -1,0 +1,59 @@
+\chapter{The codec}
+
+\section{The block codec}
+
+\texttt{block\_codec.cpp} is the codec heart: the per-family encoders, the shared scale-fitter,
+the budget guards. The known traps (D-20): \texttt{test\_block\_codec.cpp} actually tests GEMM
+kernels (the mis-named test), and the fuzz allowance permits claimed+1 byte (S3 kills the
+allowance). The budget-guard pattern of \texttt{quant\_grp16:879-884} is the real budget test ---
+never the \texttt{has\_d = (n >= 8)} non-test that caused the quant\_6k overrun.
+
+\section{The scale fitter}
+
+The shared scale-fitter \texttt{fit\_scale\_true\_mse} (block\_codec.cpp:632--695): LS seed
+$\to$ 9-point grid $\to$ 12-iteration golden-section refinement $\to$ FP16 snap $\pm6$
+neighborhood sweep. Golden-section on a unimodal MSE curve shrinks the bracket by
+$\varphi \approx 0.618$ per iteration; twelve iterations leave $0.618^{12} \approx 0.0045$ of
+the original bracket --- enough to resolve the scale to FP16 resolution. The FP16 snap sweep
+repairs the quantized-scale error after the continuous fit. The old $Q_{12}$ 3-iteration LS
+seed measured 46~dB while K\_H's 24 iterations reach ${\sim}59$~dB; the acceptance gate closes
+the gap.
+
+\section{The quantization engines}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Engine & Path & Job\\
+\midrule
+INT path & \texttt{src/codec/} & lattice, codebook, comp8, slot-sign\\
+FP path & \texttt{src/codec/} & Q\_16/Q\_24 tiers, FP8-style variants\\
+FormatPlanner & \texttt{format\_planner.h} & per-block format allocation\\
+STE quantizer & \texttt{ste\_quantizer.h} & trainable codebooks (straight-through)\\
+QAT & \texttt{qat.h} & quantization-aware training\\
+Native quant & \texttt{native\_quant\_moe.h} & the NativeFormat trainer id-space\\
+GGUF bridge & \texttt{adapters/} & import honesty: silent zero-fill raised to loud-fail\\
+\bottomrule
+\end{tabular}
+
+\medskip
+The FormatPlanner analyzes a model with calibration data and allocates formats per block to
+hit a target BPW. The STE quantizer makes codebooks trainable with the straight-through
+estimator; QAT trains in-format; the native trainer keeps its separate id-space documented
+(D-20).
+
+\section{Import honesty}
+
+The GGUF bridge silently zero-filled unsupported types (\texttt{gguf\_bridge.cpp:336--342},
+verbose-gated) --- silent zero weights are silent corruption. The L5 pass raises the fill to a
+loud fail, documented as part of import honesty. The import path streams HuggingFace
+checkpoints through \texttt{hf\_streamer.h} and \texttt{parquet\_streamer.h} with
+\texttt{mmap\_dataloader.h}; the qwen35 engine and tokenizer adapters carry the import-side
+engine glue.
+
+\section{The GPU capability contract}
+
+\texttt{test\_gpu\_capability} asserts the fail-loud contract: a backend that cannot deliver
+reports loud, never silent fallback. The KAT inventory names the 5th attention implementation
+in \texttt{src/backend/}: 4 fused + 1 composed + 15 primitive-only. The roughly eighteen GPU
+backends that exist but are unavailable are the documented exception to zero-dead-code (D-07):
+kept, accurate, excluded from the rule until the backend-completion effort.

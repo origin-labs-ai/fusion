@@ -1,0 +1,980 @@
+\chapter{Appendix: the governing documents (verbatim)}
+
+
+\section*{The ladder contract (LADDER.md)}
+\begin{verbatim}
+# Operation Clean — Target Format Ladder
+
+> The complete post-overhaul ladder: 69 formats, every name == nominal == wire BPW,
+> every wire BPW on the .0 / .25 / .50 grid. This table is the contract that L1–L7
+> implement and T1 pins. Derived from the verified plan
+> (`.claude/plans/cuddly-yawning-lamport.md`, rewiring table) and the live enum
+> (`transformers/include/quant/types.h:22-104`).
+
+## Rules the ladder encodes
+
+
+> ---
+> **OPERATOR REMINDER (2026-11-12 - read this whenever you implement anything):**
+>
+> 1. **MAIN GOAL = the ENTIRE Fusion Superproject.** Every domain, every seat, every track -
+>    all of it complete. This project is NOT just quantization; quantization is one track of it.
+> 2. **SIDE GOAL = achieve the MAXIMUM at EXACT 1.0 BPW - not 1.5 BPW.** The implemented 1.5 BPW
+>    path is a *stepping stone*; the real target is **1.0 BPW**. Older sections that say "1.5 BPW"
+>    stay true as implemented-state facts - the GOAL line is 1.0.
+> 3. **FP + INT research note (operator, same-day research):** BOTH quantization format families -
+>    FP (floating point: FP8/FP4/E5M2 style) and INT (integer: INT4/INT8/binary/ternary) contain
+>    actionable work. Research both; do not drop either.
+> 4. **FACT (2026-11-12 audit):** Loop Quantization has NEVER been implemented for any model,
+>    anywhere. Track B will be the world's first implementation.
+> 5. **Current situation (exact):** Loop Quant Track B open - Mix Quant partial (MX family
+>    quarantined) - NCM Appendix F.1.1/I read pending - EAIN design open. We WILL implement and
+>    complete all of it - grind method (`.plan/telemetry/TODO-TREE.md`), dashboard after every
+>    step (`.plan/telemetry/DASHBOARD.md`).
+1. **Family pattern (every family):** `B = base` at exact `.00` BPW — the L tier.
+   `M = B + 0.25` exact. `H = B + 0.50` exact. Three genuinely different codecs
+   (the old L≡M≡H lie ends).
+2. **Q_1 family:** L = `Q_1` = **binary** (slot-sign), exact 1.00. M = 1.25 exact.
+   H = `Q_1_K_H` = **pure ternary** (−1/0/+1), exact 1.50.
+3. **GRP base rewire down to name:** 2.625→2.00, 3.5→3.0, 4.5→4.0, 6.5625→6.00,
+   8.5→8.0, 12.5→12.0, 16.5→16.0, 24.5→24.0.
+4. **K_G M/H take the M/H tiers**; K_L ids retire (both plain and GRP).
+   `Q_16_K_*` wire 16.25/16.50 and `Q_24_K_*` wire 24.25/24.50 — every tier is
+   name-plus-delta, no family is exempt. (An earlier draft said these kept
+   16.0/24.0 because 16 and 24 are "already exact"; that contradicts D-01 and
+   is corrected here. `include/quant/types.h:294-298` has always carried the
+   deltas.)
+5. **Half formats fold:** the 18 half ids (73–90) retire; their wire spaces land in
+   `_K_H` tiers at the same BPW. Names with a negative gap (`Q_2_5`, `Q_6_5`,
+   `Q_G_2_5`, `Q_G_6_5` name x.5, wire x.4375) are retired without rewire.
+6. **MX quarantine:** all 14 MX formats keep ids but are marked quarantined
+   (2-iteration-LS tier allocator, −21..−37 dB); `Q_G_MX_3_5` rewires 3.78125 → 3.50.
+7. **`Q_32` float ceiling: no tiers** (lossless is lossless).
+8. **ID strategy: keep surviving ids in place**, retire the rest; no renumber.
+   A renumber silently reinterprets old `.quant` checkpoints (format is stored as
+   raw `uint8_t` per block, no version field read anywhere).
+
+## Wire-count arithmetic (n = 256 block, bytes per block = BPW × 256 / 8)
+
+| Format | bytes/block | Layout | Fits? |
+|---|---|---|---|
+| `Q_1` (1.00) | 32 | FP16 scale + 240 sign/2-bit-slot-packed signs | existing |
+| `Q_2` (2.00) | 64 | FP16 scale + lattice 2-bit | existing |
+| `Q_3` (3.00) | 96 | FP16 scale + codebook 3-bit | existing |
+| `Q_4` (4.00) | 128 | FP16 scale + lattice 4-bit | existing |
+| `Q_6` (6.00) | 192 | FP16 scale + codebook 6-bit | existing |
+| `Q_8` (8.00) | 256 | FP16 scale + comp8 8-bit | existing |
+| `Q_12` (12.00) | 384 | FP16 scale + 12-bit | existing |
+| `Q_16` (16.00) | 512 | FP16 scale + 16-bit | existing |
+| `Q_24` (24.00) | 768 | FP16 scale + 24-bit | existing |
+| `Q_32` (32.00) | 1024 | FP32 passthrough | existing |
+
+| Tier | bytes added over base | Layout | Layout proof |
+|---|---|---|---|
+| M (+0.25) | +8 B/block | signed per-span DC correction: plain 8-weight spans × 2 bits, GRP 32-weight spans × 8 bits | 256/8×2 = 64 b = 8 B; 256/32×8 = 64 b = 8 B |
+| H (+0.50) | +16 B/block | same per-span DC correction, wider q field: plain 8-weight spans, GRP 32-weight spans; H's width is resolved adaptively from the region size (see §L2 tier wire) | 16 B = 0.50 BPW |
+
+The multiplicative-gain sketch originally planned here ({×0.75, ×1.0, ×1.25, ×1.5}
+per 32 weights) was rejected at implementation time: a global-scale codec's
+dominant residual is a per-span **DC offset**, and a multiplicative gain cannot
+express an offset at all. Additive corrections dominate at identical byte cost;
+the evidence and the ordering proof are in §L2 tier wire below.
+
+| Format | wire BPW today | wire BPW target | Layout change |
+|---|---|---|---|
+| `Q_G_2` | 2.625 | **2.00** | cut pad + budget literal (`:2596`, `:3044`, `:865`) |
+| `Q_G_3` | 3.500 | **3.00** | same pattern |
+| `Q_G_4` | 4.500 | **4.00** | same pattern |
+| `Q_G_6` | 6.5625 | **6.00** | `quant_6k` path (`:1149`) |
+| `Q_G_8` | 8.500 | **8.00** | same pattern incl. stale `8.0f` at `:2833` |
+| `Q_G_12` | 12.500 | **12.00** | same, pad `:2865-2867` |
+| `Q_G_16` | 16.500 | **16.00** | grp16 sizing table `:865` |
+| `Q_G_24` | 24.500 | **24.00** | same pattern |
+
+### GRP K_G family (takes M/H tiers; K_L retires)
+
+| Old ids (retired) | New meaning |
+|---|---|
+| `Q_G_B_K_L` (+0.4375 or +0.5625 wire) | **retired**, id hole |
+| `Q_G_B_K_M` | M tier = B + 0.25 exact |
+| `Q_G_B_K_H` | H tier = B + 0.50 exact (absorbs old half twins at the same BPW) |
+
+## Final ladder table (69 formats — L1 writes this into the enum)
+
+### Keep (69 ids — every id below survives; nothing renumbers)
+
+**10 base** (L tier of each family): `Q_1`(0), `Q_2`(1), `Q_3`(2), `Q_4`(3),
+`Q_6`(4), `Q_8`(5), `Q_12`(6), `Q_16`(7), `Q_24`(8), `Q_32`(9).
+
+**18 plain M/H:** `Q_1_K_M`(11), `Q_1_K_H`(12) — H is the new **ternary**; then
+`Q_2_K_M/H`(14,15), `Q_3_K_M/H`(17,18), `Q_4_K_M/H`(20,21), `Q_6_K_M/H`(23,24),
+`Q_8_K_M/H`(26,27), `Q_12_K_M/H`(29,30), `Q_16_K_M/H`(32,33), `Q_24_K_M/H`(35,36).
+
+**9 GRP base:** `Q_G_1`(37) … `Q_G_24`(45) — rewired down to name (8.0 not 8.5 etc).
+
+**18 GRP M/H:** `Q_G_B_K_M/H` for B ∈ {1,2,3,4,6,8,12,16,24}:
+`Q_G_1_K_M`(47), `Q_G_1_K_H`(48), `Q_G_2_K_M`(50), `Q_G_2_K_H`(51),
+`Q_G_3_K_M`(53), `Q_G_3_K_H`(54), `Q_G_4_K_M`(56), `Q_G_4_K_H`(57),
+`Q_G_6_K_M`(59), `Q_G_6_K_H`(60), `Q_G_8_K_M`(62), `Q_G_8_K_H`(63),
+`Q_G_12_K_M`(65), `Q_G_12_K_H`(66), `Q_G_16_K_M`(68), `Q_G_16_K_H`(69),
+`Q_G_24_K_M`(71), `Q_G_24_K_H`(72).
+
+**14 MX (quarantined):** `Q_MX_3_5`(91), `Q_MX_4_5`(92), `Q_MX_6_5`(93),
+`Q_MX_8_5`(94), `Q_MX_12_5`(95), `Q_MX_16_5`(96), `Q_MX_24_5`(97),
+`Q_G_MX_3_5`(98, rewired 3.78125→3.50), `Q_G_MX_4_5`(99), `Q_G_MX_6_5`(100),
+`Q_G_MX_8_5`(101), `Q_G_MX_12_5`(102), `Q_G_MX_16_5`(103), `Q_G_MX_24_5`(104).
+
+Count check: 10 + 18 + 9 + 18 + 14 = **69** = `FORMAT_COUNT`.
+
+### Retire (36 id holes — format_is_valid() = false; decode maps via L4)
+
+| Range | Old family | Reason |
+|---|---|---|
+| 10, 13, 16, 19, 22, 25, 28, 31, 34 | plain `Q_B_K_L` | L tier lives in the base id |
+| 46, 49, 52, 55, 58, 61, 64, 67, 70 | `Q_G_B_K_L` | same |
+| 73–81 | plain halves `Q_B_5` | folded into `Q_B_K_H` tiers |
+| 82–90 | GRP halves `Q_G_B_5` | folded into `Q_G_B_K_H` tiers |
+
+`Q_16_K_L`(31) and `Q_24_K_L`(34) retire even though their K_M/K_H siblings keep
+16.0/24.0 wire — the tiers collapse into base.
+
+### Q_1_K_H ternary wire contract (the operator's H example, made exact)
+
+For n = 256:
+
+```
+bytes  0–1   : FP16 scale               = 16 bits
+bits      2–369: 232 trits, base-3 packed = ⌈232 × log2(3)⌉ = 368 bits
+bits    370–383: 14 bits — covered by the 24 evenly-spread implicit-zero slots
+                               (is_slot() Bresenham spread, slot weight = 0, never stored)
+TOTAL = 384 bits = 48 bytes = 1.5000 BPW exact
+```
+
+Tail sizes (n ≠ 256): the shipped rule is `budget = ⌈1.5·n⌉ - 16`,
+`k = ⌊budget / log2(3)⌋` trits and `z = n - k` implicit-zero slots, with `log2(3)`
+rounded slightly **up** so `3^k ≤ 2^budget` holds by construction. The wire is
+always exactly `⌈1.5·n/8⌉` bytes — **never inflate**. Below `n = 12` no room exists
+for a 16-bit scale plus a trit, so the encoder writes the `Q_1` binary payload
+(prefix-identical) zero-padded to the same wire and the decoder returns ±1.
+Measured and pinned by `tests/test_ternary_tail.cpp` for `n = 1..512`.
+
+Gate: measured tier ordering `Q_1 < Q_1_K_M < Q_1_K_H` on the 4 fuzz distributions
++ real weights. `Q_10`/`Q_11` stay CANCELLED (binary = `Q_1`; ternary = `Q_1_K_H`).
+
+## L2 tier wire (implemented 2026-11-13 — the contract the tests pin)
+
+A K tier's payload is `[ L-tier payload ][ refinement region ]`:
+
+```
+target_bytes = ceil((base_bpw + delta) * n / 8)   <- the NAME's BPW
+base_bytes   = ceil(base_bpw * n / 8)             <- the L payload
+region       = target_bytes - base_bytes          <- 8 B (M) / 16 B (H) at n = 256
+```
+
+The region carries SIGNED PER-SPAN DC CORRECTIONS added to the decoded base
+values. The unit is `span_max / div`, where `span_max` is the largest |decoded|
+... (truncated at 170 of 240 lines)
+\end{verbatim}
+
+
+\section*{The Cender theorems (THEOREM_CENDER.md)}
+\begin{verbatim}
+# THEOREM — Cender Solves Context Rot and Lost-In-The-Middle by Construction
+
+> **Status:** DRAFT PROOF — Gauntlet Loop Bar: DeepSeek-V4 (MLA) + DeltaNet (Yang et al. 2024) + Titans (Google) as reference. V2 → V4 updated per owner 2026-09-04. This doc is the measurable proof gate before any Cender code is graded.
+
+## 0. Definitions (grounded in repo)
+
+* **Transformers attention (baseline):** `src/transformer.cpp:300` `Attn = softmax(Q·K^T / √d) · V`. State = growing KV-cache `src/kv_cache.cpp:1` — memory `O(n)` per sequence length `n`.
+* **Cender attention (replacement):** `src/model/additive_delta_attention.cpp` (planned) `state_{t+1} = decay·state_t + k_t ⊗ err_t` where `k_t = W_k·x_t`, `err_t = v_t - state_t·k_t`, `decay ∈ [0,1]`. State size = `d × d` fixed (constant), independent of `n`. Same form as DeltaNet gated delta rule (Yang et al. 2024) + latent KV from DeepSeek-V4 (updated from V2 per owner 2026-09-04), variant: decay gating + orthogonal page writes `05-transcender-mission.md:39`.
+* **Context Rot:** accuracy drop when `n` → large due to softmax mass dilution. Measured via 100-page PDF test: secret on page 47, 95% garbage.
+* **Lost-In-The-Middle:** U-shaped recall where middle tokens are forgotten in long `n`. Measured via needle-in-haystack at positions 0%, 25%, 50%, 75%, 100%.
+
+## 1. Theorem 1 — Constant Memory (no KV bloat)
+
+**Statement:** For any sequence length `n`, Cender state memory `|state| = d²·sizeof(float)` is constant. Transformers KV memory `|KV| = 2·n·d·sizeof(float)` is linear in `n`.
+
+**Proof:**
+
+1. By definition, Cender recurrence updates a fixed matrix `state ∈ ℝ^{d×d}` in-place: `state ← decay·state + k⊗err`. No term depends on `n`. Allocation is one `Tensor{d,d}` `include/quant/tensor.h`, never appended per token. Verified by code inspection `src/kda_attention.cpp: delta_step` (pre-Cender) already shows per-token alloc bug; Cender fixes by chunked in-place update `src/kernel/kernel_txn_delta.cpp` K1.
+2. Transformers recurrence appends `K_t,V_t` to `kv_cache.cpp:443` `evict_to_disk` / `load_from_disk` LRU — size grows `Θ(n)`. For `d=4096, n=4M`, `|KV| ≈ 2·4M·4096·2 bytes ≈ 64 GB` (FP16) vs `|state| = 4096²·4 ≈ 64 MB` constant. Ratio `≈1000×`.
+
+**QED.** Empirically: `bench_inference` tok/s vs `n` must be flat for Cender, decreasing for Transformers (Phase 14 gate).
+
+**Verification gate (Phase 14 L046):** Run `bench_quality` + `bench_inference` at `n=4K,32K,128K,1M,4M` on same `d`. Assert `|state|` constant via `sizeof` + `max RSS` flat within 5% for Cender; `|KV|` linear for baseline. No PSNR regression.
+
+## 2. Theorem 2 — No Context Rot / No Lost-In-The-Middle by Construction
+
+**Statement:** Under Cender, recall accuracy `Acc(pos)` is independent of total length `n` and needle position `pos`, up to `decay` tuning. Under Transformers, `Acc(pos)` is U-shaped and degrades with `n`.
+
+**Proof Sketch:**
+
+1. **Softmax dilution lemma (Transformers):** `softmax(QK^T/√d)` distributes mass `∑_i p_i =1`. As `n→∞`, expected `p_needle → 1/n → 0`. Cross-entropy loss on middle tokens scales as `−log p_needle ∝ log n`. Hence middle recall collapses — this is exactly the Context Rot / Lost-In-The-Middle reported in `docs/RESEARCH/*` and `P27-P30`.
+2. **Delta associative lemma (Cender):** `state` is an associative memory over key-value bindings `(k_i, v_i)` via delta rule with optimal linear associative recall error bound `O(1/d)` independent of `n` (DeltaNet Thm. 3.1, Titans Lemma 2). Retrieval `y = state·q` is a single matrix-vector product, no softmax over `n`. Orthogonal page writes `src/pages/page_store.cpp` ensure new bindings add in orthogonal subspace to frozen core (`04-philosophy-mean.md:15`), so interference `⟨old,new⟩≈0`.
+3. **Decay controls forgetting, not dilution:** `decay` fades stale state geometrically `decay^t`, preserving recent context without mass dilution. Lost-In-The-Middle cannot occur because there is no positional softmax to starve the middle; `pos` is irrelevant to `state` lookup.
+4. **Construction:** Therefore there exists a choice of `decay` and `k_orth=true` `13-replan:20.2` such that for any `n` up to `1T` tokens (`08-current-state-20260831.md:6` 4M window already, 1T target) `Acc_Cender(n,pos) ≥ Acc_Transformer(4K, pos) − ε` with `ε→0`.
+
+**QED (by construction).**
+
+**Verification gates (Gauntlet — must beat bar, not describe it):**
+
+* **Bar freeze:** DeepSeek-V4 paper MLA recall + DeltaNet recall curves + Titans associative recall — hashed in `bar/bar.sha256` `12-file-inventory.md:304` (V4 supersedes V2).
+* **Needle test (Phase 13 L030-L037):** Build `bench_poc` C++ CLI `cender/tools/rlm_router_demo` — 100-page PDF, secret on page 47 (pos=47%), also sweep 0%/25%/50%/75%/100%. Metric: `Acc` via exact match. Bar: Transformers baseline at `n=100K` must show U-shape; Cender must show flat `≥95%` at `n=100 pages (≈100K tokens)` with `drop 95%` garbage. Critic blind A/B picks Cender.
+* **Context Rot test:** Same PDF, full dump to baseline vs RLM router filter + Cender. Metric: `Acc` and `VRAM` and `latency`. Target: `70% cost cut` `04-philosophy-mean.md:50`, `10×` latency drop, PSNR-equivalent accuracy.
+* **Regression gate:** `ctest` + `bench_format_comparison` PSNR flat (within noise) — wire format unchanged `research/claim_ledger.md:77`.
+
+## 3. What This Proves for the Repo
+
+* The 1000+ problems in `docs/RESEARCH/*` and `P1-P73` that are corollaries of softmax dilution (all Context Rot family) are **solved by architecture, not by patching**. They will never be reintroduced because `state` is constant by definition — there is no `n` term to regress.
+* Remaining wounds `W3-W10` (MLA cache, batching, YARN) become optimizations of Cender, not fixes for dilution.
+* Kernel mission K1 `kernel_txn_delta.cpp` is the FlashAttention moment for this theorem — chunked parallel delta must preserve the math while being `O(n·d² / chunk)` fast, with proof of equivalence via `test_txn_delta_parity.cpp`.
+
+## 4. Next Step (Iron Rules)
+
+* Freeze this doc as `bar/` reference for Gauntlet critic (Bar-freeze gate).
+* Implement Phase 20 IR + Phase 21 modules, each with unit test proving its lemma, then run the needle/rot benches on real hardware — numbers decide, not adjectives.
+
+---
+*Evidence pins:* `04-philosophy-mean.md:39` delta rule, `05-transcender-mission.md:8` .txn IR, `12-file-inventory.md:99` file list, `research/claim_ledger.md:77` decode gate, `bar/bar.sha256` bar freeze.
+\end{verbatim}
+
+
+\section*{The model manifest (MODEL_MANIFEST.md)}
+\begin{verbatim}
+# Model manifest (`SolIDX`) — reserved format specification
+
+Status: **reserved, documented, not implemented.** No engine reader or writer consumes this
+format yet. The magic is specified here so that the first model-packaging consumer implements
+one format instead of inventing a second meaning for the engine's `.idx` magic.
+
+## Why this file exists
+
+Two different identities were conflated during the 2026-11-12 rename wave:
+
+- **Engine wire identity** — the `.idx` integrity index. It belongs to the engine, so its magic
+  is `Transformers-FusionIDX` (current, 22 bytes) with `TransCenderIDX` as the accepted legacy
+  alias (15 bytes, "formerly known as").
+- **Model identity** — the artifact being trained or fine-tuned. The ruler model is
+  `sol-4-flash` ("Sol 4 Flash"). A model name is not an engine name.
+
+`SolIDX` is therefore **not** an engine `.idx` magic. It is reserved for a model manifest: a
+small envelope that describes a packaged Sol model and its tensor inventory. The engine's
+`QuantIDXReader` must reject `SolIDX` (regression: `tests/test_sha256_corrupt.cpp`, Test 8).
+
+## Legacy names
+
+`InNova` and `InNovaIDX` are **legacy names** from the pre-2026-11-12 project era:
+
+- `InNova` was the model family that became `Sol`; the trained ruler model is now `sol-4-flash`
+  ("Sol 4 Flash").
+- `InNovaIDX` was the old wire magic. It became `SolIDX` during the 2026-11-12 rename wave, and
+  D-30 retired the wire-magic half: `InNovaIDX` is rejected by the engine `.idx` reader and is
+  never a current identifier.
+
+Neither name is current. They are kept here only so that historical documents and old files can
+be identified without ambiguity.
+
+## Wire layout
+
+All integers are little-endian.
+
+| Offset | Size | Field | Value |
+|---|---|---|---|
+| 0 | 7 | `magic` | ASCII `SolIDX` followed by one NUL byte (`53 6F 6C 49 44 58 00`) |
+| 7 | 4 | `version` | Manifest envelope version; `1` for this specification |
+| 11 | 8 | `json_length` | Byte length of the UTF-8 JSON body |
+| 19 | `json_length` | `body` | UTF-8 JSON object, no trailing NUL |
+
+Minimum valid file: 19 bytes with an empty body is **not** valid; `json_length` must be at
+least 2 (`{}`) and at most 16 MiB. A reader must validate `json_length` against the actual file
+size before allocating or parsing.
+
+## JSON body (version 1)
+
+```json
+{
+  "model_id": "sol-4-flash",
+  "display_name": "Sol 4 Flash",
+  "manifest_version": 1,
+  "created_utc": "2026-11-13T00:00:00Z",
+  "engine": {
+    "name": "Transformers-Fusion",
+    "min_version": "0.1.0"
+  },
+  "tensors": [
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "format": "Q_4",
+      "bytes": 123456,
+      "sha256": "64 lowercase hex characters"
+    }
+  ]
+}
+```
+
+Required fields:
+
+- `model_id` — must match `^sol-[a-z0-9][a-z0-9.-]*$`; the current ruler model is
+  `sol-4-flash`.
+- `display_name` — human-readable name, `Sol 4 Flash` for the current model.
+- `manifest_version` — `1`.
+- `tensors` — array of objects, each with a unique `name`, a registered format id in `format`,
+  a non-negative `bytes` count and a 64-character lowercase `sha256`.
+
+Optional fields: `created_utc`, `engine`, and any namespaced extension object. Unknown fields
+must be ignored by a version-1 reader.
+
+## Compatibility rules
+
+1. `SolIDX` identifies a **model manifest**, never an engine `.idx` file.
+2. The engine `.idx` reader accepts only `Transformers-FusionIDX` and `TransCenderIDX`.
+3. A model manifest references engine tensor files by name and hash; it does not embed engine
+   blocks and does not change the `.idx` layout.
+4. The model id and the engine name are independent: renaming a model must not rename an engine
+... (truncated at 90 of 106 lines)
+\end{verbatim}
+
+
+\section*{The decision log (DECISIONS.md)}
+\begin{verbatim}
+# Operation Clean — Decisions Log
+
+> Every binding rule, decision, and trade-off, with provenance (operator quote →
+> distilled rule → implementation path). Companion files: [PLAN.md](PLAN.md) (task
+> DAG + DoD), [LADDER.md](LADDER.md) (69-format contract).
+> Append-only. One line per decision: date | ID | decision | why | trace.
+
+---
+
+## D-01 · Ladder pattern L/M/H (operator: 2026-10-22, "Info 5" + "Info 2")
+
+**Rule:** in EVERY family, L = base at exact `.0` BPW, M = base + `.25` exact, H = base
++ `.50` exact. Three genuinely different codecs. The old standalone "L" duplicate is
+retired; the base id IS the L tier.
+
+**Trace:**
+- "jo Q_1 hai wo formerly known as L/M/H me se L yaani Low waala variant and L waala jo
+  separate hi unko khallas aur ye exact 1.0 BPW use karenge, fir M waala, ye 1.25 BPW
+  exact use karenge, H waale 1.50…"
+- "har ek family me yahi rule hai aur jo L hai wahi base hai yaani .0 fir M matlab .25
+  and H matlab .50 exact."
+- Implementation: LADDER.md rules 1–2; tasks L1/L2.
+
+## D-02 · Q_1 = binary, Q_1_K_H = pure ternary (operator, 2026-10-22)
+
+**Rule:** `Q_1` keeps binary (slot-sign) at exact 1.00. `Q_1_K_H` becomes pure ternary
+(−1/0/+1) at exact 1.50. The proposed standalone formats Q-10/Q-11 are **CANCELLED**
+(operator said so explicitly; recorded as F-0 in DEFECTS.md).
+
+**Trace:** "jo Q_1 hai wo hi binary rahega aur jo Q_1_5 rahega jise Q_1_K_H bolenge ya
+isi type kuch, ye pure ternary and exact itna BPW hi."
+- Wire: 48 B/256 w = 1.5000 exact (trits base-3 packed + FP16 scale + implicit-zero
+  slots) — see LADDER.md §Q_1_K_H.
+
+## D-03 · Rewire direction (operator: "BPW ko kam karo")
+
+**Rule:** name says X ⇒ wire costs exactly X. The LAYOUT comes DOWN to the name; never
+rename a format up to its wire. (BOW was the operator's typo for BPW.)
+
+**Trace:** "QG2 hai to Q_G_2 rename, BPW ko kam karo … exact G bolenge, formerly known
+as karke code me likh sakte ho."
+- Implementation: 8 GRP rewire targets + K/half literals — LADDER.md table; L2.
+- Negative-gap formats (`Q_2_5` etc., name x.5 > wire x.4375) retire rather than
+  inflate the layout: folding keeps the grid clean and avoids inventing new engines.
+
+## D-04 · GRP naming normalization
+
+**Rule:** `QG2` → `Q_G_2` style everywhere; canonical pattern `Q_/Q_G_/Q_MX_/Q_G_MX_`
++ ` _K_M/_K_H` tiers. Renames carry "formerly known as <old>" comments in code.
+Macros/env excluded from casing rules.
+
+**Trace:** "QG2 hai to Q_G_2 rename … formerly known as karke code me likh sakte ho."
+
+## D-05 · Casing: QUANT → Quant (operator, 2026-10-19)
+
+**Rule:** the ALL-CAPS token `QUANT` exists only where structurally mandatory:
+C/C++ macros (`QUANT_CHECK`, `QUANT_AVX`, …, defined via #define) and environment
+variables (`QUANT_SEED`, `QUANT_PAGED_KV_DEBUG`, `QUANT_SKIP_FULL`, `QUANT_SKIP_GLA`).
+Everything else — type names, comments, docs, printf strings — is `Quant`.
+Lowercase namespace `quant` stays (distinct token).
+
+**Trace:** "macros, env's jaisi jagaho ko chhod ke kisi bhi file me 'QUANT' poora upper
+case me naa ho dhyaan rakhna, 'Quant' hona chahiye har code me aur har jagah, docs me
+bhi."
+
+## D-06 · BPW granularity (operator)
+
+**Rule:** every format lands on exact `.0 / .25 / .50` BPW steps. No other wire values
+survive anywhere in the ladder (this is what kills 3.78125, 3.4375, 6.5625, 2.625 …).
+
+## D-07 · Zero dead code / zero stubs (operator, 2026-10-18)
+
+**Rule:** after Operation Clean, no dead helper and no stub remains — every dead symbol
+is wired up correctly or deleted.
+
+**Documented exception:** the ~18 GPU/compute backends that exist but are unavailable
+(unoptimized, incomplete by design until the backend-completion effort) are kept,
+documented accurately, and excluded from the zero-stub rule. They are NOT deleted and
+NOT half-fixed here.
+**Trace:** "ek bhi dead code and stub nahi bachna chahiye, bas kuchh-kuchh stub chhode
+gay hai majboori me unko exclude karke jaise ki 18 backends hai but wo available nahi
+hai optimizations ke liye."
+Implementation: task Z1 with the exception list.
+
+## D-08 · Persistence compatibility (design decision, agent-verified)
+
+**Rule:** old `.quant` files must survive the ladder change. Therefore:
+- IDs are KEPT in place (no renumber) — a renumber silently reinterprets checkpoints
+  because format is stored as raw `uint8_t` per block and no version field is read.
+- 36 retired holes become invalid ids; readers remap via `legacy_format_id_remap()`
+  (K_L→base, halves→same-BPW `_K_H`), one log line per file, never silent.
+- All 4 clamp sites replace the ad-hoc `wire_fmt < FORMAT_COUNT \&\& wire_fmt != 19`
+  predicate with `wire_format_valid()` from a single truth (`format_compat.h`).
+- Writers assert validity before write — this catches the MoE `format = 5 with FP32
+  payload` label bug at write time, not on some future read.
+
+## D-09 · M-tier encoder (SUPERSEDED by D-32 on 2026-11-13)
+
+**Original rule (historical, no longer the shipped layout):** M tier = base layout +
+1 refinement byte per 32 weights, carrying 4 × 2-bit sub-block scale multipliers
+{×0.75, ×1.0, ×1.25, ×1.5} — engine-agnostic, provably +0.25 BPW exact.
+
+**Shipped rule (`DECISIONS.md` D-32, `block_codec.cpp:2649 tier_refine_layout`):** the
+refinement region carries **signed additive per-span DC corrections**, not multiplicative
+gains. Plain spans are 8 weights with a 2-bit q; GRP spans are 32 weights with an 8-bit
+q. A multiplicative gain cannot express a DC offset at all, and the dominant residual of
+a global-scale codec is exactly that offset; additive corrections dominate at identical
+byte cost and make `q = 0` bit-identical to the base decode, which turns
+`NMSE(L) ≥ NMSE(M) ≥ NMSE(H)` into a construction guarantee.
+
+The D-09 acceptance gate was kept and strengthened: the shipped test measures **NMSE**
+(not PSNR) with strict `M < L` everywhere, strict `H < M` for `b < 24`, and aggregate
+strictness at every rung/family on 4 fuzz distributions + trained real weights
+(`tests/test_tier_order.cpp`, 433 lines). The only allowance is per-case `H == M` ties
+at `b = 24`, a proven FP32-output floor (D-32).
+
+## D-10 · Ternary tail policy (design decision; shipped form noted 2026-11-14)
+
+**Rule:** for block sizes where the exact-1.50 ternary layout doesn't decompose
+(cleanly), the encoder NEVER inflates: it drops to the largest tier that fits the
+name's wire budget exactly (ternary → M → L, per-size). Same policy for every
+rewired format: budget guard pattern of `quant_grp16:879-884` (a real budget test,
+never the `has_d = (n >= 8)` non-test that caused the quant_6k overrun).
+
+**Shipped form (`Q_1_K_H`, D-32 / `LADDER.md` §ternary tail):** the tail rule is
+`budget = ⌈1.5·n⌉ - 16`, `k = ⌊budget / log2(3)⌋` trits, `z = n - k` implicit-zero
+slots, with `log2(3)` rounded slightly **up** so `3^k ≤ 2^budget` holds by
+construction. No M-tier fallback is ever needed: the wire is exactly
+`⌈1.5·n/8⌉` bytes for every `n = 1..512` (pinned by `tests/test_ternary_tail.cpp`).
+Below `n = 12` a 16-bit scale plus a trit cannot fit, so the encoder writes the
+`Q_1` binary payload (prefix-identical) zero-padded to the same wire; the decoder
+returns ±1. That is the L tier of this ladder, i.e. the same never-inflate policy.
+
+## D-11 · K-variant honesty (design decision)
+
+**Rule:** tier logic keys off format ID/enumeration, never the NAME string
+(today `k_tier()` parses `_L/_M/_H` out of the name at `block_codec.cpp:2464-2470` —
+a rename would silently change encoder effort). `Q_16_K/Q_24_K` trios split from
+their shared body (`:2740-2743`) into real tiers.
+
+## D-12 · Quality floor: scale fitting (design decision)
+
+**Rule:** shared scale-fitter (`fit_scale_true_mse`, currently dead at
+`block_codec.cpp:632-695`) lands in Q3/Q6/Q12 + Q2/Q4 with golden-section refinement
+where it wins (today only `comp8_fit_scale_fp16:306-358` has golden-section; Q_12's
+3-iteration LS seed is why it measures 46 dB while K_H's 24 iterations reach ~59 dB).
+Acceptance: `Q_12 ≥` old K_H within documented margin; `Q_G_12 < Q_G_8` inversion gone.
+
+## D-13 · MX quarantine (design decision, agent-verified)
+
+**Rule:** the 14 MX formats are quarantined: kept, registry-marked, documented as
+catastrophic (2-iteration-LS tier allocator, −21..−37 dB vs industrial refs at same
+BPW), excluded from dominance claims, NOT deleted (their wire/persistence contracts
+hold). `Q_G_MX_3_5` rewires 3.78125 → 3.50 so the name==wire grid includes them.
+An adaptive rework of the tier allocator is a LATER, separate effort — not Operation
+Clean scope.
+
+## D-14 · Bench honesty (design decision)
+
+**Rule:** every printed bench number must be measured, not hardcoded, and every
+comparison must use one byte basis. Concretely: `write_quant_mixed` honors
+`target_bpw` (today it ignores the knob — every "QUANT Mixed 1.50" row actually wrote
+2.625); the `pick(rs, q_ids, 7)` OOB read (`bench_industry_real.cpp:904`) gets real
+bounds; "negligible"/"95% scheduling" prose is regenerated from measured output;
+Q-10's bitnet-victory bench stays CANCELLED as a task but the hardcoded victory
+strings are covered by Q2's umbrella for the OTHER benches (bench_poc "No external
+schemes" false claim dies too).
+
+## D-15 · Priorities (operator delegated)
+
+**Rule:** DAG order is my judgment: P0 → S (memory-safety, independent of the ladder)
+→ L (ladder, tree-swallowing) → T (tests against a frozen ladder) → Q (quality on top
+of final tests) → Z (hygiene sweeps last so they touch final code once) → V1 (prove
+dominance) → R (review findings, code-fusion last because pausable).
+
+**Trace:** "Ye tum khud decide karo, priority tum apne hisaab se do sabko."
+
+## D-16 · One task to 100% (operator)
+
+**Rule:** serial execution, one worker session per task, DoD gate green before the
+next starts. Task register and gates live in PLAN.md.
+
+**Trace:** "ek ko pleetooge fir use 100% complete karoge uske best level pe, most strict
+worker in the world ki tarah … fir baari baari se sab ke sab 100% complete naa ho jaayenge
+tab tak baari-baari se sabko ek ek karke karoge."
+
+## D-17 · Execution gate (operator)
+
+**Rule:** implementation starts ONLY after review workflow `wf_ce1d51d7-91d` reaches
+100%. Documented fallback if the synthesize stage keeps dying on infra: compose the
+final report + completeness pass from the journal + `findings_verified.json`, mark the
+workflow *complete-by-reconstruction* in this file, and proceed.
+
+**Trace:** "Workflow 100% complete hone ke baad ham plan ko implement karenge" /
+"Plan complete ho jaayega to workflow ke wait ke liye rukna."
+
+## D-18 · Execution name (operator)
+
+**Rule:** this effort is called **Operation Clean** (all user-facing references and the
+docs directory name).
+
+## D-19 · Strictness (operator, general)
+
+**Rule:** "koi chook nahi honi chahiye" — the most-strict-worker standard. Every task's
+DoD includes evidence (grep-zero counts, test names, measured numbers), not claims.
+Honest bench regressions after rewire are documented, not hidden; what is hidden or
+faked is a defect by definition.
+
+## D-20 · Known-caught-at-test-time traps (from exploration)
+
+These field-tested facts feed the task DoDs directly:
+- `test_fuzz_codec.cpp:278` allows claimed+1 byte — this is EXACTLY why the quant_6k
+  +1-byte overrun passes today (S3 kills the allowance, strict ≤ after).
+- `test_block_codec.cpp` does NOT test `block_codec.cpp` (it tests GEMM kernels) —
+  `block_codec.h:65`'s claim otherwise is false (corrected everywhere in L1/Z3).
+- `test_format_audit.cpp` checks `actual <= format_bpw + 1e-3` only at N=256 and never
+  fails on PSNR — `test_wire_budgets.cpp` (T1) replaces all three gaps.
+- `test_format_registry_complete.cpp` `singles>=19` is a floor, not the 69-set — its
+  replacement pins `singles >= 55` + retired names fail parse (registry
+  silent-default-on-miss becomes loud).
+- GGUF bridge silently zero-fills unsupported types (`gguf_bridge.cpp:336-342`,
+  verbose-gated) — raises to loud-fail during L5 (documented as part of import
+  honesty, since silent zero weights are silent corruption).
+- `NativeFormat` (trainer) is a separate, untouched format id-space; documented, not
+  merged into the quant ladder except by alias check (L4 records this explicitly).
+
+## D-21 · Operation Clean ≠ review findings only
+
+**Rule:** the review workflow findings (A-ranges) and quant overhaul (B/C/E ranges)
+both execute through the same greatest-strictness process; quant tasks S1–V1 run
+before R-series (review) because they need a stable build/test gate. DEFECTS.md stays
+the ledger for both.
+
+---
+
+## Workflow reconstruction record (D-17 fallback — filled only if triggered)
+
+*(empty — the review workflow is still running; this section fills with evidence if
+the synthesize stage cannot complete and complete-by-reconstruction is invoked.)*
+
+---
+
+### How to use this file during execution
+
+1. Before each task: check the register in PLAN.md + relevant decisions here.
+2. During each task: if a decision is contradicted by a live fact, STOP, record the
+   conflict here as a new decision (append, never rewrite), then continue.
+3. After each task: append one line to PLAN.md §Progress log.
+
+---
+
+## D-22 · LADDER COUNT RESOLVED: **69 wins** (Fusion Smash, 2026-11-01)
+
+**Conflict raised by Prime Orchestrator:** `review-tracking/MASTER_PLAN.md` says 60 formats;
+`docs/operation-clean/LADDER.md` + the live enum say 69.
+
+**Verdict: 69 is authoritative.** Evidence (all commands run, outputs below):
+
+| # | Evidence | Source |
+|---|---|---|
+| 1 | `MASTER_PLAN.md:29` §1 heading says "Target format ladder (60 formats)" — but `MASTER_PLAN.md:223` its OWN L1 task row says "`types.h`: **69 live formats**, validity table, retired-id map, new `format_compat.h`" | MASTER_PLAN internal contradiction |
+| 2 | `MASTER_PLAN.md:94` §1.4 retires "GRP base `Q_G_x` (9)" — but `MASTER_PLAN.md:126-133` §2 "Rewire map" REWIRES that same family: "`Q_G_2` 2.625 → **2.00**", "`Q_G_x_K_*` (×9) → exact base", "same as their GRP base" | MASTER_PLAN internal contradiction |
+| 3 | `MASTER_PLAN.md:18` G-4 verbatim: "GRP families (`Q_G_*`) **follow the identical L/M/H rule**" — L is the base; retirement contradicts the rule it cites | operator rule |
+| 4 | Live enum `include/quant/types.h:146-147`: `FORMAT_ID_SLOTS = 105`, `FORMAT_COUNT = 69`; `kFormatValid[105]` marks exactly 69 ids live, and ids 37–45 (`Q_G_1`..`Q_G_24`) are LIVE | live code |
+| 5 | Live `format_bpw` already carries `Q_G_2 → 2.0f` … `Q_G_24 → 24.0f` (`types.h:312-320`), matching LADDER's 69-ladder | live code |
+| 6 | 69 = 10 base + 18 plain M/H + 9 GRP base + 18 GRP M/H + 14 MX, and MASTER_PLAN's own §1.1/1.2/1.3 arithmetic (28 + 18 + 14) = 60 comes from retiring the 9 GRP bases | arithmetic |
+
+**Resolution that satisfies both documents:** keep the 9 GRP bases (LADDER.md's 69). The
+§1.0 budget proof in MASTER_PLAN is still TRUE and is retained as a **design note**, not a
+retirement:
+
+> ### Design note D-22a (the real content of MASTER_PLAN §1.0)
+> At `B.00` a 256-weight block has exactly `256·B` bits of budget and `B`-bit levels alone
+> consume all of it — so a GRP base at `B.00` **cannot carry any per-group state**. Its
+> layout is therefore the *plain base layout under a GRP name* (exactly as `Q_G_1` already
+> is: `types.h:284` `Q_1 → 1.0f` and `:312` `Q_G_1 → 1.0f`, both using the same slot-sign
+> codec at `block_codec.cpp`). The genuine grouping lives in the tiers: `Q_G_x_K_M` at
+> `B.25` and `Q_G_x_K_H` at `B.50`.
+> Consequence for L2: **the GRP base encoder must be cut down to the plain-base layout**
+> (today it still calls the grouped-affine path at 2.625 BPW — see D-23).
+
+**Trade-off accepted:** `Q_G_x` at `B.00` is byte-identical in *layout* to `Q_x` for every x.
+That is not a lie (name == wire == `B.00`), but it must be **documented as a naming/API alias**
+in Z3's docs pass so no one claims the GRP base is a distinct codec. If a distinct GRP base
+codec is ever wanted, it requires a sub-`.00` grid, which the operator's `.0/.25/.50` rule
+forbids.
+
+**Ladder count is now frozen: 69. `FORMAT_COUNT = 69`. Any future claim of 60 is stale — this
+line supersedes it.**
+
+---
+
+## D-23 · LIVE DEFECT found during D-22 verification (L4 is a data-corruption bug)
+
+**Found:** 2026-11-01, Fusion Smash. **Severity: critical (silent data corruption on read).**
+
+L1 landed (`FORMAT_COUNT` 105 → 69) but L4 did not. All four `.quant` clamp sites still use the
+old predicate `wire_fmt < FORMAT_COUNT \&\& wire_fmt != 19`:
+
+| Site | Line |
+|---|---|
+| `src/codec/quant_format.cpp` | `:456` `bd.format = (wire_fmt < FORMAT_COUNT \&\& wire_fmt != 19) ? (Format)wire_fmt : Format::Q_32;` |
+| `src/codec/quant_format.cpp` | `:611` `fmts.push_back((wire_fmt < FORMAT_COUNT \&\& wire_fmt != 19) ? (Format)wire_fmt : Format::Q_32);` |
+| `src/adapters/tools/qwen35_engine.cpp` | `:32` `const Format fmt = (wire_fmt < FORMAT_COUNT \&\& wire_fmt != 19) …` |
+| `src/adapters/tools/qwen35_engine.cpp` | `:145` `t.fmt = (wire_fmt < FORMAT_COUNT \&\& wire_fmt != 19) …` |
+
+Because `FORMAT_COUNT` is now 69 while the id space is 105, **every valid format with id ≥ 69
+silently decodes as `Format::Q_32`**. Parsed from the live `kFormatValid` table, that is
+**17 valid formats**: ids `69, 71, 72` (`Q_G_16_K_M`, `Q_G_24_K_M`, `Q_G_24_K_H`) and
+`91..104` (all 14 MX formats).
+
+**Fix (L4, next task):** introduce `include/quant/format_compat.h` with `kFormatValid` as the
+single truth plus `wire_format_valid()`, and replace all four predicates with it. Writer must
+assert validity before write. Recorded as the first L4 sub-step.
+
+
+## D-24 · Workspace rename: `code-fusion/` → `code/`, `transformers-fusion/` → `transformers/` (operator, 2026-11-12)
+
+**Rule:** both repos were renamed because both already live inside `fusion/` ("fusion to hai hi").
+The GitHub remotes follow: `origin-labs-ai/code.git` and `origin-labs-ai/transformers.git`
+(old `*-fusion.git` URLs redirect; everything else unchanged). **The product/alias vocabulary is
+NOT renamed** — CodeFusion, TransFormers-Fusion and TransCender stay as names (§1 of the master
+plan governs). What changed is only *path-shaped* references: `transformers-fusion/…`,
+`code-fusion/…`, `*-fusion.git` URLs — 93 live files swept (plan + PLAN.md + review-tracking +
+operation-clean docs + all `.rea-tmp` scripts + `transformers/PROGRESS.md` + `code/arch` +
+`code/payloads`). **Verbatim operator quotes, the alias-vocabulary table and historical evidence
+dumps were deliberately left untouched** — rewriting a quote would falsify evidence. Full backup:
+`.plan/.rea-tmp/rename-sweep-backup-20261112-182006/`.
+
+> **Spelling update (2026-11-13, D-28):** the current product spelling is
+> **`Transformers-Fusion`**; this 2026-11-12 entry preserves its dated spelling as history.
+
+**Trace:**
+- *"Saath me maine code-fusion/ ko code/ me rename kar diya hai and transformers-fusion/ ko
+  transformers/ me kyuki dono fusion/ folder ke andar me hai yaani fusion to hai hi! Usi ke
+  hisaab se thora-bahut origin bhi change hoga, transformers-fusion.git se transformers.git
+  ho jaayega, baaki ka adress same hi hai, aise hi code-fusion.git se code.git ho jaayega!
+  Keep in mind!"*
+- Implementation: path sweep (`rename_sweep.py` + `surgical.py`), then **all 7 plan verifiers
+  re-run exit 0** (step1 117/117·13/13 · step2 PASSED · step3 156/156 anchors 0 problems ·
+  subanchors 85/85 · step5 65 checks · step6 PASSED · arxiv 67/67).
+
+## D-25 · Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11-12)
+
+**Rule:** `code/slider/effort` = `dsh-claude-effort-slider` v0.9.4 (MIT) — a **DeepSeek Harness
+(DSH) plugin** (cordis.patch.yml + `dsh.client` bundle, 6-stop Low→Ultracode, 38/38 tests). DSH
+== **Sonar (Plus)** natively. **Zenix (Claude Desktop)** has no cordis/slots (plain Electron +
+React renderer) but *does* carry the hooks (`effortLevel`/`reasoningEffort` in main,
+`thinkingBudget`/`extendedThinking` in renderer) — so a port is possible later, in one of two
+shapes: **A** DOM-inject into the composer (fast, reversible, needs `ion-dist.asar` repack) or
+**B** native rebuild wired into Fusion's layout system. **Operator ruling: park BOTH for now**
+— *"look waisa implement karenge, Sonar me bhi implement karenge!"* then *"Dono baad me
+karenge!"* → Sonar integration + Zenix port are context-only until unparked.
+
+**Trace:** thread *Current Strike* runs 11–12 (host-mismatch quote + comment). Implementation:
+none yet — parked. Next when un-parked: Sonar = plugin wire (profile bundle + registry) and
+Zenix = choose A or B.
+
+## D-26 · _archive/ = reference-only port of every deleted doc (operator, 2026-11-12)
+
+**Rule:** all docs ever deleted from **both** repos (the 2026-11-01 `code-fusion` purge of
+README/`docs/` and the earlier `transformers` history) are recovered ONCE into
+`.plan/_archive/` — 288 files / ~10.6 MB: README (5,925 lines), `docs/` (38), `repo/memory/`
+(15, the iron rules), `TransCender.png`. **`InNova.png` stays deleted** (operator ruling). The
+archive is **reference only** — future docs get redesigned fresh ("sab bas reference ke liye
+uthaa raha hu"), so this port defines the pattern for how deleted docs get archived: copy-once,
+never override, keep the deletion history intact. Engine-repo identity recorded alongside:
+TransFormers-Fusion, **formerly known as TransCender** (Inferno = kernel + training engine).
+
+> **Spelling update (2026-11-13, D-28):** current spelling is **`Transformers-Fusion`**; D-30 also
+> fixes the wire identity — `Transformers-FusionIDX` + legacy `TransCenderIDX` only.
+
+**Trace:**
+- *"IDEA! Bhai, .plan/_archive wo waala saara ka saara source yahaa copy kar! … InNova.png ko
+  deleted hi rehne de! Jitna jo bhi files the — delete hue, sab ko yahaa uthaa ke le aa,
+  kuchh bhi override bhi naa ho! … sab bas reference ke liye uthaa raha hu to uthaa le!"*
+- Implementation: `.plan/_archive/` populated (Code Crash thread run 12 — archive + remotes
+  completed before the run died on a provider 429; the path-sweep remainder was finished here).
+
+
+## D-27 · Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12)
+
+**Rule:** the reading public (and any agent) misreads this project as "main target 1.5 BPW".
+Operator ruling: **MAIN GOAL = the entire Fusion Superproject** (every domain, seat, track —
+complete). **SIDE GOAL = MAXIMUM at EXACT 1.0 BPW** — *not* 1.5; the implemented 1.5 BPW path
+is the *stepping stone*, and existing "1.5 BPW" statements stay true as *implemented-state
+facts* while the goal line moves to 1.0. **New research direction (operator's same-day
+research):** FP (floating-point) and INT (integer) quantization format families BOTH have
+actionable work — research both. **Fact recorded:** Loop Quantization has never been
+implemented for any model anywhere (2026-11-12 audit) — Track B will be the first.
+Every implement-facing document carries the reminder note in the operator's own words.
+
+**Trace:**
+- *"Jo bhi ye project dekhta hai to use lagta hai ki is project ka main target 1.5 BPW hai… ye
+  poora sabka doubt clear karne ke liye… Is project ka main goal to poora Superproject hai!
+  Side goal me 1.5 BPW par nahi, exact 1.0 BPW par maximum achieve karna hai, sab kuchh!"*
+- *"Aaj ke mere research ke hisaab se FP waale jo bhi quantization formats hai and INT yaani
+  Floating Point and Integers waale unka bhi kuchh kara jaa sakta hai, ye sab note kar lo!
+  Har document me! … apne words me jisse ki koi bhi agent plan waale file ko dekh karke
+  implement kar raha ho to beech me ye padhe to mujhe yaad dilaaye!"*
+- *"Aaj tak kisi ne Loop Quantization implement bhi nahi kiya hai, koi bhi model ka!"*
+- Implementation: reminder inserted in master plan, PLAN.md, LADDER.md, PROGRESS.md,
+  TODO-TREE, BLUEPRINT; telemetry DASHBOARD carries it top-of-file.
+
+
+## D-28 · Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (operator, 2026-11-13)
+
+**Rule:** the capital `F` in "Formers" is dropped everywhere in the Fusion Superproject -
+`TransFormers-Fusion` becomes **`Transformers-Fusion`** - across documentation, code, build
+scripts, CI workflows, benchmarks, tests, telemetry strings and archived documents.
+`CodeFusion` and `TransCender` keep their names (D-24 left the product vocabulary alone;
+this ruling narrows it for the engine name only). The spelling is **byte-length preserving**
+(`TransFormers` and `Transformers` are both 12 characters), so file sizes, the archive
+manifest's byte column and every size-derived fact stay valid.
+
+**Wire-format safety:** the `.idx` magic moves from `TransFormers-FusionIDX` to
+`Transformers-FusionIDX`. Both are 22 bytes (21 compared + NUL), so the layout does not
+change, and the reader now accepts **both** spellings so that files written by earlier
+builds keep decoding. The writer emits the new spelling only. The magic that would have
+been broken is therefore not broken - this honours the standing ruling that the wire format
+is not touched without an operator decision.
+
+**Trace:**
+- *"poore fusion/ me jahaa bhi and kahi bhi Trans'F'ormers-Fusion likha hua hai, 'F'ormers
+  me to usko 'f' kardo, lower case kar do! Har ek jagah, docs se lekar code tak, jahaa jo
+  bhi hai - sab!"*
+- Implementation: project-wide sweep with backups (`.plan/.rea-tmp/rename-lowerf-backup-*`),
+  dual-magic reader, test updated to assert the new magic and the legacy alias.
+
+**Executed (2026-11-13):**
+- 83 text files rewritten - 9 under `.plan/`, 74 under `transformers/`; `code/` needed none.
+- The first sweep died with `WinError 206` (path too long) after 33,284 mirrored backups. It was
+  completed with a flat, hash-named backup: `.plan/.rea-tmp/rlb-20261113-113652/` (83 entries,
+  `index.jsonl` maps every rewritten file to its backup). Re-running the sweep changes 0 files.
+- Excluded on purpose: `.git`, `.mimosa`, build trees, `__pycache__`, `.rea-tmp` snapshots, every
+  `*.bak*` / backup copy, and this file (the decision log keeps the historical spelling).
+- Wire format: the writer magic is lowered; the reader keeps the pre-D-28 spelling as a fourth
+  accepted magic. `tests/test_sha256_corrupt.cpp` gained `Test 6` (legacy magic still readable) -
+  16/16 tests pass on a fresh Ninja + clang++ build (`build-norm/`), and `test_math` /
+  `test_kernel` still pass.
+- Residual scan: zero `TransFormers` occurrences outside this decision log.
+- Commit status: `.plan` committed with this record. `transformers/` already carried ~69 unrelated
+  in-flight changes from earlier sessions, so the rename is applied in its working tree but is
+  deliberately **not** committed there - committing it would mix unrelated work into a naming
+  commit. `code/` was likewise left untouched.
+
+> **Superseded in part by D-30 (2026-11-13):** the engine `.idx` reader accepts exactly two
+> engine identities - `Transformers-FusionIDX` (current, 22 B) and `TransCenderIDX` (legacy
+> "formerly known as", 15 B) - plus the pre-D-28 capital-F spelling of the current magic
+> (same 22 B, read-only). `SolIDX` is **not** an engine magic; it is reserved for model
+> manifests. D-28's byte-length argument and the writer change remain valid.
+
+
+## D-29 · Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13)
+
+**Rule:** the native Claude Desktop seat is **Zenix** - the `CC` suffix is removed from the
+product name, the folder (`windows/zenix`), the registry entries and every current-state doc.
+The component folders and GitHub repos carry no `-fusion` suffix (`code/`,
+`origin-labs-ai/code`; `transformers/`, `origin-labs-ai/transformers`) - reaffirming D-24 -
+while the product names **CodeFusion** and **Transformers-Fusion** are unchanged (D-28).
+The alias registry lists each accepted spelling exactly once; a repeated variant is a
+documentation defect and is removed.
+
+**Trace:**
+- *"Zenix-CC ab 'Zenix' only reh chuka hai, CC hat gaya hai, ab dono repos me se *-fusion hat
+  gaya hai ... is file me ... 2 baar 'Transformers-Fusion' repeated hai to ek hataa dena,
+  aise-aise jitne bhi jhol hai sab fix kar dena!"*
+
+**Executed (2026-11-13):**
+- Master plan §1: duplicate `Transformers-Fusion` alias removed from the accepted-variants
+  table and the §1.1 alias registry; a path/repo note now states that folders and GitHub
+  repos carry no `-fusion` suffix while product names stay unchanged.
+- Master-plan §16: the D-28 entry's "before" spellings were restored (`TransFormers-Fusion`,
+  `TransFormers-FusionIDX`) after the sweep had rewritten both sides of the arrow.
+- `code/scripts/rebrand/fix-zenix-cc.mjs` -> `fix-zenix.mjs`; `migrate-arch.mjs` reference
+  updated; all `Zenix CC` strings removed from the tooling.
+- `code/BRAND.md`, `code/arch/windows.json`, `code/arch/brand.ts`, `code/launcher/index.html`
+  and `code/windows/zenix/window.json` already use **Zenix** / `windows/zenix`; the new
+  `window.json` is tracked and `windows/zenix/SOURCE/` stays local-only.
+- `.plan/review-tracking/FINAL_REPORT.md` and `PROGRESS.md` carry dated correction notes for
+  their historical `Zenix CC` rows.
+- `.plan/telemetry/gen_dashboard.py` deletion note updated to `zenix-cc -> zenix`; the
+  dashboard is regenerated after the sweep.
+- Historical documents keep historical spellings where they are explicitly history:
+  `.plan/_archive/`, this decision log's older entries, and verbatim operator quotes.
+
+
+## D-30 · Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCenderIDX` only; `SolIDX` is model-manifest-only (operator, 2026-11-13)
+
+**Rule:** a model name is not an engine wire identity. The `.idx` format belongs to the engine,
+so its magic is the engine's own identity:
+
+| Namespace | Accepted | Rejected |
+|---|---|---|
+| Engine `.idx` | `Transformers-FusionIDX` (22 B, current); pre-D-28 capital-F spelling (same 22 B, read-only); `TransCenderIDX` (15 B, the engine's former name - "formerly known as") | `SolIDX` (7 B), `InNovaIDX` (10 B) |
+| Model manifest | `SolIDX` (7 B incl. NUL), reserved and specified - no engine consumer | - |
+
+`SolIDX` is documented as a **model-manifest magic** in `transformers/docs/MODEL_MANIFEST.md`.
+`tracesol` stays as the cosmetic Plotly series name. `Sol` remains the trained model family
+(`sol-4-flash`).
+
+**Legacy names.** `InNova` (the pre-rename model family, now `Sol` / `sol-4-flash`) and
+`InNovaIDX` (the pre-rename wire magic, now retired) are historical names only. They are never
+current identifiers, and `InNovaIDX` stays rejected by the engine `.idx` reader.
+
+**Trace:**
+- *"ye TransCenderIDX kyu SolIDX banaa? Bhai, Seedha matlab ye tha ki Transformers-FusionIDX /
+  TransCenderIDX same cheej the yaani TF = TC tha, Sol to wo model ka naam socha gaya jo ki train
+  kara jaayega ya fine tune karaa jaayega, ye kya jhol ho gaya!"*
+- *"InNovaIDX bhi nahi rakhna hai naa! Hame TransCenderIDX / Transformers-FusionIDX dono is also
+  known as ya formerly known as bhi daal sakte hai!"*
+
+**The defect.** The 2026-11-12 rename wave (`D-27`, "Sab rename hoyega!") treated `SolIDX` as the
+new name of the `.idx` legacy magic and shipped a 7-byte reader branch. That conflated the engine
+wire namespace with the model namespace, and it made old 10-byte `InNovaIDX` files unreadable.
+The correct equivalence is `Transformers-FusionIDX` = current engine identity and
+`TransCenderIDX` = the same engine's former name; `Sol` names the model, not the file format.
+
+**Executed (2026-11-13):**
+- `transformers/src/codec/quant_format.cpp`: removed the `SolIDX` branch; `TransCenderIDX` is the
+  only legacy engine branch. Writer still emits `Transformers-FusionIDX` (22 B).
+- The pre-D-28 capital-F magic is compared byte-wise (`"Trans"` + `'F'` + `"ormers-FusionIDX"`) so
+  the source tree never carries the old spelling; the reader still accepts it for read compatibility.
+- Reader minimum size raised to **23 B** (15 B legacy magic + 8 B header); the 15 B guard was sized
+  for the retired 7 B magic.
+- Every early return after ownership transfer nulls `data_` as well as `mapped_file_`; the
+  22-byte-magic-only probe exposed a dangling `data_` that made `valid()` return true.
+- `transformers/include/quant/quant_format.h` and
+  `transformers/install_test/include/quant/quant_format.h` comments corrected.
+- `transformers/tests/test_sha256_corrupt.cpp`: **Test 8** asserts `TransCenderIDX` decodes and
+  `SolIDX`/`InNovaIDX` are rejected.
+- Proof: `build-norm/tests/test_sha256_corrupt.exe` -> **28 tests, 0 failures, exit 0**;
+  `transformers/SHA256_TEST_LOG.md` regenerated.
+- Docs: `transformers/README.md` §9 and §12; `transformers/PROGRESS.md` (dated correction bullet,
+  historical entries marked superseded); new `transformers/docs/MODEL_MANIFEST.md`; this entry;
+  master-plan §6.1 note, §10X coverage row and §16 D-30 entry; `.plan/telemetry/TODO-TREE.md`
+  T3.2 closed and T3.5 annotated.
+
+**Why `SolIDX` has a spec but no implementation.** No model-manifest consumer exists in the tree
+today - the only manifest artefacts are `tools/dataset_manifest.schema.json` and the `PackManifest`
+test struct. The project rule is zero dead code and zero stubs, so `SolIDX` is documented as
+**reserved**, not implemented. The first consumer must add a writer, a reader and a regression test
+before the status changes to **implemented**.
+
+---
+
+## D-31 · Exact documentation targets: 2048 / 4096 / 6144 LOC + a 512-page DOCX and PDF (operator, 2026-11-13)
+
+**Rule:** the three project READMEs are built to **exact** line counts, and the publishable
+research package is a **512-page** document in both `.docx` and `.pdf`:
+
+| Repository | README target | Exactness |
+|---|---|---|
+| `fusion/` (superproject) | **2,048 LOC** | `wc -l` must equal 2,048 |
+| `code/` (CodeFusion) | **4,096 LOC** | `wc -l` must equal 4,096 |
+| `transformers/` (Transformers-Fusion) | **6,144 LOC** | `wc -l` must equal 6,144 |
+
+This supersedes the T10 mapping recorded on 2026-11-12 (which had `fusion` at 4,096 and `code` at
+2,048). The operator's words on 2026-11-13: *"CodeFusion repo me 4096 LOCs ka README banega,
+Transfoemers-Fusion repo me 6144 LOCs ka and Fusion me 2048 LOCs ka, exact! Bhai, mera exact matlab
+exact hi hota hai."*
+
+**Format rule.** The visual reference is
+`C:\Users\thaku\Workspaces\side-projects\origin-router\README.md`: centred header with an SVG logo,
+one-line pitch, emoji navigation links, `shields.io` badges (`style=flat-square`), horizontal rules,
+emoji-headed sections, tables, short command snippets and a licence/credits footer. Code snippets
+stay **average/minimal** - a command, a call shape or a small type, never a wall of source.
+
+**Page rule.** The 512-page package ships as **one document, two formats**: `PDF` typeset with TeX
+Live 2026 (cover page, part dividers, running headers, page numbers, tables, callouts) and `DOCX`
+... (truncated at 570 of 662 lines)
+\end{verbatim}
+
+
+\chapter{Appendix: the per-format deep-dive (computed)}
+
+Every format's wire arithmetic computed from its BPW: bytes per 256-weight block, family,
+tier behavior, persistence. The arithmetic is computed, not asserted.
+
+\noindent\textbf{Q\_1} (id 0, base, 1.00 BPW): 32 bytes per 256-weight block. \\
+\noindent\textbf{Q\_2} (id 1, base, 2.00 BPW): 64 bytes per 256-weight block. \\
+\noindent\textbf{Q\_3} (id 2, base, 3.00 BPW): 96 bytes per 256-weight block. \\
+\noindent\textbf{Q\_4} (id 3, base, 4.00 BPW): 128 bytes per 256-weight block. \\
+\noindent\textbf{Q\_6} (id 4, base, 6.00 BPW): 192 bytes per 256-weight block. \\
+\noindent\textbf{Q\_8} (id 5, base, 8.00 BPW): 256 bytes per 256-weight block. \\
+\noindent\textbf{Q\_12} (id 6, base, 12.00 BPW): 384 bytes per 256-weight block. \\
+\noindent\textbf{Q\_16} (id 7, base, 16.00 BPW): 512 bytes per 256-weight block. \\
+\noindent\textbf{Q\_24} (id 8, base, 24.00 BPW): 768 bytes per 256-weight block. \\
+\noindent\textbf{Q\_32} (id 9, base, 32.00 BPW): 1024 bytes per 256-weight block. \\
+\noindent\textbf{Q\_1\_K\_M} (id 11, M/H, 1.25 BPW): 40 bytes per 256-weight block. \\
+\noindent\textbf{Q\_1\_K\_H} (id 12, H (ternary), 1.50 BPW): 48 bytes per 256-weight block. \\
+\noindent\textbf{Q\_2\_K\_M} (id 14, M/H, 2.25 BPW): 72 bytes per 256-weight block. \\
+\noindent\textbf{Q\_2\_K\_H} (id 15, M/H, 2.50 BPW): 80 bytes per 256-weight block. \\
+\noindent\textbf{Q\_3\_K\_M} (id 17, M/H, 3.25 BPW): 104 bytes per 256-weight block. \\
+\noindent\textbf{Q\_3\_K\_H} (id 18, M/H, 3.50 BPW): 112 bytes per 256-weight block. \\
+\noindent\textbf{Q\_4\_K\_M} (id 20, M/H, 4.25 BPW): 136 bytes per 256-weight block. \\
+\noindent\textbf{Q\_4\_K\_H} (id 21, M/H, 4.50 BPW): 144 bytes per 256-weight block. \\
+\noindent\textbf{Q\_6\_K\_M} (id 23, M/H, 6.25 BPW): 200 bytes per 256-weight block. \\
+\noindent\textbf{Q\_6\_K\_H} (id 24, M/H, 6.50 BPW): 208 bytes per 256-weight block. \\
+\noindent\textbf{Q\_8\_K\_M} (id 26, M/H, 8.25 BPW): 264 bytes per 256-weight block. \\
+\noindent\textbf{Q\_8\_K\_H} (id 27, M/H, 8.50 BPW): 272 bytes per 256-weight block. \\
+\noindent\textbf{Q\_12\_K\_M} (id 29, M/H, 12.25 BPW): 392 bytes per 256-weight block. \\
+\noindent\textbf{Q\_12\_K\_H} (id 30, M/H, 12.50 BPW): 400 bytes per 256-weight block. \\
+\noindent\textbf{Q\_16\_K\_M} (id 32, M/H, 16.25 BPW): 520 bytes per 256-weight block. \\
+\noindent\textbf{Q\_16\_K\_H} (id 33, M/H, 16.50 BPW): 528 bytes per 256-weight block. \\
+\noindent\textbf{Q\_24\_K\_M} (id 35, M/H, 24.25 BPW): 776 bytes per 256-weight block. \\
+\noindent\textbf{Q\_24\_K\_H} (id 36, M/H, 24.50 BPW): 784 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_1} (id 37, GRP base, 1.00 BPW): 32 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_24} (id 45, GRP base, 24.00 BPW): 768 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_1\_K\_M} (id 47, GRP M/H, 1.25 BPW): 40 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_1\_K\_H} (id 48, GRP M/H, 1.50 BPW): 48 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_2\_K\_M} (id 50, GRP M/H, 2.25 BPW): 72 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_2\_K\_H} (id 51, GRP M/H, 2.50 BPW): 80 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_3\_K\_M} (id 53, GRP M/H, 3.25 BPW): 104 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_3\_K\_H} (id 54, GRP M/H, 3.50 BPW): 112 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_4\_K\_M} (id 56, GRP M/H, 4.25 BPW): 136 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_4\_K\_H} (id 57, GRP M/H, 4.50 BPW): 144 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_6\_K\_M} (id 59, GRP M/H, 6.25 BPW): 200 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_6\_K\_H} (id 60, GRP M/H, 6.50 BPW): 208 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_8\_K\_M} (id 62, GRP M/H, 8.25 BPW): 264 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_8\_K\_H} (id 63, GRP M/H, 8.50 BPW): 272 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_12\_K\_M} (id 65, GRP M/H, 12.25 BPW): 392 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_12\_K\_H} (id 66, GRP M/H, 12.50 BPW): 400 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_16\_K\_M} (id 68, GRP M/H, 16.25 BPW): 520 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_16\_K\_H} (id 69, GRP M/H, 16.50 BPW): 528 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_24\_K\_M} (id 71, GRP M/H, 24.25 BPW): 776 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_24\_K\_H} (id 72, GRP M/H, 24.50 BPW): 784 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_3\_5} (id 91, MX, 3.50 BPW): 112 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_4\_5} (id 92, MX, 4.50 BPW): 144 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_6\_5} (id 93, MX, 6.50 BPW): 208 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_8\_5} (id 94, MX, 8.50 BPW): 272 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_12\_5} (id 95, MX, 12.50 BPW): 400 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_16\_5} (id 96, MX, 16.50 BPW): 528 bytes per 256-weight block. \\
+\noindent\textbf{Q\_MX\_24\_5} (id 97, MX, 24.50 BPW): 784 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_MX\_4\_5} (id 99, GRP MX, 4.50 BPW): 144 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_MX\_6\_5} (id 100, GRP MX, 6.50 BPW): 208 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_MX\_8\_5} (id 101, GRP MX, 8.50 BPW): 272 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_MX\_12\_5} (id 102, GRP MX, 12.50 BPW): 400 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_MX\_16\_5} (id 103, GRP MX, 16.50 BPW): 528 bytes per 256-weight block. \\
+\noindent\textbf{Q\_G\_MX\_24\_5} (id 104, GRP MX, 24.50 BPW): 784 bytes per 256-weight block. \\
+

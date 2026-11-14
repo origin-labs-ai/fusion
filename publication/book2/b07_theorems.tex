@@ -1,0 +1,85 @@
+\chapter{The theorems}
+
+Two theorem families anchor the project: the Cender attention theorems (design theorems for the
+constant-memory attention line) and the TransCender wire-identity theorems (the checkpoint
+identity contract). A design theorem is not a measured result; the distinction is kept.
+
+\section{Theorem 1 --- constant memory}
+
+\textbf{Statement.} For any sequence length $n$, Cender state memory
+$|\text{state}| = d^2 \cdot \text{sizeof(float)}$ is constant. Transformers KV memory
+$|\text{KV}| = 2nd\cdot\text{sizeof(float)}$ is linear in $n$.
+
+\begin{quote}
+\textbf{Proof.} The Cender recurrence updates a fixed matrix in place:
+$\text{state}_{t+1} = \gamma\cdot\text{state}_t + k_t \otimes e_t$ where
+$k_t = W_k x_t$, $e_t = v_t - \text{state}_t k_t$, $\gamma \in [0,1]$. No term depends on $n$;
+the allocation is one \texttt{Tensor\{d,d\}}, never appended per token. The baseline appends
+$K_t, V_t$ per token, so its state grows as $\Theta(n)$. At $d{=}4096$, $n{=}4$M:
+$|\text{KV}| \approx 2\cdot4\text{M}\cdot4096\cdot2\,\text{B} \approx 64$~GB (FP16) versus
+$|\text{state}| = 4096^2 \cdot 4\,\text{B} \approx 64$~MB --- a ratio of ${\approx}1000\times$,
+constant in $n$. \hfill$\square$
+\end{quote}
+
+\textbf{Verification gate.} \texttt{bench\_inference} tok/s vs $n$ flat for Cender, decreasing
+for the baseline; max RSS flat within 5\% at $n \in \{4K, 32K, 128K, 1M, 4M\}$; no PSNR
+regression.
+
+\section{Theorem 2 --- no context rot by construction}
+
+\textbf{Statement.} Under Cender, recall accuracy $\mathrm{Acc}(pos)$ is independent of total
+length $n$ and needle position $pos$, up to decay tuning. Under softmax attention,
+$\mathrm{Acc}(pos)$ is U-shaped and degrades with $n$.
+
+\textbf{Proof sketch.}
+\begin{enumerate}
+\item \textbf{Softmax dilution lemma.} $\mathrm{softmax}(QK^T/\sqrt{d})$ distributes mass with
+$\sum_i p_i = 1$. As $n\to\infty$, expected $p_{\text{needle}} \to 1/n \to 0$; cross-entropy on
+the middle token scales as $-\log p_{\text{needle}} \propto \log n$. Middle recall collapses ---
+the context-rot family.
+\item \textbf{Delta associative lemma.} \texttt{state} is an associative memory over key-value
+bindings via the delta rule, with recall error $O(1/d)$ independent of $n$ (DeltaNet Thm.~3.1,
+arXiv 2406.06484; Titans Lemma~2). Retrieval $y = \text{state}\cdot q$ is one matrix-vector
+product --- no softmax over $n$. Orthogonal page writes add bindings in an orthogonal subspace,
+so interference $\langle \text{old}, \text{new}\rangle \approx 0$.
+\item \textbf{Decay controls forgetting, not dilution.} $\gamma^t$ fades stale state
+geometrically, preserving recent context without mass dilution. Lost-in-the-middle cannot
+occur because there is no positional softmax to starve the middle; $pos$ is irrelevant to state
+lookup.
+\item \textbf{Construction.} There exists $\gamma$ and $k_{\text{orth}}$ such that for any $n$
+up to 1T tokens, $\mathrm{Acc}_{\text{Cender}}(n, pos) \ge
+\mathrm{Acc}_{\text{TF}}(4K, pos) - \varepsilon$ with $\varepsilon \to 0$. \hfill$\square$
+\end{enumerate}
+
+\textbf{Verification gates.} Needle test: 100-page PDF, secret on page 47, positions swept at
+0/25/50/75/100\%; Cender flat $\ge 95\%$ at ${\sim}100$K tokens with 95\% garbage. Context-rot
+test: full dump vs the RLM router filter; 70\% cost cut, 10$\times$ latency target.
+
+\section{Theorem 3 --- bounded reads, fail-closed parsing}
+
+Every \texttt{.idx} reader bounds-checks the header against the magic lengths (22 B for
+\texttt{Transformers-FusionIDX}, 15 B for \texttt{TransCenderIDX}) before reading further; a
+truncated header fails closed. Proof: the per-magic size gates (30/23) plus a header-bounds
+guard, fixed in audit 1; the regression is \texttt{test\_sha256\_corrupt} (23/0 pass).
+\hfill$\square$
+
+\section{Theorem 4 --- three-source identity agreement}
+
+The engine registry, the model manifest and the decision log agree on one identity: the engine
+accepts \texttt{Transformers-FusionIDX} (22 B) plus legacy \texttt{TransCenderIDX} (15 B);
+\texttt{SolIDX} is model-manifest-only. Proof: D-30 states it, the registry implements it,
+Test 8 (28 tests, 0 failures) verifies it. \hfill$\square$
+
+\section{The GPTQ-on-loops obligation}
+
+\textbf{Statement.} On a looped model, a PTQ method that calibrates on step-0 activations only
+is dominated by Hessian accumulation across recurrence steps.
+
+\begin{quote}
+\textbf{Proof sketch.} One-step GPTQ's Hessian $H = E[a_0a_0^T]$ weights only the step-0 input
+directions. The loop visits directions $a_t$ ($t>0$) nearly orthogonal to $a_0$; their
+quantization error feeds back through the recurrence (feedback exposure). Accumulating
+$H = \sum_t E[a_t a_t^T]$ weights every visited direction; the published result: one-step GPTQ
+loses to RTN on 5/9 looped checkpoints while accumulation wins 9/9 (2609.30820).
+\hfill$\square$
+\end{quote}

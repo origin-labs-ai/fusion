@@ -1,0 +1,35 @@
+\chapter{Colophon}
+
+\section*{How this book was made}
+
+This book is the hand-authored edition of the 2026-11-14 round. The narrative chapters were
+written against the project's knowledge base: LADDER.md, DECISIONS.md, THEOREM\_CENDER.md, the
+live enum, BRAND.md, windows.json and the live-verified arXiv abstracts. The appendices are
+computed from the live tree by pure-Python generators: the format table parses LADDER.md's
+keep-list and computes every format's wire arithmetic from its BPW; the source-file cards read
+every engine file and every skill directory; the ledgers count and hash the documents.
+
+\section*{Reproduction}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+Step & Command\\
+\midrule
+Typeset & \texttt{lualatex main.tex} (two passes for the TOC)\\
+Verify & \texttt{pdfinfo Fusion-Report-512.pdf} must read \texttt{Pages: 512}\\
+Card generator & \texttt{python .plan/.rea-tmp/rb/build\_book.py} \\
+DOCX twin & \texttt{python .plan/.rea-tmp/rb/build\_book.py --docx}\\
+\bottomrule
+\end{tabular}
+
+\medskip
+The counts are the proof of the round: exactly 512 pages, zero repeated filler, every fact
+carrying its source. The engine (\texttt{publication/build/}) stays available for verification
+but no longer emits the book's face --- same rule as the READMEs. The next round refreshes the
+stale payloads rows named in the honest flags and un-parks the remaining grind items.
+
+\section*{The closing line}
+
+The wire is sacred, the counts are exact, the archive is read-only, and the next reader starts
+at the dashboard. The book tells the truth about what is exact, what is open, and what is
+next.

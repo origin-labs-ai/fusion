@@ -1,0 +1,84 @@
+\chapter{The G/S design note (Gates and Structure)}
+
+The written design (master plan \S5c.6, the OPEN-RESEARCH \#4 deliverable, 2026-11-13). Method:
+a deep read of the ten \S5 papers --- 2603.10123 (Ces\`aro U-curve), 2603.15031 (AttnRes),
+2605.18855 (Delta AttnRes), 2610.13630 (MSAR), 2607.27230 (MHAR), 2607.09694 (LR-AttnRes),
+2606.18524 (Loop-$\mu$P), 2610.00673 (Closing the Loop), 2605.16343 (LoopQ), 2610.16368
+(LoopQuant) --- abstracts fetched live, bodies consolidated against \S5c.2/\S5c.3, \S5d and
+\S5e. The note states the design and tags every remaining fork; it closes no OPEN-DECISION by
+fiat.
+
+\textbf{G = the Gate (design statements G1..G8):}
+
+\begin{enumerate}
+\item \textbf{G1 · Backbone = Form B on both axes.} Sequence axis: $G(GS)$ selects
+$m \ll n$ keys from the index $S$ and softmaxes over those $m$ with a $\log m$ normaliser ---
+length-invariant, $O(n)$, and V10's strict-superset property holds by construction
+($m = n, G \equiv 1$ recovers today's softmax). Depth axis: the same mechanism is AttnRes
+(2603.15031) --- softmax attention over preceding layer outputs. One mechanism, two axes.
+\item \textbf{G2 · No new router module.} Route by reading the attention scores already
+computed (A-MoD, 2412.20875): no additional trainable parameters, adapts from pretrained
+transformers, composes with $G$. Learned-gate vs post-hoc readout stays OPEN-DECISION \#6.
+\item \textbf{G3 · Routing cost decoupled from width.} Use LR-AttnRes's $r$-dimensional routing
+keys (2607.09694) for any $G$-side scoring --- the only family variant whose routing cost does
+not scale with hidden width $d$. MHAR (2607.27230) shows a single shared depth query degrades
+progressively as width grows --- a scaling hazard, not a styling choice.
+\item \textbf{G4 · Form C is required, as a hypothesis.} The factorial dead zone
+$O(1/(H{-}1)!)$ (2603.10123) lives in the residual-depth path; without a depth correction the
+mid-context influence collapses regardless of the sequence-axis gate. Caveat: the Ces\`aro
+result assumes distinct per-layer operators; under weight-tied loops the constant is
+OPEN-UNKNOWN \#11.
+\item \textbf{G5 · Attend over deltas, not cumulative states.} Delta AttnRes (2605.18855):
+cumulative hidden states are redundant, driving routing collapse (max weight $\approx 0.2$) at
+depth; routing over per-sublayer deltas restores contrast ($\approx 0.6$). $S$'s depth entries
+store sublayer deltas; $G$'s V-gate asserts depth-attention contrast.
+\item \textbf{G6 · Exit gate, specified.} $\lambda_t(x) = \sigma(\mathrm{Gate}(F^{(t)}(x)))$;
+inference uses the Q-exit rule (exit when the exit-CDF crosses $q$ --- a deployment knob, no
+retraining). Training: LR warmup (without it $p(\text{exit at step 1})$ stays 1.00 for 2{,}267
+steps --- the silent collapse), $\beta \ge 0.10$ for recovery, and the smoothed exit loss
+\[ L = (1-\varepsilon)\sum_t p_t L_t + \frac{\varepsilon}{T}\sum_t L_t, \quad \varepsilon = 0.05 \]
+so abandoned steps keep gradient ($\ge 0.0167$ of LM weight at $T=3$). Monitor the exit
+distribution directly; the LM loss will not show the collapse.
+\item \textbf{G7 · The policy must shrink work, not just depth.} Per-token routing where
+inactive tokens skip deeper recursions including their attention and KV work (Mixture-of-Recursions; T-LoopFormer 2609.15160). A design requirement on the
+\texttt{HybridAttnKind} / \texttt{build\_hybrid\_schedule} seam. [OPEN-DECISION \#20.]
+\item \textbf{G8 · Norm interaction + Form A quarantine.} \texttt{TransformerBlock} is
+pre-norm (\texttt{transformer.h:139-142}); MoDA (2603.15619) reports depth attention pairs
+better with post-norm --- a concrete Phase-0 risk. Form A (rectified/unnormalised gate)
+breaks V10's normaliser: experimental flag only, with its own gradient check (V19).
+\end{enumerate}
+
+\textbf{S = the Structure (design statements S1..S6):}
+
+\begin{enumerate}
+\item \textbf{S1 · Bounded is state of the art.} ARLoop (2611.05234): sliding-window depth
+attention matches or outperforms full-history at larger recurrent depths. $S$ = a bounded,
+sliding, persistent index: the active window stays hot, older state moves into the
+\texttt{.idx}-backed store. ``Never forgets anything'' is satisfied by eviction into $S$,
+never by deletion.
+\item \textbf{S2 · Two axes in one index.} $S$ holds sequence history and depth history (MoDA,
+2603.15619); the depth entries carry the deltas (G5).
+\item \textbf{S3 · Position-independence constraint.} The index is not position-ordered ---
+keying $S$ by position would re-introduce the position bias $G$ exists to kill.
+\item \textbf{S4 · KV-cache policy, stated.} Naive = $T$ separate KV sets per position;
+shared-KV (2610.33360) cuts persistent cache sets $15 \to 4$ and removes 81--89\% of the
+continuation-loss penalty (consistency loss in the final 10\% of the token budget). At the
+1.0/1.5-BPW $\times$ 4M-window budget this is first-order memory. [OPEN-DECISION \#22;
+recommendation: shared-KV.]
+\item \textbf{S5 · Loop-entry identity path.} 2609.30820: per-channel INT4 fails first at the
+non-residual loop-entry adapter --- quantised perturbation without an identity path feeds back
+through later steps. The looped entry seam gets an identity path; PTQ on looped blocks
+accumulates GPTQ Hessians over all recurrence steps.
+\item \textbf{S6 · Quantisation-first discipline.} $G$ is a normalisation over an attention
+row; OASIS (2605.17887) shows an extra depth-wise normalisation channel amplifies sinks,
+outliers and low-bit error. Therefore $G$ goes inside the quantisation test set from day one,
+at every wire BPW on the ladder --- the 1.0-BPW side goal included, both FP and INT families
+(D-27). [OPEN-DECISION \#14; recommendation: yes.]
+\end{enumerate}
+
+\textbf{Forks left open} (each carries its ledger id --- the operator stamps): \#12 confirm
+B+C composite (recommend: yes) · \#13 single- vs multi-stream + routing-key dimensionality ·
+\#6 learned gate vs post-hoc readout · \#16 adopt Loop-$\mu$P $\times1/N$ · \#21 residual
+interface · \#22 KV policy · \#17 default loop ladder (recommend: $T=2$, measure to 4) · \#14
+$G$ in the quant set (recommend: day one) · \#11 weight-tied dead-zone measurement · \#20
+work-shrinking routing seam.

@@ -1,0 +1,90 @@
+\chapter{What Fusion is}
+
+Fusion is the superproject that turns three repositories into one product: the C++20 engine in
+\texttt{transformers/}, the Windows launcher workspace in \texttt{code/}, and the plan, telemetry
+and research base in \texttt{.plan/}. The superproject does not duplicate component source; it
+records which commit of each component is pinned, and it owns the cross-repository claims that
+neither component can make alone.
+
+\section{The three repositories}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Repository & Role & Contents\\
+\midrule
+\texttt{fusion/} & the superproject & plan, decisions, telemetry, research, publication\\
+\texttt{transformers/} & the engine & C++20 quantization, training, inference, serving\\
+\texttt{code/} & the launcher workspace & Launcher Desktop, nine seats, payloads\\
+\bottomrule
+\end{tabular}
+
+\medskip
+The engine owns the model, the quantization ladder, training, inference, serving and the
+numerical kernels. The launcher owns the desktop shell, the component registry and the
+reverse-engineered seats. The plan owns the decisions, the evidence and the grind tree. A change
+that spans two components is recorded in the superproject, with the two pins that make it
+reproducible.
+
+\section{The goal line (D-27)}
+
+\begin{quote}
+``Jo bhi ye project dekhta hai to use lagta hai ki is project ka main target 1.5 BPW hai\ldots{}
+Is project ka main goal to poora Superproject hai! Side goal me 1.5 BPW par nahi, exact 1.0 BPW
+par maximum achieve karna hai, sab kuchh!''
+\end{quote}
+
+The main goal is the entire Fusion Superproject: every domain, every seat, every track complete.
+The side goal is the maximum quality at \textbf{exact 1.0 BPW} --- not 1.5. The implemented 1.5 BPW
+path is a stepping stone; older statements that say 1.5 BPW stay true as implemented-state facts
+while the goal line reads 1.0. Both format families are in scope: FP (floating point) and INT
+(integer). Loop Quantization has never been implemented for any model, anywhere (the operator's
+audit of 2026-11-12); Track B in this project would be the first implementation in the world.
+
+\section{The context-recovery contract}
+
+A new agent reads four documents in order. The dashboard reports live state: git heads, verifier
+exits, repository dirt, ledger counts and domain coverage. The todo tree reports what is being
+worked and what comes next, with sub-to-dos. The decision log reports every binding ruling with
+provenance and implementation trace. The master plan holds the long-form reasoning and the
+section-level evidence that the summaries compress.
+
+The contract exists because the project is larger than one context window and older than one
+session. A reader who skips the order tends to re-litigate a closed decision or re-open a
+finished task. A reader who follows the order can name the current state, the next action and the
+rule that constrains it.
+
+\section{The four instruments}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Instrument & Path & What it answers\\
+\midrule
+Dashboard & \texttt{.plan/telemetry/DASHBOARD.md} & live state: heads, gates, dirt, ledger\\
+Grind tree & \texttt{.plan/telemetry/TODO-TREE.md} & what is next, with sub-to-dos\\
+Decision log & \texttt{.plan/docs/operation-clean/DECISIONS.md} & every binding rule\\
+Research index & \texttt{.plan/RESEARCH-INDEX.md} & what was studied, what it proved\\
+\bottomrule
+\end{tabular}
+
+\medskip
+The dashboard is regenerated, not hand-edited. The todo tree and the decision log are edited by
+hand and then reflected in the dashboard. The archive is reference-only: it preserves deleted
+documents once and never overrides them (D-26). The scratch trees are ignored by Git because
+they are regenerable.
+
+\section{Repository topology}
+
+The submodule pins are commits, not branches: the launcher workspace is pinned at
+\texttt{1e72c52e0} and the engine at \texttt{28373ed}. Both track \texttt{main}; the
+\texttt{.gitmodules} file is the source of truth for branch names. A component commit is made in
+the component first, then pushed, then pinned in the superproject. The pin is a full commit hash;
+a tag or a branch name is not a pin.
+
+\section{The publication contract (D-31)}
+
+D-31 sets exact targets: the three READMEs at 2{,}048, 4{,}096 and 6{,}144 lines, and this
+publication at exactly 512 pages in both PDF and DOCX. The targets are exact because the operator
+asked for exact, and because an approximate target is impossible to verify. The 2026-11-14 round
+rebuilt all three READMEs by hand after the generated versions were found to repeat filler lines
+up to 177 times; this book is the same discipline carried into long form: hand-written narrative,
+computed catalogs, zero repeated filler.

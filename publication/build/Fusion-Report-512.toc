@@ -1,0 +1,1528 @@
+\contentsline {section}{\numberline {1}Preface}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}What this edition contains}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}What the report does not claim}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}The goal line}{3}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}The evidence labels}{3}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Reading paths}{3}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}A note on names}{3}{subsection.1.6}%
+\contentsline {subsection}{\numberline {1.7}A note on numbers}{3}{subsection.1.7}%
+\contentsline {section}{\numberline {2}Conventions}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Identifiers}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Units}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Dates}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Code and commands}{3}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Tables}{4}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Quotations}{4}{subsection.2.6}%
+\contentsline {section}{Part I \textperiodcentered {} The programme}{4}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Mission, goal line, and the operating contract}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}0. GOAL LINE (D-27 - read before anything)}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}1. Project map}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}2. Domain pipeline (THE grind loop - applies to every domain)}{4}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}3. Domain status board (source: 2026-11-12 audit; live copy in DASHBOARD.md)}{4}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}4. Context-recovery contract (one-shot handoff)}{4}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}5. Workflow protocol (what "live dash" means)}{4}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}6. Parked (do not start without operator order)}{4}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.8}Goal (one sentence)}{5}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}Files this loop touches}{5}{subsection.3.9}%
+\contentsline {subsection}{\numberline {3.10}Standing rules for this loop}{5}{subsection.3.10}%
+\contentsline {subsection}{\numberline {3.11}Numbered plan}{5}{subsection.3.11}%
+\contentsline {subsubsection}{\numberline {3.11.1}Step 1 — Uncovered-source coverage audit (SPEC-INFERNO + 4 sibling sources)}{5}{subsubsection.3.11.1}%
+\contentsline {subsubsection}{\numberline {3.11.2}Step 2 — KAT-layer inventory completed (S2.1b, gate V8)}{5}{subsubsection.3.11.2}%
+\contentsline {subsubsection}{\numberline {3.11.3}Step 3 — Line-anchor cleanup pass (S2.1a, S10, S10O–10W)}{5}{subsubsection.3.11.3}%
+\contentsline {subsubsection}{\numberline {3.11.4}Step 4 — Remaining tree audits}{5}{subsubsection.3.11.4}%
+\contentsline {subsubsection}{\numberline {3.11.5}Step 5 — Close the open Phase-0 gates (the decisions)}{5}{subsubsection.3.11.5}%
+\contentsline {subsubsection}{\numberline {3.11.6}Step 6 — Final verification + report}{5}{subsubsection.3.11.6}%
+\contentsline {subsection}{\numberline {3.12}Critique pass (plan-loop step 4 — done by me, NOT a subagent, per user rule \#1)}{5}{subsection.3.12}%
+\contentsline {subsection}{\numberline {3.13}Rules in force (verbatim from the ZCode session, user-authored)}{6}{subsection.3.13}%
+\contentsline {subsection}{\numberline {3.14}Defect found while planning (fix under Step 2)}{6}{subsection.3.14}%
+\contentsline {subsection}{\numberline {3.15}Post-loop audit (2026-11-12) — what the MCode session left behind}{6}{subsection.3.15}%
+\contentsline {section}{\numberline {4}The master plan: from transformer to Fusion}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Context}{7}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}The problem}{7}{subsubsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.2}The intended outcome}{7}{subsubsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.3}The two anchor facts}{7}{subsubsection.4.1.3}%
+\contentsline {subsubsection}{\numberline {4.1.4}Hard technical goal}{7}{subsubsection.4.1.4}%
+\contentsline {subsection}{\numberline {4.2}1. Naming — must appear in docs (all accepted spellings)}{7}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}The equation}{7}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Accepted name variants — ALL are valid}{7}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}1.1 Complete alias registry — ALL names the user has given}{7}{subsubsection.4.2.3}%
+\contentsline {subsubsection}{\numberline {4.2.4}1.2 Roles}{8}{subsubsection.4.2.4}%
+\contentsline {subsection}{\numberline {4.3}2. THE SWEEP — replace every traditional-transformer file with Fusion code}{8}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Rules for the sweep}{8}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}2.1 Sweep inventory — CORRECTED after adversarial verification (4/4 reviewers)}{8}{subsubsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.4}3. The new attention core}{10}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}3.1 Baseline (exists today)}{10}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}3.2 Fusion attention}{10}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.3}3.3 Where it goes in the code}{11}{subsubsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.5}3b. NCM — Next-Concept Modeling (the generation mechanism)}{11}{subsection.4.5}%
+\contentsline {subsubsection}{\numberline {4.5.1}3b.1 What it actually is (VERIFIED — arXiv 2610.14162, published 2026-10-09)}{11}{subsubsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.2}3b.2 Reported results (from the paper, as verified above)}{11}{subsubsection.4.5.2}%
+\contentsline {subsubsection}{\numberline {4.5.3}3b.3 Why this belongs in Fusion — five specific points}{11}{subsubsection.4.5.3}%
+\contentsline {subsubsection}{\numberline {4.5.4}3b.4 Open questions the research phase must answer}{11}{subsubsection.4.5.4}%
+\contentsline {subsubsection}{\numberline {4.5.5}3b.5 Implementation shape (Phase 6 addition — see S11)}{12}{subsubsection.4.5.5}%
+\contentsline {subsubsection}{\numberline {4.5.6}3b.6 THE FULL SPEC — extracted from the paper (arXiv 2610.14162v1)}{12}{subsubsection.4.5.6}%
+\contentsline {subsubsection}{\numberline {4.5.7}3b.7 The three risks this spec creates for Fusion — and what to do}{12}{subsubsection.4.5.7}%
+\contentsline {subsection}{\numberline {4.6}3c. DSpine — Adjacent Causal Injection speculative decoding (RESEARCH ADDED 2026-11-09)}{13}{subsection.4.6}%
+\contentsline {subsubsection}{\numberline {4.6.1}3c.1 The problem it attacks}{13}{subsubsection.4.6.1}%
+\contentsline {subsubsection}{\numberline {4.6.2}3c.2 The mechanism (four parts)}{13}{subsubsection.4.6.2}%
+\contentsline {subsubsection}{\numberline {4.6.3}3c.3 Transition-cached predecessor-conditioned decoding}{13}{subsubsection.4.6.3}%
+\contentsline {subsubsection}{\numberline {4.6.4}3c.4 Layer-wise output-embedding supervision}{13}{subsubsection.4.6.4}%
+\contentsline {subsubsection}{\numberline {4.6.5}3c.5 Training recipe (Appendix A, verbatim numbers)}{13}{subsubsection.4.6.5}%
+\contentsline {subsubsection}{\numberline {4.6.6}3c.5a Training loss details}{13}{subsubsection.4.6.6}%
+\contentsline {subsubsection}{\numberline {4.6.7}3c.6 Numbers (verified from the paper)}{14}{subsubsection.4.6.7}%
+\contentsline {subsubsection}{\numberline {4.6.8}3c.7 Why DSpine belongs in Fusion (composition analysis)}{14}{subsubsection.4.6.8}%
+\contentsline {subsubsection}{\numberline {4.6.9}3c.8 What DSpine does NOT do (boundaries, so scope stays honest)}{14}{subsubsection.4.6.9}%
+\contentsline {subsubsection}{\numberline {4.6.10}3c.8.1 Same-trunk four-lever structure (the design conclusion)}{14}{subsubsection.4.6.10}%
+\contentsline {subsubsection}{\numberline {4.6.11}3c.9 Phase-6c scope}{14}{subsubsection.4.6.11}%
+\contentsline {subsection}{\numberline {4.7}4. Neurons — Req 1}{14}{subsection.4.7}%
+\contentsline {subsubsection}{\numberline {4.7.1}4.1 The requirement}{14}{subsubsection.4.7.1}%
+\contentsline {subsubsection}{\numberline {4.7.2}4.1a The benchmark bar}{15}{subsubsection.4.7.2}%
+\contentsline {subsubsection}{\numberline {4.7.3}4.2 Why the distinction matters (from Transcript 2)}{15}{subsubsection.4.7.3}%
+\contentsline {subsubsection}{\numberline {4.7.4}4.3 Design framing}{15}{subsubsection.4.7.4}%
+\contentsline {subsubsection}{\numberline {4.7.5}4.4 What it must connect to}{15}{subsubsection.4.7.5}%
+\contentsline {subsubsection}{\numberline {4.7.6}4.5 Status — RESOLVED by direct audit (no longer open)}{15}{subsubsection.4.7.6}%
+\contentsline {subsubsection}{\numberline {4.7.7}4.6 What already exists to build ON (module-level, verified)}{16}{subsubsection.4.7.7}%
+\contentsline {subsubsection}{\numberline {4.7.8}4.7 The exact gap — unit-level, not module-level}{16}{subsubsection.4.7.8}%
+\contentsline {subsubsection}{\numberline {4.7.9}4.7a Each missing primitive now has a literature source (S5c.4)}{16}{subsubsection.4.7.9}%
+\contentsline {subsubsection}{\numberline {4.7.10}4.7b The trap to avoid}{16}{subsubsection.4.7.10}%
+\contentsline {subsubsection}{\numberline {4.7.11}4.7c The concrete unit shape the literature supports}{16}{subsubsection.4.7.11}%
+\contentsline {subsubsection}{\numberline {4.7.12}4.8 Two constraints to honour}{16}{subsubsection.4.7.12}%
+\contentsline {subsubsection}{\numberline {4.7.13}4.8a Three parallel ECC/continual implementations — **NO consolidation}{16}{subsubsection.4.7.13}%
+\contentsline {subsubsection}{\numberline {4.7.14}4.9 Scope warning — implement only what is actually implementable}{17}{subsubsection.4.7.14}%
+\contentsline {subsubsection}{\numberline {4.7.15}4.10 Sequence — and it was explicitly confirmed by the user}{17}{subsubsection.4.7.15}%
+\contentsline {subsection}{\numberline {4.8}5. Architecture: hybrid \textbf {adaptive routing}, not a static split}{17}{subsection.4.8}%
+\contentsline {subsubsection}{\numberline {4.8.1}Hard constraint — RESEARCH BEFORE IMPLEMENT}{17}{subsubsection.4.8.1}%
+\contentsline {subsubsection}{\numberline {4.8.2}Research grounding (verified — these papers exist)}{17}{subsubsection.4.8.2}%
+\contentsline {subsection}{\numberline {4.9}5c. CONSOLIDATED RESEARCH FINDINGS (solo, arXiv — verified 2026-11-01)}{17}{subsection.4.9}%
+\contentsline {subsubsection}{\numberline {4.9.1}5c.1 WHY lost-in-the-middle happens — the mechanism G must attack}{17}{subsubsection.4.9.1}%
+\contentsline {subsubsection}{\numberline {4.9.2}5c.2 Candidate formulations for G(GS) — grounded, with trade-offs}{18}{subsubsection.4.9.2}%
+\contentsline {subsubsection}{\numberline {4.9.3}5c.3 Adaptive routing — what the literature supports}{18}{subsubsection.4.9.3}%
+\contentsline {subsubsection}{\numberline {4.9.4}5c.4 EAIN — the literature basis, and its honest ceiling}{19}{subsubsection.4.9.4}%
+\contentsline {subsubsection}{\numberline {4.9.5}5c.5 Research gaps — what is still UNKNOWN (stated, not hidden)}{19}{subsubsection.4.9.5}%
+\contentsline {subsubsection}{\numberline {4.9.6}5c.6 G/S DESIGN NOTE — the written design (OPEN-RESEARCH \#4 deliverable, 2026-11-13)}{20}{subsubsection.4.9.6}%
+\contentsline {subsection}{\numberline {4.10}12 confirm B+C composite (recommend: yes) . \#13 single-stream vs multi-stream + routing-key}{21}{subsection.4.10}%
+\contentsline {subsection}{\numberline {4.11}11 weight-tied dead-zone measurement (OPEN-UNKNOWN) . \#20 work-shrinking routing seam}{21}{subsection.4.11}%
+\contentsline {subsection}{\numberline {4.12}5d. LOOP vs TRADITIONAL — the two transformer types: attention, and training (verified 2026-11-10)}{21}{subsection.4.12}%
+\contentsline {subsubsection}{\numberline {4.12.1}5d.0 The taxonomy — three loop shapes, one idea}{21}{subsubsection.4.12.1}%
+\contentsline {subsubsection}{\numberline {4.12.2}5d.1 What actually changes when you loop — and what does NOT}{21}{subsubsection.4.12.2}%
+\contentsline {subsubsection}{\numberline {4.12.3}5d.2 ATTENTION — the crux, on three axes}{21}{subsubsection.4.12.3}%
+\contentsline {subsubsection}{\numberline {4.12.4}5d.3 TRAINING — the topic}{22}{subsubsection.4.12.4}%
+\contentsline {subsubsection}{\numberline {4.12.5}5d.4 Cost and quality — the market scan (verified 2026-11-10)}{23}{subsubsection.4.12.5}%
+\contentsline {subsubsection}{\numberline {4.12.6}5d.5 What this means for Transformers-Fusion — the actionable list}{24}{subsubsection.4.12.6}%
+\contentsline {subsection}{\numberline {4.13}5e. ATTENTION RESIDUALS — the depth-axis mechanism our G/S was reaching for}{24}{subsection.4.13}%
+\contentsline {subsection}{\numberline {4.14}5f. DEPLOYING LOOPED MODELS — quantisation evidence for 1.5 BPW (supporting, verified 2026-11-10)}{25}{subsection.4.14}%
+\contentsline {subsection}{\numberline {4.15}6. Confirmed decisions}{25}{subsection.4.15}%
+\contentsline {subsubsection}{\numberline {4.15.1}6.1 Decision gates closed — the eight open Phase-0 questions (2026-11-12)}{26}{subsubsection.4.15.1}%
+\contentsline {subsection}{\numberline {4.16}7. Proof targets — pass/fail gates}{26}{subsection.4.16}%
+\contentsline {subsection}{\numberline {4.17}8. .idx index and lazy context loading}{27}{subsection.4.17}%
+\contentsline {subsubsection}{\numberline {4.17.1}8.1 The index infrastructure already exists in CodeFusion — extend it, don't rebuild it}{27}{subsubsection.4.17.1}%
+\contentsline {subsubsection}{\numberline {4.17.2}8.2 Where the .idx is \emph {read} — the lazy-load call site}{27}{subsubsection.4.17.2}%
+\contentsline {subsection}{\numberline {4.18}9. Benchmarks}{27}{subsection.4.18}%
+\contentsline {subsection}{\numberline {4.19}9b. Models to train}{27}{subsection.4.19}%
+\contentsline {subsubsection}{\numberline {4.19.1}9b.1 The 1.5 BPW path already exists — use it, don't invent it}{27}{subsubsection.4.19.1}%
+\contentsline {subsubsection}{\numberline {4.19.2}9b.2 Both quant tracks — the ladder we have, and the loop-aware quant we still need}{28}{subsubsection.4.19.2}%
+\contentsline {subsection}{\numberline {4.20}10. Confirmed codebase facts (read from disk)}{28}{subsection.4.20}%
+\contentsline {subsubsection}{\numberline {4.20.1}10M. Confirmed defects — 7 critical + 19+ high (the defect register)}{29}{subsubsection.4.20.1}%
+\contentsline {subsubsection}{\numberline {4.20.2}10O. CodeFusion architecture — explored directly}{29}{subsubsection.4.20.2}%
+\contentsline {subsubsection}{\numberline {4.20.3}10P. Thinking preservation — precise exists / partial / absent matrix}{30}{subsubsection.4.20.3}%
+\contentsline {subsubsection}{\numberline {4.20.4}10Q. Compaction strategy (implemented) and what it destroys}{31}{subsubsection.4.20.4}%
+\contentsline {subsubsection}{\numberline {4.20.5}10R. World model / environment learning in the harness — ABSENT}{31}{subsubsection.4.20.5}%
+\contentsline {subsubsection}{\numberline {4.20.6}10S. Hard constraints discovered in cf-session (implementation-critical)}{32}{subsubsection.4.20.6}%
+\contentsline {subsubsection}{\numberline {4.20.7}10T. Compaction internals — read from compaction-basic/README.md (critical for Phase 3)}{32}{subsubsection.4.20.7}%
+\contentsline {subsubsection}{\numberline {4.20.8}10U. CodeFusion's own agent protocol — the honesty standard this work must meet}{33}{subsubsection.4.20.8}%
+\contentsline {subsubsection}{\numberline {4.20.9}10V. Where compaction is intercepted — the exact hooks for S7}{33}{subsubsection.4.20.9}%
+\contentsline {subsubsection}{\numberline {4.20.10}10W. Consolidated — what exists vs what we must build}{34}{subsubsection.4.20.10}%
+\contentsline {subsection}{\numberline {4.21}10X. Uncovered-source coverage map (Step 1, 2026-11-10)}{34}{subsection.4.21}%
+\contentsline {subsubsection}{\numberline {4.21.1}10X.0 The ruling: which document is authoritative}{34}{subsubsection.4.21.1}%
+\contentsline {subsubsection}{\numberline {4.21.2}10X.1 The gaps this audit found}{34}{subsubsection.4.21.2}%
+\contentsline {subsubsection}{\numberline {4.21.3}10X.2 The coverage map — every source heading, one row each}{35}{subsubsection.4.21.3}%
+\contentsline {subsubsection}{\numberline {4.21.4}10X.3 What this changes in the plan}{37}{subsubsection.4.21.4}%
+\contentsline {subsection}{\numberline {4.22}10Y. The seven remaining trees — audited file-by-file (Step 4, 2026-11-12)}{37}{subsection.4.22}%
+\contentsline {subsubsection}{\numberline {4.22.1}10Y.1 src/server/ — 6 files, 3,805 lines — 1 attention-relevant site, 3 socket binds}{37}{subsubsection.4.22.1}%
+\contentsline {subsubsection}{\numberline {4.22.2}10Y.2 src/gle/ — 2 files, 406 lines — **CLEAN}{37}{subsubsection.4.22.2}%
+\contentsline {subsubsection}{\numberline {4.22.3}10Y.3 src/core/telemetry.cpp — 1 file, 340 lines — \textbf {NOT CLEAN} (the plan's claim was wrong)}{37}{subsubsection.4.22.3}%
+\contentsline {subsubsection}{\numberline {4.22.4}10Y.4 inferno/ — 5 files, 1,324 lines — \textbf {CLEAN} (it is the speed bench, not the model)}{37}{subsubsection.4.22.4}%
+\contentsline {subsubsection}{\numberline {4.22.5}10Y.5 scripts/ — 9 files, 1,098 lines — **CLEAN}{37}{subsubsection.4.22.5}%
+\contentsline {subsubsection}{\numberline {4.22.6}10Y.6 tests/ — 77 files, 14,832 lines — **the conformance surface, not a clean tree}{38}{subsubsection.4.22.6}%
+\contentsline {subsubsection}{\numberline {4.22.7}10Y.7 code-fusion (read-only sibling) — \textbf {CLEAN}, and it is \textbf {not} where the plan says it is}{38}{subsubsection.4.22.7}%
+\contentsline {subsubsection}{\numberline {4.22.8}10Y.8 The verdict, in one table}{38}{subsubsection.4.22.8}%
+\contentsline {subsection}{\numberline {4.23}11. Execution phases}{38}{subsection.4.23}%
+\contentsline {subsubsection}{\numberline {4.23.1}Phase 0 — Research (BLOCKING GATE)}{38}{subsubsection.4.23.1}%
+\contentsline {subsubsection}{\numberline {4.23.2}Phase 1 — Stabilise (fast, unblocks everything)}{41}{subsubsection.4.23.2}%
+\contentsline {subsubsection}{\numberline {4.23.3}Phase 2 — Architecture (the engine)}{41}{subsubsection.4.23.3}%
+\contentsline {subsubsection}{\numberline {4.23.4}Phase 3 — Harness (CodeFusion) — build to the Cordis seam pattern}{42}{subsubsection.4.23.4}%
+\contentsline {subsubsection}{\numberline {4.23.5}Phase 4 — Neurons (EAIN)}{42}{subsubsection.4.23.5}%
+\contentsline {subsubsection}{\numberline {4.23.6}Phase 5 — Benchmarks}{42}{subsubsection.4.23.6}%
+\contentsline {subsubsection}{\numberline {4.23.7}Phase 6 — Training}{43}{subsubsection.4.23.7}%
+\contentsline {subsubsection}{\numberline {4.23.8}Phase 6b — NCM (Next-Concept Modeling) — S3b}{43}{subsubsection.4.23.8}%
+\contentsline {subsubsection}{\numberline {4.23.9}Phase 7 — Docs, release, cleanup}{43}{subsubsection.4.23.9}%
+\contentsline {subsection}{\numberline {4.24}12. Standing responsibilities}{43}{subsection.4.24}%
+\contentsline {subsection}{\numberline {4.25}13. Memory cleanup — DONE (moved, not deleted)}{43}{subsection.4.25}%
+\contentsline {subsection}{\numberline {4.26}14. Verification}{43}{subsection.4.26}%
+\contentsline {subsection}{\numberline {4.27}15. Source transcripts (preserve verbatim)}{44}{subsection.4.27}%
+\contentsline {subsubsection}{\numberline {4.27.1}15.3 Transcript 3 — Next-Concept Modeling (NCM)}{44}{subsubsection.4.27.1}%
+\contentsline {subsection}{\numberline {4.28}16. Plan audit trail}{44}{subsection.4.28}%
+\contentsline {subsubsection}{\numberline {4.28.1}Known remaining gaps (carried into Phase 0, not hidden)}{44}{subsubsection.4.28.1}%
+\contentsline {subsubsection}{\numberline {4.28.2}2026-11-10 — research pass + code check, and a repair of the plan file itself}{45}{subsubsection.4.28.2}%
+\contentsline {subsubsection}{\numberline {4.28.3}2026-11-10 (later) — S5d rebuilt on the correct framing: loop vs traditional, attention, training}{45}{subsubsection.4.28.3}%
+\contentsline {subsubsection}{\numberline {4.28.4}2026-11-10 (final) — S5d evidence polish: the survey is a preprint, and six more papers}{45}{subsubsection.4.28.4}%
+\contentsline {subsubsection}{\numberline {4.28.5}2026-11-10 (Step 1) — the eight sources the plan had never read, and a corrected S9b.1}{46}{subsubsection.4.28.5}%
+\contentsline {subsubsection}{\numberline {4.28.6}2026-11-10 (Step 2) — the KAT inventory re-derived from disk, and a new CRITICAL defect}{46}{subsubsection.4.28.6}%
+\contentsline {subsubsection}{\numberline {4.28.7}2026-11-12 (Step 3) — every line anchor re-verified against disk, and the model identity fixed}{46}{subsubsection.4.28.7}%
+\contentsline {subsubsection}{\numberline {4.28.8}2026-11-12 (Step 3, addendum) — the bare-filename anchors, and a dangling section reference}{47}{subsubsection.4.28.8}%
+\contentsline {subsubsection}{\numberline {4.28.9}2026-11-12 (Step 4) — the seven remaining trees are audited, and the plan's "no attention found" claim was wrong for two of them}{47}{subsubsection.4.28.9}%
+\contentsline {subsubsection}{\numberline {4.28.10}2026-11-12 (Step 5) — the eight open decision gates are closed, and two id namespaces were split}{48}{subsubsection.4.28.10}%
+\contentsline {subsubsection}{\numberline {4.28.11}2026-11-12 (Step 6) — the plan-loop closes: whole-plan verification, and the last honest accounting}{48}{subsubsection.4.28.11}%
+\contentsline {subsubsection}{\numberline {4.28.12}2026-11-12 (post-loop audit) — the holes the abandoned session left behind}{49}{subsubsection.4.28.12}%
+\contentsline {subsubsection}{\numberline {4.28.13}2026-11-12 — workspace rename (code-fusion code, transformers-fusion transformers) + deleted-docs archive + full re-verification}{49}{subsubsection.4.28.13}%
+\contentsline {subsubsection}{\numberline {4.28.14}2026-11-13 - naming normalisation: TransFormers-Fusion -> Transformers-Fusion (D-28)}{50}{subsubsection.4.28.14}%
+\contentsline {subsubsection}{\numberline {4.28.15}2026-11-13 - naming cleanup: Zenix-CC -> Zenix + alias-registry duplicates (D-29)}{50}{subsubsection.4.28.15}%
+\contentsline {subsubsection}{\numberline {4.28.16}2026-11-13 — wire-magic identity correction: SolIDX is model-only, TransCenderIDX is the engine alias (D-30)}{50}{subsubsection.4.28.16}%
+\contentsline {subsubsection}{\numberline {4.28.17}2026-11-13 (grind pass) — T1.1 closed: the G/S design note lands as S5c.6}{51}{subsubsection.4.28.17}%
+\contentsline {subsection}{\numberline {4.29}22 — with recommendations stated and rulings explicitly left to the operator** (D-15}{51}{subsection.4.29}%
+\contentsline {section}{\numberline {5}The decision register}{51}{section.5}%
+\contentsline {subsection}{\numberline {5.1}D-01 . Ladder pattern L/M/H (operator: 2026-10-22, "Info 5" + "Info 2")}{51}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}D-02 . Q\_1 = binary, Q\_1\_K\_H = pure ternary (operator, 2026-10-22)}{51}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}D-03 . Rewire direction (operator: "BPW ko kam karo")}{51}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}D-04 . GRP naming normalization}{51}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}D-05 . Casing: QUANT Quant (operator, 2026-10-19)}{51}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}D-06 . BPW granularity (operator)}{51}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}D-07 . Zero dead code / zero stubs (operator, 2026-10-18)}{51}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}D-08 . Persistence compatibility (design decision, agent-verified)}{52}{subsection.5.8}%
+\contentsline {subsection}{\numberline {5.9}D-09 . M-tier encoder (design decision, pre-authorized)}{52}{subsection.5.9}%
+\contentsline {subsection}{\numberline {5.10}D-10 . Ternary tail policy (design decision)}{52}{subsection.5.10}%
+\contentsline {subsection}{\numberline {5.11}D-11 . K-variant honesty (design decision)}{52}{subsection.5.11}%
+\contentsline {subsection}{\numberline {5.12}D-12 . Quality floor: scale fitting (design decision)}{52}{subsection.5.12}%
+\contentsline {subsection}{\numberline {5.13}D-13 . MX quarantine (design decision, agent-verified)}{52}{subsection.5.13}%
+\contentsline {subsection}{\numberline {5.14}D-14 . Bench honesty (design decision)}{52}{subsection.5.14}%
+\contentsline {subsection}{\numberline {5.15}D-15 . Priorities (operator delegated)}{52}{subsection.5.15}%
+\contentsline {subsection}{\numberline {5.16}D-16 . One task to 100\% (operator)}{52}{subsection.5.16}%
+\contentsline {subsection}{\numberline {5.17}D-17 . Execution gate (operator)}{52}{subsection.5.17}%
+\contentsline {subsection}{\numberline {5.18}D-18 . Execution name (operator)}{52}{subsection.5.18}%
+\contentsline {subsection}{\numberline {5.19}D-19 . Strictness (operator, general)}{52}{subsection.5.19}%
+\contentsline {subsection}{\numberline {5.20}D-20 . Known-caught-at-test-time traps (from exploration)}{52}{subsection.5.20}%
+\contentsline {subsection}{\numberline {5.21}D-21 . Operation Clean != review findings only}{53}{subsection.5.21}%
+\contentsline {subsection}{\numberline {5.22}Workflow reconstruction record (D-17 fallback — filled only if triggered)}{53}{subsection.5.22}%
+\contentsline {subsubsection}{\numberline {5.22.1}How to use this file during execution}{53}{subsubsection.5.22.1}%
+\contentsline {subsection}{\numberline {5.23}D-22 . LADDER COUNT RESOLVED: \textbf {69 wins} (Fusion Smash, 2026-11-01)}{53}{subsection.5.23}%
+\contentsline {subsubsection}{\numberline {5.23.1}Design note D-22a (the real content of MASTER\_PLAN S1.0)}{53}{subsubsection.5.23.1}%
+\contentsline {subsection}{\numberline {5.24}D-23 . LIVE DEFECT found during D-22 verification (L4 is a data-corruption bug)}{53}{subsection.5.24}%
+\contentsline {subsection}{\numberline {5.25}D-24 . Workspace rename: code-fusion/ code/, transformers-fusion/ transformers/ (operator, 2026-11-12)}{53}{subsection.5.25}%
+\contentsline {subsection}{\numberline {5.26}D-25 . Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11-12)}{54}{subsection.5.26}%
+\contentsline {subsection}{\numberline {5.27}D-26 . \_archive/ = reference-only port of every deleted doc (operator, 2026-11-12)}{54}{subsection.5.27}%
+\contentsline {subsection}{\numberline {5.28}D-27 . Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12)}{54}{subsection.5.28}%
+\contentsline {subsection}{\numberline {5.29}D-28 . Product-name normalisation: TransFormers-Fusion -> Transformers-Fusion (operator, 2026-11-13)}{54}{subsection.5.29}%
+\contentsline {subsection}{\numberline {5.30}D-29 . Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13)}{55}{subsection.5.30}%
+\contentsline {subsection}{\numberline {5.31}D-30 . Wire-magic identity: engine .idx accepts Transformers-FusionIDX + TransCenderIDX only; SolIDX is model-manifest-only (operator, 2026-11-13)}{55}{subsection.5.31}%
+\contentsline {section}{\numberline {6}The research index}{56}{section.6}%
+\contentsline {subsection}{\numberline {6.1}How to audit a research item}{56}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}A. Completed research (audit-ready)}{56}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}R-01 . Master plan loop, Steps 1-6 (Transformers-Fusion architecture plan)}{56}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}R-02 . Loop Transformers research (S5d, S5e, S5c)}{56}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}R-03 . Traditional Transformers baseline (S5d companion)}{56}{subsubsection.6.2.3}%
+\contentsline {subsubsection}{\numberline {6.2.4}R-04 . Traditional Quantization / Track A - the 69-format ladder}{57}{subsubsection.6.2.4}%
+\contentsline {subsubsection}{\numberline {6.2.5}R-05 . CodeFusion per-part research (64 sections - the product's research record)}{57}{subsubsection.6.2.5}%
+\contentsline {subsubsection}{\numberline {6.2.6}R-06 . Reverse-engineering research (the 7 seats)}{57}{subsubsection.6.2.6}%
+\contentsline {subsubsection}{\numberline {6.2.7}R-07 . Effort slider reverse-engineering (DSH plugin)}{57}{subsubsection.6.2.7}%
+\contentsline {subsubsection}{\numberline {6.2.8}R-08 . Claude Code effort-slider archaeology}{57}{subsubsection.6.2.8}%
+\contentsline {subsubsection}{\numberline {6.2.9}R-09 . Deleted-docs recovery (the 2026-10-07 purge)}{57}{subsubsection.6.2.9}%
+\contentsline {subsubsection}{\numberline {6.2.10}R-10 . Workspace rename + superproject git recovery (2026-11-12)}{57}{subsubsection.6.2.10}%
+\contentsline {subsection}{\numberline {6.3}B. Research in progress / pending (operator-owned or queued)}{57}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}R-11 . INT x FP programme (the operator's current research topic) - ACTIVE}{57}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}R-12 . Loop Quantization (Track B) - never implemented anywhere}{57}{subsubsection.6.3.2}%
+\contentsline {subsubsection}{\numberline {6.3.3}R-13 . Mix Quantization}{58}{subsubsection.6.3.3}%
+\contentsline {subsubsection}{\numberline {6.3.4}R-14 . NCM - Next-Concept Modeling (arXiv 2610.14162)}{58}{subsubsection.6.3.4}%
+\contentsline {subsubsection}{\numberline {6.3.5}R-15 . EAIN (Enhanced Artificial Intelligence Neurons)}{58}{subsubsection.6.3.5}%
+\contentsline {subsubsection}{\numberline {6.3.6}R-16 . Inferno (kernel + training engine)}{58}{subsubsection.6.3.6}%
+\contentsline {subsubsection}{\numberline {6.3.7}R-17 . Publishable research report (PDF + DOCX, 512 pages)}{58}{subsubsection.6.3.7}%
+\contentsline {subsubsection}{\numberline {6.3.8}R-18 . The three project READMEs (publishable depth)}{58}{subsubsection.6.3.8}%
+\contentsline {subsection}{\numberline {6.4}D. Audit protocol for each research item}{58}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Telemetry, the grind queue, and the working tree}{58}{section.7}%
+\contentsline {subsection}{\numberline {7.1}T1 . Loop Transformers (research close-out)}{59}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}T2 . Traditional Transformers (baseline side)}{59}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}T3 . Traditional Quantization (Track A — the ladder)}{59}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}T4 . Loop Quantization (Track B — compute contract)}{59}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}T5 . Mix Quantization}{59}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}T6 . DSpine x NCM merger}{59}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}T7 . EAIN}{59}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}T8 . Inferno deep breakdown (after T1–T7)}{59}{subsection.7.8}%
+\contentsline {subsection}{\numberline {7.9}T9 . Cross-cutting}{59}{subsection.7.9}%
+\contentsline {subsection}{\numberline {7.10}T10 . READMEs to publishable depth (operator targets, D-31 2026-11-13)}{60}{subsection.7.10}%
+\contentsline {subsection}{\numberline {7.11}T12 . PDF completeness audit (transformers git + superproject fetch)}{60}{subsection.7.11}%
+\contentsline {subsection}{\numberline {7.12}T13 . Publishable research package (operator-led; support on request)}{60}{subsection.7.12}%
+\contentsline {subsection}{\numberline {7.13}T14 . Repository hygiene (operator: "jo karna hai fix wo kar de", 2026-11-13)}{60}{subsection.7.13}%
+\contentsline {subsection}{\numberline {7.14}T15 . Documentation verification + telemetry}{60}{subsection.7.14}%
+\contentsline {subsection}{\numberline {7.15}0. Superproject git (fusion repo)}{61}{subsection.7.15}%
+\contentsline {subsection}{\numberline {7.16}1. Plan verifiers (live run)}{61}{subsection.7.16}%
+\contentsline {subsection}{\numberline {7.17}2. Code repo gate}{61}{subsection.7.17}%
+\contentsline {subsection}{\numberline {7.18}3. Repos (working tree)}{61}{subsection.7.18}%
+\contentsline {subsection}{\numberline {7.19}4. Phase-0 ledger (master plan)}{61}{subsection.7.19}%
+\contentsline {subsection}{\numberline {7.20}5. Research domain coverage (audit 2026-11-12)}{61}{subsection.7.20}%
+\contentsline {subsection}{\numberline {7.21}6. Parked (operator: 'Dono baad me karenge!')}{61}{subsection.7.21}%
+\contentsline {subsection}{\numberline {7.22}7. Open ledger items (the grind queue)}{61}{subsection.7.22}%
+\contentsline {subsection}{\numberline {7.23}1. Modified files (12) — dispositions}{62}{subsection.7.23}%
+\contentsline {subsection}{\numberline {7.24}2. Untracked files (18+) — dispositions}{62}{subsection.7.24}%
+\contentsline {subsection}{\numberline {7.25}3. What P0.0 must do (in order)}{62}{subsection.7.25}%
+\contentsline {subsection}{\numberline {7.26}4. Baseline expectations (so regressions are attributable)}{62}{subsection.7.26}%
+\contentsline {subsection}{\numberline {7.27}Non-negotiables (from the operator)}{62}{subsection.7.27}%
+\contentsline {subsection}{\numberline {7.28}Working state at plan time}{63}{subsection.7.28}%
+\contentsline {subsection}{\numberline {7.29}Task DAG}{63}{subsection.7.29}%
+\contentsline {subsubsection}{\numberline {7.29.1}Why this order}{63}{subsubsection.7.29.1}%
+\contentsline {subsection}{\numberline {7.30}Task register}{63}{subsection.7.30}%
+\contentsline {subsection}{\numberline {7.31}Explicit non-tasks}{64}{subsection.7.31}%
+\contentsline {subsection}{\numberline {7.32}Verification commands (run verbatim at every gate)}{64}{subsection.7.32}%
+\contentsline {subsection}{\numberline {7.33}Progress log}{64}{subsection.7.33}%
+\contentsline {section}{\numberline {8}The superproject in its own words}{64}{section.8}%
+\contentsline {subsection}{\numberline {8.1}1. What Fusion is}{64}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}2. The goal line (D-27)}{65}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}3. Repository topology}{65}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}4. The context-recovery contract}{65}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}6. Telemetry dashboard}{65}{subsection.8.5}%
+\contentsline {subsection}{\numberline {8.6}7. The grind to-do tree}{65}{subsection.8.6}%
+\contentsline {subsection}{\numberline {8.7}8. Verifiers and gates}{66}{subsection.8.7}%
+\contentsline {subsection}{\numberline {8.8}9. The documentation programme (D-31)}{66}{subsection.8.8}%
+\contentsline {subsection}{\numberline {8.9}10. The publication package}{66}{subsection.8.9}%
+\contentsline {subsection}{\numberline {8.10}11. Git and submodule protocol}{66}{subsection.8.10}%
+\contentsline {subsection}{\numberline {8.11}12. The security audit programme}{66}{subsection.8.11}%
+\contentsline {subsection}{\numberline {8.12}13. Roadmap}{66}{subsection.8.12}%
+\contentsline {subsection}{\numberline {8.13}14. Licence and provenance}{67}{subsection.8.13}%
+\contentsline {subsection}{\numberline {8.14}D-01 . Ladder pattern L/M/H (operator: 2026-10-22, "Info 5" + "Info 2")}{67}{subsection.8.14}%
+\contentsline {subsection}{\numberline {8.15}D-02 . Q\_1 = binary, Q\_1\_K\_H = pure ternary (operator, 2026-10-22)}{67}{subsection.8.15}%
+\contentsline {subsection}{\numberline {8.16}D-03 . Rewire direction (operator: "BPW ko kam karo")}{67}{subsection.8.16}%
+\contentsline {subsection}{\numberline {8.17}D-04 . GRP naming normalization}{67}{subsection.8.17}%
+\contentsline {subsection}{\numberline {8.18}D-05 . Casing: QUANT Quant (operator, 2026-10-19)}{67}{subsection.8.18}%
+\contentsline {subsection}{\numberline {8.19}D-06 . BPW granularity (operator)}{68}{subsection.8.19}%
+\contentsline {subsection}{\numberline {8.20}D-07 . Zero dead code / zero stubs (operator, 2026-10-18)}{68}{subsection.8.20}%
+\contentsline {subsection}{\numberline {8.21}D-08 . Persistence compatibility (design decision, agent-verified)}{68}{subsection.8.21}%
+\contentsline {subsection}{\numberline {8.22}D-09 . M-tier encoder (design decision, pre-authorized)}{68}{subsection.8.22}%
+\contentsline {subsection}{\numberline {8.23}D-10 . Ternary tail policy (design decision)}{68}{subsection.8.23}%
+\contentsline {subsection}{\numberline {8.24}D-11 . K-variant honesty (design decision)}{69}{subsection.8.24}%
+\contentsline {subsection}{\numberline {8.25}D-12 . Quality floor: scale fitting (design decision)}{69}{subsection.8.25}%
+\contentsline {subsection}{\numberline {8.26}D-13 . MX quarantine (design decision, agent-verified)}{69}{subsection.8.26}%
+\contentsline {subsection}{\numberline {8.27}D-14 . Bench honesty (design decision)}{69}{subsection.8.27}%
+\contentsline {subsection}{\numberline {8.28}D-15 . Priorities (operator delegated)}{69}{subsection.8.28}%
+\contentsline {subsection}{\numberline {8.29}D-16 . One task to 100\% (operator)}{69}{subsection.8.29}%
+\contentsline {subsection}{\numberline {8.30}D-17 . Execution gate (operator)}{70}{subsection.8.30}%
+\contentsline {subsection}{\numberline {8.31}D-18 . Execution name (operator)}{70}{subsection.8.31}%
+\contentsline {subsection}{\numberline {8.32}D-19 . Strictness (operator, general)}{70}{subsection.8.32}%
+\contentsline {subsection}{\numberline {8.33}D-20 . Known-caught-at-test-time traps (from exploration)}{70}{subsection.8.33}%
+\contentsline {subsection}{\numberline {8.34}D-21 . Operation Clean != review findings only}{70}{subsection.8.34}%
+\contentsline {subsubsection}{\numberline {8.34.1}How to use this file during execution}{70}{subsubsection.8.34.1}%
+\contentsline {subsection}{\numberline {8.35}D-22 . LADDER COUNT RESOLVED: \textbf {69 wins} (Fusion Smash, 2026-11-01)}{70}{subsection.8.35}%
+\contentsline {subsubsection}{\numberline {8.35.1}Design note D-22a (the real content of MASTER\_PLAN S1.0)}{71}{subsubsection.8.35.1}%
+\contentsline {subsection}{\numberline {8.36}D-23 . LIVE DEFECT found during D-22 verification (L4 is a data-corruption bug)}{71}{subsection.8.36}%
+\contentsline {subsection}{\numberline {8.37}D-24 . Workspace rename: code-fusion/ code/, transformers-fusion/ transformers/ (operator, 2026-11-12)}{71}{subsection.8.37}%
+\contentsline {subsection}{\numberline {8.38}D-25 . Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11-12)}{71}{subsection.8.38}%
+\contentsline {subsection}{\numberline {8.39}D-26 . \_archive/ = reference-only port of every deleted doc (operator, 2026-11-12)}{72}{subsection.8.39}%
+\contentsline {subsection}{\numberline {8.40}D-27 . Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-11-12)}{72}{subsection.8.40}%
+\contentsline {subsection}{\numberline {8.41}D-28 . Product-name normalisation: TransFormers-Fusion -> Transformers-Fusion (operator, 2026-11-13)}{72}{subsection.8.41}%
+\contentsline {subsection}{\numberline {8.42}D-29 . Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operator, 2026-11-13)}{72}{subsection.8.42}%
+\contentsline {subsection}{\numberline {8.43}D-30 . Wire-magic identity: engine .idx accepts Transformers-FusionIDX + TransCenderIDX only; SolIDX is model-manifest-only (operator, 2026-11-13)}{73}{subsection.8.43}%
+\contentsline {subsection}{\numberline {8.44}R-01 . Master plan loop, Steps 1-6 (Transformers-Fusion architecture plan)}{73}{subsection.8.44}%
+\contentsline {subsection}{\numberline {8.45}R-02 . Loop Transformers research (S5d, S5e, S5c)}{74}{subsection.8.45}%
+\contentsline {subsection}{\numberline {8.46}R-03 . Traditional Transformers baseline (S5d companion)}{74}{subsection.8.46}%
+\contentsline {subsection}{\numberline {8.47}R-04 . Traditional Quantization / Track A - the 69-format ladder}{74}{subsection.8.47}%
+\contentsline {subsection}{\numberline {8.48}R-05 . CodeFusion per-part research (64 sections - the product's research record)}{74}{subsection.8.48}%
+\contentsline {subsection}{\numberline {8.49}R-06 . Reverse-engineering research (the 7 seats)}{74}{subsection.8.49}%
+\contentsline {subsection}{\numberline {8.50}R-07 . Effort slider reverse-engineering (DSH plugin)}{75}{subsection.8.50}%
+\contentsline {subsection}{\numberline {8.51}R-08 . Claude Code effort-slider archaeology}{75}{subsection.8.51}%
+\contentsline {subsection}{\numberline {8.52}R-09/R-10 . Deleted-docs recovery and workspace rename}{75}{subsection.8.52}%
+\contentsline {subsection}{\numberline {8.53}R-11 . INT x FP programme (the operator's current research topic) - ACTIVE}{75}{subsection.8.53}%
+\contentsline {subsection}{\numberline {8.54}R-12 . Loop Quantization (Track B) - never implemented anywhere}{75}{subsection.8.54}%
+\contentsline {subsection}{\numberline {8.55}R-13 . Mix Quantization}{76}{subsection.8.55}%
+\contentsline {subsection}{\numberline {8.56}R-14 . NCM - Next-Concept Modeling (arXiv 2610.14162)}{76}{subsection.8.56}%
+\contentsline {subsection}{\numberline {8.57}R-15 . EAIN (Enhanced Artificial Intelligence Neurons)}{76}{subsection.8.57}%
+\contentsline {subsection}{\numberline {8.58}R-16 . Inferno (kernel + training engine)}{76}{subsection.8.58}%
+\contentsline {subsection}{\numberline {8.59}R-17 . Publishable research report (PDF + DOCX, 512 pages)}{76}{subsection.8.59}%
+\contentsline {subsection}{\numberline {8.60}R-18 . The three project READMEs (publishable depth)}{77}{subsection.8.60}%
+\contentsline {subsection}{\numberline {8.61}Document control}{77}{subsection.8.61}%
+\contentsline {subsection}{\numberline {8.62}Colophon}{77}{subsection.8.62}%
+\contentsline {section}{Part II \textperiodcentered {} CodeFusion}{77}{subsection.8.62}%
+\contentsline {section}{\numberline {9}CodeFusion: product research and session forensics}{77}{section.9}%
+\contentsline {subsection}{\numberline {9.1}2. What CF is, in plain terms}{78}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}3. Session history, part one: baseline repair and CJK damage}{78}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}4. Session history, part two: Repo Wiki and the Qoder evidence}{78}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}5. Session history, part three: MAD restored natively}{79}{subsection.9.4}%
+\contentsline {subsection}{\numberline {9.5}6. Session history, part four: skills vendored and rebranded}{79}{subsection.9.5}%
+\contentsline {subsection}{\numberline {9.6}7. Session history, part five: the desktop binary, extracted and proven}{80}{subsection.9.6}%
+\contentsline {subsection}{\numberline {9.7}8. Session history, part six: the naming cycle}{80}{subsection.9.7}%
+\contentsline {subsection}{\numberline {9.8}9. Session history, part seven: restructure, gate, and the inbuilt bundle}{80}{subsection.9.8}%
+\contentsline {subsection}{\numberline {9.9}10. Current state of the tree}{81}{subsection.9.9}%
+\contentsline {subsection}{\numberline {9.10}11. The registry schema}{81}{subsection.9.10}%
+\contentsline {subsection}{\numberline {9.11}12. Invariants and the consistency gate}{82}{subsection.9.11}%
+\contentsline {subsection}{\numberline {9.12}13. The alias ladder and resolution}{82}{subsection.9.12}%
+\contentsline {subsection}{\numberline {9.13}14. Provenance: labels, policy, and why they are data}{82}{subsection.9.13}%
+\contentsline {subsection}{\numberline {9.14}15. The provenance table: the direct answer}{83}{subsection.9.14}%
+\contentsline {subsection}{\numberline {9.15}16. The Qoder lineage: Aster and Zingma}{83}{subsection.9.15}%
+\contentsline {subsection}{\numberline {9.16}17. The three forks: Ingot, Chromix, and GSX-CLI}{83}{subsection.9.16}%
+\contentsline {subsection}{\numberline {9.17}18. The official packages: Codeix and Zenix}{84}{subsection.9.17}%
+\contentsline {subsection}{\numberline {9.18}19. The Sonar seat: reverse-engineered DeepSeek Harness}{84}{subsection.9.18}%
+\contentsline {subsection}{\numberline {9.19}20. Evidence layout and the provenance table upkeep}{84}{subsection.9.19}%
+\contentsline {subsection}{\numberline {9.20}21. The Aster rename: scope, order, and why now}{85}{subsection.9.20}%
+\contentsline {subsection}{\numberline {9.21}22. The Aster rename: file-by-file}{85}{subsection.9.21}%
+\contentsline {subsection}{\numberline {9.22}23. The Aster rename: risks, gates, and rollback}{86}{subsection.9.22}%
+\contentsline {subsection}{\numberline {9.23}24. Launcher Desktop: identity and contract}{86}{subsection.9.23}%
+\contentsline {subsection}{\numberline {9.24}25. Launcher UI: structure and card content}{86}{subsection.9.24}%
+\contentsline {subsection}{\numberline {9.25}26. Launcher UI: visual system and accessibility}{86}{subsection.9.25}%
+\contentsline {subsection}{\numberline {9.26}27. launch.ps1: modes, input, and resolution}{87}{subsection.9.26}%
+\contentsline {subsection}{\numberline {9.27}28. launch.ps1: start entries and process hygiene}{87}{subsection.9.27}%
+\contentsline {subsection}{\numberline {9.28}29. launch.ps1: errors, exit codes, and messages}{87}{subsection.9.28}%
+\contentsline {subsection}{\numberline {9.29}30. The manifest generator}{88}{subsection.9.29}%
+\contentsline {subsection}{\numberline {9.30}31. The consistency gate: checks and meaning}{88}{subsection.9.30}%
+\contentsline {subsection}{\numberline {9.31}32. The consistency gate: output, future checks, and CI}{88}{subsection.9.31}%
+\contentsline {subsection}{\numberline {9.32}33. Part Ingot: identity and role}{89}{subsection.9.32}%
+\contentsline {subsection}{\numberline {9.33}34. Part Ingot: tasks and gates}{89}{subsection.9.33}%
+\contentsline {subsection}{\numberline {9.34}35. Part Aster: identity after the rename}{89}{subsection.9.34}%
+\contentsline {subsection}{\numberline {9.35}36. Part Aster: identity edits and the patch log}{90}{subsection.9.35}%
+\contentsline {subsection}{\numberline {9.36}37. Part Aster: limits and known risks}{90}{subsection.9.36}%
+\contentsline {subsection}{\numberline {9.37}38. Part Aster: the rebrand procedure}{90}{subsection.9.37}%
+\contentsline {subsection}{\numberline {9.38}39. Part Chromix: identity, tasks, and gates}{90}{subsection.9.38}%
+\contentsline {subsection}{\numberline {9.39}40. Part Codeix: identity, tasks, and gates}{91}{subsection.9.39}%
+\contentsline {subsection}{\numberline {9.40}41. Part GSX-CLI: identity, tasks, and gates}{91}{subsection.9.40}%
+\contentsline {subsection}{\numberline {9.41}42. Part Zingma: identity and the reserved surface}{91}{subsection.9.41}%
+\contentsline {subsection}{\numberline {9.42}43. Part Zingma: source evidence and dependencies}{91}{subsection.9.42}%
+\contentsline {subsection}{\numberline {9.43}44. Part Zingma: reverse-engineering steps}{92}{subsection.9.43}%
+\contentsline {subsection}{\numberline {9.44}45. Part Zingma: gates, risks, and follow-ups}{92}{subsection.9.44}%
+\contentsline {subsection}{\numberline {9.45}46. Part Sonar: identity and the unknown artifact}{92}{subsection.9.45}%
+\contentsline {subsection}{\numberline {9.46}47. Part Sonar: discovery and classification}{93}{subsection.9.46}%
+\contentsline {subsection}{\numberline {9.47}48. Part Sonar: gates, risks, and follow-ups}{93}{subsection.9.47}%
+\contentsline {subsection}{\numberline {9.48}49. Part Zenix: identity and the native seat}{93}{subsection.9.48}%
+\contentsline {subsection}{\numberline {9.49}50. Part Zenix: setup steps}{93}{subsection.9.49}%
+\contentsline {subsection}{\numberline {9.50}51. Part Zenix: gates, risks, and follow-ups}{94}{subsection.9.50}%
+\contentsline {subsection}{\numberline {9.51}52. Skills inventory}{94}{subsection.9.51}%
+\contentsline {subsection}{\numberline {9.52}53. Skills provenance and rebrand rules}{94}{subsection.9.52}%
+\contentsline {subsection}{\numberline {9.53}54. Skills wiring}{94}{subsection.9.53}%
+\contentsline {subsection}{\numberline {9.54}55. The inbuilt bundle: folders and purposes}{95}{subsection.9.54}%
+\contentsline {subsection}{\numberline {9.55}56. The inbuilt bundle: manifests and gates}{95}{subsection.9.55}%
+\contentsline {subsection}{\numberline {9.56}57. Reverse-engineering methodology: routing}{95}{subsection.9.56}%
+\contentsline {subsection}{\numberline {9.57}58. Reverse-engineering methodology: evidence format}{95}{subsection.9.57}%
+\contentsline {subsection}{\numberline {9.58}59. Phase 0: baseline}{96}{subsection.9.58}%
+\contentsline {subsection}{\numberline {9.59}60. Phase 1: launcher shell}{96}{subsection.9.59}%
+\contentsline {subsection}{\numberline {9.60}61. Phase 2: parts wiring}{96}{subsection.9.60}%
+\contentsline {subsection}{\numberline {9.61}62. Phase 3: the three seats}{96}{subsection.9.61}%
+\contentsline {subsection}{\numberline {9.62}63. Phase 4: rebrand, bundle, and documentation}{97}{subsection.9.62}%
+\contentsline {subsection}{\numberline {9.63}64. Verification, risks, and open questions}{97}{subsection.9.63}%
+\contentsline {section}{\numberline {10}The launcher and the nine seats}{97}{section.10}%
+\contentsline {subsection}{\numberline {10.1}1. What CodeFusion is}{97}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}2. The Launcher Desktop}{98}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}3. The component registry}{98}{subsection.10.3}%
+\contentsline {subsection}{\numberline {10.4}4. Naming and aliases}{98}{subsection.10.4}%
+\contentsline {subsection}{\numberline {10.5}5. Layouts}{98}{subsection.10.5}%
+\contentsline {subsection}{\numberline {10.6}6. Branding}{99}{subsection.10.6}%
+\contentsline {subsection}{\numberline {10.7}7. Build and run}{99}{subsection.10.7}%
+\contentsline {subsection}{\numberline {10.8}8. Validation}{99}{subsection.10.8}%
+\contentsline {subsection}{\numberline {10.9}9. Scripts}{99}{subsection.10.9}%
+\contentsline {subsection}{\numberline {10.10}10. Payloads}{100}{subsection.10.10}%
+\contentsline {subsection}{\numberline {10.11}11. Security and provenance}{100}{subsection.10.11}%
+\contentsline {subsection}{\numberline {10.12}12. Git workflow}{100}{subsection.10.12}%
+\contentsline {subsection}{\numberline {10.13}13. Documentation}{100}{subsection.10.13}%
+\contentsline {subsection}{\numberline {10.14}14. Roadmap}{100}{subsection.10.14}%
+\contentsline {subsection}{\numberline {10.15}15. Contributing}{101}{subsection.10.15}%
+\contentsline {subsection}{\numberline {10.16}16. Licence and provenance}{101}{subsection.10.16}%
+\contentsline {subsection}{\numberline {10.17}17. The nine-seat map}{101}{subsection.10.17}%
+\contentsline {subsection}{\numberline {10.18}18. Command reference}{101}{subsection.10.18}%
+\contentsline {subsection}{\numberline {10.19}19. Glossary}{102}{subsection.10.19}%
+\contentsline {subsection}{\numberline {10.20}20.1 Ingot . overview}{102}{subsection.10.20}%
+\contentsline {subsection}{\numberline {10.21}20.2 Ingot . registry entry}{102}{subsection.10.21}%
+\contentsline {subsection}{\numberline {10.22}20.3 Ingot . folder layout}{102}{subsection.10.22}%
+\contentsline {subsection}{\numberline {10.23}20.4 Ingot . top-level inventory}{102}{subsection.10.23}%
+\contentsline {subsection}{\numberline {10.24}20.5 Ingot . build and run}{103}{subsection.10.24}%
+\contentsline {subsection}{\numberline {10.25}20.6 Ingot . runtime surface}{103}{subsection.10.25}%
+\contentsline {subsection}{\numberline {10.26}20.7 Ingot . launcher integration}{103}{subsection.10.26}%
+\contentsline {subsection}{\numberline {10.27}20.8 Ingot . layout mapping}{103}{subsection.10.27}%
+\contentsline {subsection}{\numberline {10.28}20.9 Ingot . validation}{103}{subsection.10.28}%
+\contentsline {subsection}{\numberline {10.29}20.10 Ingot . security and provenance}{103}{subsection.10.29}%
+\contentsline {subsection}{\numberline {10.30}20.11 Ingot . risks and next steps}{104}{subsection.10.30}%
+\contentsline {subsection}{\numberline {10.31}20.12 Ingot . file catalog}{104}{subsection.10.31}%
+\contentsline {subsection}{\numberline {10.32}21.1 Onyx . overview}{104}{subsection.10.32}%
+\contentsline {subsection}{\numberline {10.33}21.2 Onyx . registry entry}{104}{subsection.10.33}%
+\contentsline {subsection}{\numberline {10.34}21.3 Onyx . folder layout}{104}{subsection.10.34}%
+\contentsline {subsection}{\numberline {10.35}21.4 Onyx . top-level inventory}{105}{subsection.10.35}%
+\contentsline {subsection}{\numberline {10.36}21.5 Onyx . build and run}{105}{subsection.10.36}%
+\contentsline {subsection}{\numberline {10.37}21.6 Onyx . runtime surface}{105}{subsection.10.37}%
+\contentsline {subsection}{\numberline {10.38}21.7 Onyx . launcher integration}{105}{subsection.10.38}%
+\contentsline {subsection}{\numberline {10.39}21.8 Onyx . layout mapping}{105}{subsection.10.39}%
+\contentsline {subsection}{\numberline {10.40}21.9 Onyx . validation}{105}{subsection.10.40}%
+\contentsline {subsection}{\numberline {10.41}21.10 Onyx . security and provenance}{106}{subsection.10.41}%
+\contentsline {subsection}{\numberline {10.42}21.11 Onyx . risks and next steps}{106}{subsection.10.42}%
+\contentsline {subsection}{\numberline {10.43}21.12 Onyx . file catalog}{106}{subsection.10.43}%
+\contentsline {subsection}{\numberline {10.44}22.1 Codeix . overview}{106}{subsection.10.44}%
+\contentsline {subsection}{\numberline {10.45}22.2 Codeix . registry entry}{106}{subsection.10.45}%
+\contentsline {subsection}{\numberline {10.46}22.3 Codeix . folder layout}{106}{subsection.10.46}%
+\contentsline {subsection}{\numberline {10.47}22.4 Codeix . top-level inventory}{107}{subsection.10.47}%
+\contentsline {subsection}{\numberline {10.48}22.5 Codeix . build and run}{107}{subsection.10.48}%
+\contentsline {subsection}{\numberline {10.49}22.6 Codeix . runtime surface}{107}{subsection.10.49}%
+\contentsline {subsection}{\numberline {10.50}22.7 Codeix . launcher integration}{107}{subsection.10.50}%
+\contentsline {subsection}{\numberline {10.51}22.8 Codeix . layout mapping}{107}{subsection.10.51}%
+\contentsline {subsection}{\numberline {10.52}22.9 Codeix . validation}{107}{subsection.10.52}%
+\contentsline {subsection}{\numberline {10.53}22.10 Codeix . security and provenance}{108}{subsection.10.53}%
+\contentsline {subsection}{\numberline {10.54}22.11 Codeix . risks and next steps}{108}{subsection.10.54}%
+\contentsline {subsection}{\numberline {10.55}22.12 Codeix . file catalog}{108}{subsection.10.55}%
+\contentsline {subsection}{\numberline {10.56}23.1 GSX-CLI . overview}{108}{subsection.10.56}%
+\contentsline {subsection}{\numberline {10.57}23.2 GSX-CLI . registry entry}{108}{subsection.10.57}%
+\contentsline {subsection}{\numberline {10.58}23.3 GSX-CLI . folder layout}{108}{subsection.10.58}%
+\contentsline {subsection}{\numberline {10.59}23.4 GSX-CLI . top-level inventory}{109}{subsection.10.59}%
+\contentsline {subsection}{\numberline {10.60}23.5 GSX-CLI . build and run}{109}{subsection.10.60}%
+\contentsline {subsection}{\numberline {10.61}23.6 GSX-CLI . runtime surface}{109}{subsection.10.61}%
+\contentsline {subsection}{\numberline {10.62}23.7 GSX-CLI . launcher integration}{109}{subsection.10.62}%
+\contentsline {subsection}{\numberline {10.63}23.8 GSX-CLI . layout mapping}{109}{subsection.10.63}%
+\contentsline {subsection}{\numberline {10.64}23.9 GSX-CLI . validation}{109}{subsection.10.64}%
+\contentsline {subsection}{\numberline {10.65}23.10 GSX-CLI . security and provenance}{110}{subsection.10.65}%
+\contentsline {subsection}{\numberline {10.66}23.11 GSX-CLI . risks and next steps}{110}{subsection.10.66}%
+\contentsline {subsection}{\numberline {10.67}23.12 GSX-CLI . file catalog}{110}{subsection.10.67}%
+\contentsline {subsection}{\numberline {10.68}24.1 Zingma . overview}{110}{subsection.10.68}%
+\contentsline {subsection}{\numberline {10.69}24.2 Zingma . registry entry}{110}{subsection.10.69}%
+\contentsline {subsection}{\numberline {10.70}24.3 Zingma . folder layout}{111}{subsection.10.70}%
+\contentsline {subsection}{\numberline {10.71}24.4 Zingma . top-level inventory}{111}{subsection.10.71}%
+\contentsline {subsection}{\numberline {10.72}24.5 Zingma . build and run}{111}{subsection.10.72}%
+\contentsline {subsection}{\numberline {10.73}24.6 Zingma . runtime surface}{111}{subsection.10.73}%
+\contentsline {subsection}{\numberline {10.74}24.7 Zingma . launcher integration}{111}{subsection.10.74}%
+\contentsline {subsection}{\numberline {10.75}24.8 Zingma . layout mapping}{111}{subsection.10.75}%
+\contentsline {subsection}{\numberline {10.76}24.9 Zingma . validation}{112}{subsection.10.76}%
+\contentsline {subsection}{\numberline {10.77}24.10 Zingma . security and provenance}{112}{subsection.10.77}%
+\contentsline {subsection}{\numberline {10.78}24.11 Zingma . risks and next steps}{112}{subsection.10.78}%
+\contentsline {subsection}{\numberline {10.79}24.12 Zingma . file catalog}{112}{subsection.10.79}%
+\contentsline {subsection}{\numberline {10.80}25.1 Sonar . overview}{112}{subsection.10.80}%
+\contentsline {subsection}{\numberline {10.81}25.2 Sonar . registry entry}{112}{subsection.10.81}%
+\contentsline {subsection}{\numberline {10.82}25.3 Sonar . folder layout}{113}{subsection.10.82}%
+\contentsline {subsection}{\numberline {10.83}25.4 Sonar . top-level inventory}{113}{subsection.10.83}%
+\contentsline {subsection}{\numberline {10.84}25.5 Sonar . build and run}{113}{subsection.10.84}%
+\contentsline {subsection}{\numberline {10.85}25.6 Sonar . runtime surface}{113}{subsection.10.85}%
+\contentsline {subsection}{\numberline {10.86}25.7 Sonar . launcher integration}{113}{subsection.10.86}%
+\contentsline {subsection}{\numberline {10.87}25.8 Sonar . layout mapping}{113}{subsection.10.87}%
+\contentsline {subsection}{\numberline {10.88}25.9 Sonar . validation}{114}{subsection.10.88}%
+\contentsline {subsection}{\numberline {10.89}25.10 Sonar . security and provenance}{114}{subsection.10.89}%
+\contentsline {subsection}{\numberline {10.90}25.11 Sonar . risks and next steps}{114}{subsection.10.90}%
+\contentsline {subsection}{\numberline {10.91}25.12 Sonar . file catalog}{114}{subsection.10.91}%
+\contentsline {subsection}{\numberline {10.92}26.1 Zenix . overview}{114}{subsection.10.92}%
+\contentsline {subsection}{\numberline {10.93}26.2 Zenix . registry entry}{114}{subsection.10.93}%
+\contentsline {subsection}{\numberline {10.94}26.3 Zenix . folder layout}{114}{subsection.10.94}%
+\contentsline {subsection}{\numberline {10.95}26.4 Zenix . top-level inventory}{115}{subsection.10.95}%
+\contentsline {subsection}{\numberline {10.96}26.5 Zenix . build and run}{115}{subsection.10.96}%
+\contentsline {subsection}{\numberline {10.97}26.6 Zenix . runtime surface}{115}{subsection.10.97}%
+\contentsline {subsection}{\numberline {10.98}26.7 Zenix . launcher integration}{115}{subsection.10.98}%
+\contentsline {subsection}{\numberline {10.99}26.8 Zenix . layout mapping}{115}{subsection.10.99}%
+\contentsline {subsection}{\numberline {10.100}26.9 Zenix . validation}{115}{subsection.10.100}%
+\contentsline {subsection}{\numberline {10.101}26.10 Zenix . security and provenance}{116}{subsection.10.101}%
+\contentsline {subsection}{\numberline {10.102}26.11 Zenix . risks and next steps}{116}{subsection.10.102}%
+\contentsline {subsection}{\numberline {10.103}26.12 Zenix . file catalog}{116}{subsection.10.103}%
+\contentsline {subsection}{\numberline {10.104}27.1 Merger . overview}{116}{subsection.10.104}%
+\contentsline {subsection}{\numberline {10.105}27.2 Merger . registry entry}{116}{subsection.10.105}%
+\contentsline {subsection}{\numberline {10.106}27.3 Merger . folder layout}{116}{subsection.10.106}%
+\contentsline {subsection}{\numberline {10.107}27.4 Merger . top-level inventory}{117}{subsection.10.107}%
+\contentsline {subsection}{\numberline {10.108}27.5 Merger . build and run}{117}{subsection.10.108}%
+\contentsline {subsection}{\numberline {10.109}27.6 Merger . runtime surface}{117}{subsection.10.109}%
+\contentsline {subsection}{\numberline {10.110}27.7 Merger . launcher integration}{117}{subsection.10.110}%
+\contentsline {subsection}{\numberline {10.111}27.8 Merger . layout mapping}{117}{subsection.10.111}%
+\contentsline {subsection}{\numberline {10.112}27.9 Merger . validation}{117}{subsection.10.112}%
+\contentsline {subsection}{\numberline {10.113}27.10 Merger . security and provenance}{118}{subsection.10.113}%
+\contentsline {subsection}{\numberline {10.114}27.11 Merger . risks and next steps}{118}{subsection.10.114}%
+\contentsline {subsection}{\numberline {10.115}27.12 Merger . file catalog}{118}{subsection.10.115}%
+\contentsline {subsection}{\numberline {10.116}28.1 Vs-Ext . overview}{118}{subsection.10.116}%
+\contentsline {subsection}{\numberline {10.117}28.2 Vs-Ext . registry entry}{118}{subsection.10.117}%
+\contentsline {subsection}{\numberline {10.118}28.3 Vs-Ext . folder layout}{118}{subsection.10.118}%
+\contentsline {subsection}{\numberline {10.119}28.4 Vs-Ext . top-level inventory}{119}{subsection.10.119}%
+\contentsline {subsection}{\numberline {10.120}28.5 Vs-Ext . build and run}{119}{subsection.10.120}%
+\contentsline {subsection}{\numberline {10.121}28.6 Vs-Ext . runtime surface}{119}{subsection.10.121}%
+\contentsline {subsection}{\numberline {10.122}28.7 Vs-Ext . launcher integration}{119}{subsection.10.122}%
+\contentsline {subsection}{\numberline {10.123}28.8 Vs-Ext . layout mapping}{119}{subsection.10.123}%
+\contentsline {subsection}{\numberline {10.124}28.9 Vs-Ext . validation}{119}{subsection.10.124}%
+\contentsline {subsection}{\numberline {10.125}28.10 Vs-Ext . security and provenance}{120}{subsection.10.125}%
+\contentsline {subsection}{\numberline {10.126}28.11 Vs-Ext . risks and next steps}{120}{subsection.10.126}%
+\contentsline {subsection}{\numberline {10.127}Document control}{120}{subsection.10.127}%
+\contentsline {subsection}{\numberline {10.128}Colophon}{120}{subsection.10.128}%
+\contentsline {section}{\numberline {11}The effort slider: a reverse-engineering case study}{120}{section.11}%
+\contentsline {subsection}{\numberline {11.1}0. 先理解：发布其实是四件事}{120}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}1. 插件目录结构：哪些必须有}{120}{subsection.11.2}%
+\contentsline {subsubsection}{\numberline {11.2.1}每个文件干什么、少了会怎样}{120}{subsubsection.11.2.1}%
+\contentsline {subsection}{\numberline {11.3}2. package.json：逐字段填写}{120}{subsection.11.3}%
+\contentsline {subsubsection}{\numberline {11.3.1}字段说明}{121}{subsubsection.11.3.1}%
+\contentsline {subsection}{\numberline {11.4}3. cordis.patch.yml：三行，但不能错}{121}{subsection.11.4}%
+\contentsline {subsection}{\numberline {11.5}4. 版本号与依赖规范}{121}{subsection.11.5}%
+\contentsline {subsubsection}{\numberline {11.5.1}4.1 SemVer 怎么选}{121}{subsubsection.11.5.1}%
+\contentsline {subsubsection}{\numberline {11.5.2}4.2 依赖规范}{121}{subsubsection.11.5.2}%
+\contentsline {subsubsection}{\numberline {11.5.3}4.3 预发布版本的坑（真实存在）}{121}{subsubsection.11.5.3}%
+\contentsline {subsection}{\numberline {11.6}5. 打包与产物校验}{121}{subsection.11.6}%
+\contentsline {subsubsection}{\numberline {11.6.1}5.1 先想清楚：你需要哪种安装方式}{121}{subsubsection.11.6.1}%
+\contentsline {subsubsection}{\numberline {11.6.2}5.2 npm pack 打包}{121}{subsubsection.11.6.2}%
+\contentsline {subsubsection}{\numberline {11.6.3}5.3 产物校验（四步，缺一不可）}{121}{subsubsection.11.6.3}%
+\contentsline {subsubsection}{\numberline {11.6.4}5.4 打包常见事故}{121}{subsubsection.11.6.4}%
+\contentsline {subsection}{\numberline {11.7}6. GitHub 建仓、推送与 Release}{121}{subsection.11.7}%
+\contentsline {subsubsection}{\numberline {11.7.1}6.1 首次建仓（本仓库已初始化并提交过，可跳过 git init / add / commit）}{121}{subsubsection.11.7.1}%
+\contentsline {subsubsection}{\numberline {11.7.2}6.2 仓库设置（网页上做）}{121}{subsubsection.11.7.2}%
+\contentsline {subsubsection}{\numberline {11.7.3}6.3 打 tag + 发 Release}{121}{subsubsection.11.7.3}%
+\contentsline {subsubsection}{\numberline {11.7.4}6.4 Release 的两个坑}{122}{subsubsection.11.7.4}%
+\contentsline {subsection}{\numberline {11.8}7. 提交到精选插件库（awesome-dsh-plugin）}{122}{subsection.11.8}%
+\contentsline {subsubsection}{\numberline {11.8.1}7.1 先满足 6 个硬性条件}{122}{subsubsection.11.8.1}%
+\contentsline {subsubsection}{\numberline {11.8.2}7.2 提交（网页版，零命令行）}{122}{subsubsection.11.8.2}%
+\contentsline {subsubsection}{\numberline {11.8.3}7.3 YAML 字段规则}{122}{subsubsection.11.8.3}%
+\contentsline {subsubsection}{\numberline {11.8.4}7.4 tarball 字段（只有需要时才写）}{122}{subsubsection.11.8.4}%
+\contentsline {subsubsection}{\numberline {11.8.5}7.5 截图（可选，强烈推荐）}{122}{subsubsection.11.8.5}%
+\contentsline {subsubsection}{\numberline {11.8.6}7.6 CI 会检查什么（4 项，按顺序）}{122}{subsubsection.11.8.6}%
+\contentsline {subsubsection}{\numberline {11.8.7}7.7 需要提交的材料清单}{122}{subsubsection.11.8.7}%
+\contentsline {subsection}{\numberline {11.9}8. 新手常见错误（按踩坑概率排序）}{122}{subsection.11.9}%
+\contentsline {subsection}{\numberline {11.10}9. 可能被拒的原因（对照表）}{122}{subsection.11.10}%
+\contentsline {subsection}{\numberline {11.11}10. 提交前自检清单}{122}{subsection.11.11}%
+\contentsline {subsubsection}{\numberline {11.11.1}A. 代码与清单}{122}{subsubsection.11.11.1}%
+\contentsline {subsubsection}{\numberline {11.11.2}B. 打包与安装}{122}{subsubsection.11.11.2}%
+\contentsline {subsubsection}{\numberline {11.11.3}C. GitHub}{123}{subsubsection.11.11.3}%
+\contentsline {subsubsection}{\numberline {11.11.4}D. 投稿}{123}{subsubsection.11.11.4}%
+\contentsline {subsection}{\numberline {11.12}11. 本仓库可以直接照抄的命令}{123}{subsection.11.12}%
+\contentsline {subsection}{\numberline {11.13}12. 一句话总结}{123}{subsection.11.13}%
+\contentsline {subsection}{\numberline {11.14}0. 一帧画面由四层叠成}{123}{subsection.11.14}%
+\contentsline {subsection}{\numberline {11.15}1. 时间轴}{123}{subsection.11.15}%
+\contentsline {subsection}{\numberline {11.16}2. 尺寸与网格}{123}{subsection.11.16}%
+\contentsline {subsection}{\numberline {11.17}3. 铺开（sweep）相关}{123}{subsection.11.17}%
+\contentsline {subsection}{\numberline {11.18}4. 每格的亮度（核心公式）}{123}{subsection.11.18}%
+\contentsline {subsection}{\numberline {11.19}5. 待机脉冲（铺满之后）}{123}{subsection.11.19}%
+\contentsline {subsection}{\numberline {11.20}6. 底晕（wash）}{124}{subsection.11.20}%
+\contentsline {subsection}{\numberline {11.21}7. 触发与重播规则}{124}{subsection.11.21}%
+\contentsline {subsection}{\numberline {11.22}8. 文字与其它动画}{124}{subsection.11.22}%
+\contentsline {subsection}{\numberline {11.23}9. 浅色主题（0.9.2）}{124}{subsection.11.23}%
+\contentsline {subsection}{\numberline {11.24}10. 已知冗余（不影响运行）}{124}{subsection.11.24}%
+\contentsline {subsection}{\numberline {11.25}11. 快速调参对照}{124}{subsection.11.25}%
+\contentsline {section}{Part III \textperiodcentered {} Transformers-Fusion}{124}{subsection.11.25}%
+\contentsline {section}{\numberline {12}The training engine specification}{124}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Target device : AMD Radeon Vega 7 / 5600GT integrated GPU (iGPU), Windows x64}{124}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}Compiler : Clang 22.1.7, C++20, Ninja + MSVC runtime}{124}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}Build dir : build/ (configure: cmake -S . -B build -G Ninja -DCMAKE\_BUILD\_TYPE=Release -DCMAKE\_CXX\_COMPILER=clang++)}{124}{subsection.12.3}%
+\contentsline {subsection}{\numberline {12.4}Header files : exactly 1024 lines. Do not exceed; edit in place}{124}{subsection.12.4}%
+\contentsline {subsection}{\numberline {12.5}0. Executive mandate}{124}{subsection.12.5}%
+\contentsline {subsection}{\numberline {12.6}1. Device specification (this host)}{124}{subsection.12.6}%
+\contentsline {subsection}{\numberline {12.7}2. The 32x mandate}{124}{subsection.12.7}%
+\contentsline {subsection}{\numberline {12.8}3. Architecture}{125}{subsection.12.8}%
+\contentsline {subsection}{\numberline {12.9}4. Engine catalog — dense/ (engines/trainer/dense/)}{125}{subsection.12.9}%
+\contentsline {subsection}{\numberline {12.10}5. Engine catalog — moe/ and multimodal/}{126}{subsection.12.10}%
+\contentsline {subsection}{\numberline {12.11}6. Training-system decisions}{126}{subsection.12.11}%
+\contentsline {subsection}{\numberline {12.12}7. Feature parity checklist (PyTorch -> engine)}{127}{subsection.12.12}%
+\contentsline {subsection}{\numberline {12.13}8. Performance plan (how the 32x floor is met)}{127}{subsection.12.13}%
+\contentsline {subsection}{\numberline {12.14}9. Device-coverage plan (every backend)}{127}{subsection.12.14}%
+\contentsline {subsection}{\numberline {12.15}10. Verified fixes (bugs the tests found and corrected)}{127}{subsection.12.15}%
+\contentsline {subsection}{\numberline {12.16}11. Modality matrix (all types trainable)}{128}{subsection.12.16}%
+\contentsline {subsection}{\numberline {12.17}12. Test \& verification}{128}{subsection.12.17}%
+\contentsline {subsection}{\numberline {12.18}13. Conventions}{128}{subsection.12.18}%
+\contentsline {subsection}{\numberline {12.19}14. Roadmap (next work)}{128}{subsection.12.19}%
+\contentsline {subsection}{\numberline {12.20}15. Reference (file map)}{128}{subsection.12.20}%
+\contentsline {subsection}{\numberline {12.21}16. Manifest}{128}{subsection.12.21}%
+\contentsline {subsection}{\numberline {12.22}Appendix A — dense module function-level reference}{128}{subsection.12.22}%
+\contentsline {subsection}{\numberline {12.23}Appendix B — training-loop pseudocode (the engine's core)}{129}{subsection.12.23}%
+\contentsline {subsection}{\numberline {12.24}Appendix C — measured benchmark reference (this host)}{130}{subsection.12.24}%
+\contentsline {subsection}{\numberline {12.25}Appendix D — backend probe matrix (runtime)}{130}{subsection.12.25}%
+\contentsline {subsection}{\numberline {12.26}Appendix E — modality encoder spec}{130}{subsection.12.26}%
+\contentsline {subsection}{\numberline {12.27}Appendix F — test case index (75 CTest cases)}{130}{subsection.12.27}%
+\contentsline {subsection}{\numberline {12.28}Appendix G — build and run reference}{130}{subsection.12.28}%
+\contentsline {subsection}{\numberline {12.29}Appendix H — naming, conventions, glossary}{130}{subsection.12.29}%
+\contentsline {subsection}{\numberline {12.30}Appendix I — session work log (chronological)}{130}{subsection.12.30}%
+\contentsline {subsection}{\numberline {12.31}Appendix J — glossary of subsystems}{130}{subsection.12.31}%
+\contentsline {subsection}{\numberline {12.32}Appendix K — line budget and integrity}{131}{subsection.12.32}%
+\contentsline {subsection}{\numberline {12.33}Appendix L — engine configuration surface (defaults)}{131}{subsection.12.33}%
+\contentsline {subsection}{\numberline {12.34}Appendix M — decisions-model training system}{131}{subsection.12.34}%
+\contentsline {subsection}{\numberline {12.35}Appendix N — MoE and multimodal detail}{131}{subsection.12.35}%
+\contentsline {subsection}{\numberline {12.36}Appendix O — per-modality training recipe}{132}{subsection.12.36}%
+\contentsline {subsection}{\numberline {12.37}Appendix P — failure taxonomy (what the engine must never do)}{132}{subsection.12.37}%
+\contentsline {subsection}{\numberline {12.38}Appendix Q — dependency map}{132}{subsection.12.38}%
+\contentsline {subsection}{\numberline {12.39}Appendix R — 32x measurement methodology}{132}{subsection.12.39}%
+\contentsline {subsection}{\numberline {12.40}Appendix S — maintenance and contribution rules}{132}{subsection.12.40}%
+\contentsline {section}{\numberline {13}Engine architecture}{132}{section.13}%
+\contentsline {subsection}{\numberline {13.1}Overview}{132}{subsection.13.1}%
+\contentsline {subsection}{\numberline {13.2}High-Level Architecture}{132}{subsection.13.2}%
+\contentsline {subsection}{\numberline {13.3}Source Layout Truth (Phase 24)}{132}{subsection.13.3}%
+\contentsline {subsection}{\numberline {13.4}Component Hierarchy}{133}{subsection.13.4}%
+\contentsline {subsubsection}{\numberline {13.4.1}1. Core Layer (Foundation)}{133}{subsubsection.13.4.1}%
+\contentsline {subsubsection}{\numberline {13.4.2}2. Autograd Layer (Automatic Differentiation)}{133}{subsubsection.13.4.2}%
+\contentsline {subsubsection}{\numberline {13.4.3}3. Model Layer (Neural Network Components)}{133}{subsubsection.13.4.3}%
+\contentsline {subsubsection}{\numberline {13.4.4}4. Quantization Layer (Format-Specific Kernels)}{133}{subsubsection.13.4.4}%
+\contentsline {subsubsection}{\numberline {13.4.5}5. MoE Layer (Mixture of Experts)}{134}{subsubsection.13.4.5}%
+\contentsline {subsubsection}{\numberline {13.4.6}6. GPU Layer (Hardware Acceleration)}{134}{subsubsection.13.4.6}%
+\contentsline {subsubsection}{\numberline {13.4.7}7. Training Layer}{134}{subsubsection.13.4.7}%
+\contentsline {subsubsection}{\numberline {13.4.8}8. QUANT Format Layer}{134}{subsubsection.13.4.8}%
+\contentsline {subsubsection}{\numberline {13.4.9}9. Tools Layer (CLI)}{135}{subsubsection.13.4.9}%
+\contentsline {subsection}{\numberline {13.5}Component Dependencies}{135}{subsection.13.5}%
+\contentsline {subsection}{\numberline {13.6}Design Philosophy}{135}{subsection.13.6}%
+\contentsline {subsubsection}{\numberline {13.6.1}1. Zero Dependencies}{135}{subsubsection.13.6.1}%
+\contentsline {subsubsection}{\numberline {13.6.2}2. Single Format Truth}{135}{subsubsection.13.6.2}%
+\contentsline {subsubsection}{\numberline {13.6.3}3. Research-Driven}{135}{subsubsection.13.6.3}%
+\contentsline {subsubsection}{\numberline {13.6.4}4. Performance-First}{135}{subsubsection.13.6.4}%
+\contentsline {subsubsection}{\numberline {13.6.5}5. Modularity}{135}{subsubsection.13.6.5}%
+\contentsline {subsection}{\numberline {13.7}Performance Characteristics}{135}{subsection.13.7}%
+\contentsline {subsection}{\numberline {13.8}Scalability}{135}{subsection.13.8}%
+\contentsline {subsubsection}{\numberline {13.8.1}Current Limits}{135}{subsubsection.13.8.1}%
+\contentsline {subsubsection}{\numberline {13.8.2}Future Scalability Features}{136}{subsubsection.13.8.2}%
+\contentsline {subsection}{\numberline {13.9}Debugging \& Development}{136}{subsection.13.9}%
+\contentsline {subsubsection}{\numberline {13.9.1}Debug Builds}{136}{subsubsection.13.9.1}%
+\contentsline {subsubsection}{\numberline {13.9.2}Sanitizers}{136}{subsubsection.13.9.2}%
+\contentsline {subsubsection}{\numberline {13.9.3}Logging}{136}{subsubsection.13.9.3}%
+\contentsline {subsubsection}{\numberline {13.9.4}Testing}{136}{subsubsection.13.9.4}%
+\contentsline {subsection}{\numberline {13.10}Version History}{136}{subsection.13.10}%
+\contentsline {subsection}{\numberline {13.11}Learning Resources}{136}{subsection.13.11}%
+\contentsline {subsection}{\numberline {13.12}Cender — Future Architecture Core (NOT in tree)}{136}{subsection.13.12}%
+\contentsline {subsection}{\numberline {13.13}Need More Information?}{136}{subsection.13.13}%
+\contentsline {section}{\numberline {14}The engine API}{136}{section.14}%
+\contentsline {subsection}{\numberline {14.1}Table of Contents}{136}{subsection.14.1}%
+\contentsline {subsection}{\numberline {14.2}Core Types}{136}{subsection.14.2}%
+\contentsline {subsubsection}{\numberline {14.2.1}Namespace}{136}{subsubsection.14.2.1}%
+\contentsline {subsubsection}{\numberline {14.2.2}Enumerations}{136}{subsubsection.14.2.2}%
+\contentsline {section}{\numberline {15}Tensors, autograd, and numerical kernels}{142}{section.15}%
+\contentsline {subsection}{\numberline {15.1}Overview}{142}{subsection.15.1}%
+\contentsline {subsection}{\numberline {15.2}Key Features}{142}{subsection.15.2}%
+\contentsline {subsubsection}{\numberline {15.2.1}1. Multi-Dimensional Support}{142}{subsubsection.15.2.1}%
+\contentsline {subsubsection}{\numberline {15.2.2}2. Data Types}{142}{subsubsection.15.2.2}%
+\contentsline {subsubsection}{\numberline {15.2.3}3. Memory Management}{142}{subsubsection.15.2.3}%
+\contentsline {subsubsection}{\numberline {15.2.4}4. Shape Operations}{142}{subsubsection.15.2.4}%
+\contentsline {subsubsection}{\numberline {15.2.5}5. Autograd Integration}{142}{subsubsection.15.2.5}%
+\contentsline {subsection}{\numberline {15.3}API Reference}{142}{subsection.15.3}%
+\contentsline {subsubsection}{\numberline {15.3.1}Class: Tensor}{142}{subsubsection.15.3.1}%
+\contentsline {subsubsection}{\numberline {15.3.2}Class: Shape}{143}{subsubsection.15.3.2}%
+\contentsline {subsection}{\numberline {15.4}Implementation Details}{143}{subsection.15.4}%
+\contentsline {subsubsection}{\numberline {15.4.1}Memory Layout}{143}{subsubsection.15.4.1}%
+\contentsline {subsubsection}{\numberline {15.4.2}Contiguity}{143}{subsubsection.15.4.2}%
+\contentsline {subsubsection}{\numberline {15.4.3}Views vs Copies}{143}{subsubsection.15.4.3}%
+\contentsline {subsubsection}{\numberline {15.4.4}Custom Allocators}{143}{subsubsection.15.4.4}%
+\contentsline {subsubsection}{\numberline {15.4.5}Data Type Conversions}{143}{subsubsection.15.4.5}%
+\contentsline {subsection}{\numberline {15.5}Best Practices}{143}{subsection.15.5}%
+\contentsline {subsubsection}{\numberline {15.5.1}1. Memory Efficiency}{143}{subsubsection.15.5.1}%
+\contentsline {subsubsection}{\numberline {15.5.2}2. Performance}{143}{subsubsection.15.5.2}%
+\contentsline {subsubsection}{\numberline {15.5.3}3. Correctness}{143}{subsubsection.15.5.3}%
+\contentsline {subsubsection}{\numberline {15.5.4}4. Autograd}{144}{subsubsection.15.5.4}%
+\contentsline {subsection}{\numberline {15.6}Common Pitfalls}{144}{subsection.15.6}%
+\contentsline {subsubsection}{\numberline {15.6.1}1. Non-Contiguous Tensors}{144}{subsubsection.15.6.1}%
+\contentsline {subsubsection}{\numberline {15.6.2}2. Shape Mismatches}{144}{subsubsection.15.6.2}%
+\contentsline {subsubsection}{\numberline {15.6.3}3. Data Type Mismatches}{144}{subsubsection.15.6.3}%
+\contentsline {subsubsection}{\numberline {15.6.4}4. Memory Leaks}{144}{subsubsection.15.6.4}%
+\contentsline {subsubsection}{\numberline {15.6.5}5. Autograd Context}{144}{subsubsection.15.6.5}%
+\contentsline {subsection}{\numberline {15.7}Debugging}{144}{subsection.15.7}%
+\contentsline {subsubsection}{\numberline {15.7.1}Debug Output}{144}{subsubsection.15.7.1}%
+\contentsline {subsubsection}{\numberline {15.7.2}Debug Checks}{144}{subsubsection.15.7.2}%
+\contentsline {subsubsection}{\numberline {15.7.3}Memory Debugging}{144}{subsubsection.15.7.3}%
+\contentsline {subsection}{\numberline {15.8}Performance Tips}{144}{subsection.15.8}%
+\contentsline {subsubsection}{\numberline {15.8.1}1. Pre-Allocate Tensors}{144}{subsubsection.15.8.1}%
+\contentsline {subsubsection}{\numberline {15.8.2}2. Use In-Place Operations}{144}{subsubsection.15.8.2}%
+\contentsline {subsubsection}{\numberline {15.8.3}3. Batch Operations}{144}{subsubsection.15.8.3}%
+\contentsline {subsubsection}{\numberline {15.8.4}4. Avoid Unnecessary Copies}{144}{subsubsection.15.8.4}%
+\contentsline {subsection}{\numberline {15.9}Related Modules}{144}{subsection.15.9}%
+\contentsline {subsection}{\numberline {15.10}Example: Complete Tensor Usage}{144}{subsection.15.10}%
+\contentsline {section}{\numberline {16}Using and building the engine}{144}{section.16}%
+\contentsline {subsection}{\numberline {16.1}Quick Start Examples}{145}{subsection.16.1}%
+\contentsline {subsubsection}{\numberline {16.1.1}Run Inference}{145}{subsubsection.16.1.1}%
+\contentsline {subsubsection}{\numberline {16.1.2}Train a Model}{145}{subsubsection.16.1.2}%
+\contentsline {subsubsection}{\numberline {16.1.3}Fine-tune a Model}{145}{subsubsection.16.1.3}%
+\contentsline {subsubsection}{\numberline {16.1.4}Convert Model Formats}{145}{subsubsection.16.1.4}%
+\contentsline {subsubsection}{\numberline {16.1.5}Run Benchmarks}{145}{subsubsection.16.1.5}%
+\contentsline {subsection}{\numberline {16.2}Command-Line Tools Reference}{145}{subsection.16.2}%
+\contentsline {subsubsection}{\numberline {16.2.1}quant\_infer - Run Inference}{145}{subsubsection.16.2.1}%
+\contentsline {subsubsection}{\numberline {16.2.2}quant\_train - Train a Model from Scratch}{145}{subsubsection.16.2.2}%
+\contentsline {subsubsection}{\numberline {16.2.3}quant\_finetune - Fine-tune an Existing Model}{146}{subsubsection.16.2.3}%
+\contentsline {subsubsection}{\numberline {16.2.4}quant\_convert - Convert Model Formats}{146}{subsubsection.16.2.4}%
+\contentsline {subsubsection}{\numberline {16.2.5}quant\_info - Display Model Information}{146}{subsubsection.16.2.5}%
+\contentsline {subsubsection}{\numberline {16.2.6}quant\_bench - Run Performance Benchmarks}{147}{subsubsection.16.2.6}%
+\contentsline {subsection}{\numberline {16.3}Using the C++ API}{147}{subsection.16.3}%
+\contentsline {subsubsection}{\numberline {16.3.1}Basic Setup}{147}{subsubsection.16.3.1}%
+\contentsline {subsubsection}{\numberline {16.3.2}Training Example}{147}{subsubsection.16.3.2}%
+\contentsline {subsubsection}{\numberline {16.3.3}Inference with GPU Acceleration}{147}{subsubsection.16.3.3}%
+\contentsline {subsection}{\numberline {16.4}Configuration Files}{147}{subsection.16.4}%
+\contentsline {subsubsection}{\numberline {16.4.1}Model Configuration}{147}{subsubsection.16.4.1}%
+\contentsline {subsubsection}{\numberline {16.4.2}Training Configuration}{147}{subsubsection.16.4.2}%
+\contentsline {subsubsection}{\numberline {16.4.3}Quantization Configuration}{147}{subsubsection.16.4.3}%
+\contentsline {subsection}{\numberline {16.5}Best Practices}{147}{subsection.16.5}%
+\contentsline {subsubsection}{\numberline {16.5.1}1. Model Selection}{148}{subsubsection.16.5.1}%
+\contentsline {subsubsection}{\numberline {16.5.2}2. Quantization Settings}{148}{subsubsection.16.5.2}%
+\contentsline {subsubsection}{\numberline {16.5.3}3. Training Tips}{148}{subsubsection.16.5.3}%
+\contentsline {subsubsection}{\numberline {16.5.4}4. Inference Tips}{148}{subsubsection.16.5.4}%
+\contentsline {subsection}{\numberline {16.6}Common Issues}{148}{subsection.16.6}%
+\contentsline {subsubsection}{\numberline {16.6.1}1. Out of Memory}{148}{subsubsection.16.6.1}%
+\contentsline {subsubsection}{\numberline {16.6.2}2. Slow Inference}{148}{subsubsection.16.6.2}%
+\contentsline {subsubsection}{\numberline {16.6.3}3. Model Fails to Load}{148}{subsubsection.16.6.3}%
+\contentsline {subsubsection}{\numberline {16.6.4}4. Training Loss Doesn't Decrease}{148}{subsubsection.16.6.4}%
+\contentsline {subsubsection}{\numberline {16.6.5}5. Poor Quality Output}{148}{subsubsection.16.6.5}%
+\contentsline {subsection}{\numberline {16.7}Additional Resources}{148}{subsection.16.7}%
+\contentsline {subsection}{\numberline {16.8}Quick Start}{148}{subsection.16.8}%
+\contentsline {subsubsection}{\numberline {16.8.1}Windows (Clang-cl)}{148}{subsubsection.16.8.1}%
+\contentsline {subsubsection}{\numberline {16.8.2}Linux (GCC/Clang)}{148}{subsubsection.16.8.2}%
+\contentsline {subsubsection}{\numberline {16.8.3}macOS (Apple Clang)}{148}{subsubsection.16.8.3}%
+\contentsline {subsection}{\numberline {16.9}Prerequisites}{149}{subsection.16.9}%
+\contentsline {subsubsection}{\numberline {16.9.1}Required Dependencies}{149}{subsubsection.16.9.1}%
+\contentsline {subsubsection}{\numberline {16.9.2}Compiler Requirements}{149}{subsubsection.16.9.2}%
+\contentsline {subsubsection}{\numberline {16.9.3}Optional Dependencies}{149}{subsubsection.16.9.3}%
+\contentsline {subsection}{\numberline {16.10}Build Options}{149}{subsection.16.10}%
+\contentsline {subsubsection}{\numberline {16.10.1}Standard Options}{149}{subsubsection.16.10.1}%
+\contentsline {subsubsection}{\numberline {16.10.2}Platform-Specific Options}{149}{subsubsection.16.10.2}%
+\contentsline {subsection}{\numberline {16.11}Build Configurations}{149}{subsection.16.11}%
+\contentsline {subsubsection}{\numberline {16.11.1}Release Build (Recommended)}{149}{subsubsection.16.11.1}%
+\contentsline {subsubsection}{\numberline {16.11.2}Debug Build}{149}{subsubsection.16.11.2}%
+\contentsline {subsubsection}{\numberline {16.11.3}Debug with Sanitizers}{149}{subsubsection.16.11.3}%
+\contentsline {subsubsection}{\numberline {16.11.4}AVX2 Optimized Build}{149}{subsubsection.16.11.4}%
+\contentsline {subsubsection}{\numberline {16.11.5}GPU-Enabled Build (Windows Only)}{149}{subsubsection.16.11.5}%
+\contentsline {subsubsection}{\numberline {16.11.6}Minimal Build (Core Only)}{149}{subsubsection.16.11.6}%
+\contentsline {subsubsection}{\numberline {16.11.7}Custom Install Prefix}{149}{subsubsection.16.11.7}%
+\contentsline {subsection}{\numberline {16.12}Build Output Structure}{150}{subsection.16.12}%
+\contentsline {subsection}{\numberline {16.13}Build System Details}{150}{subsection.16.13}%
+\contentsline {subsubsection}{\numberline {16.13.1}CMake Targets}{150}{subsubsection.16.13.1}%
+\contentsline {subsubsection}{\numberline {16.13.2}CMake Custom Targets}{150}{subsubsection.16.13.2}%
+\contentsline {subsection}{\numberline {16.14}Build Customization}{150}{subsection.16.14}%
+\contentsline {subsubsection}{\numberline {16.14.1}Custom Compiler Flags}{150}{subsubsection.16.14.1}%
+\contentsline {subsubsection}{\numberline {16.14.2}Custom Linker Flags}{150}{subsubsection.16.14.2}%
+\contentsline {subsection}{\numberline {16.15}Parallel Build}{150}{subsection.16.15}%
+\contentsline {subsection}{\numberline {16.16}Clean Build}{150}{subsection.16.16}%
+\contentsline {subsection}{\numberline {16.17}Troubleshooting}{150}{subsection.16.17}%
+\contentsline {subsubsection}{\numberline {16.17.1}Common Issues}{150}{subsubsection.16.17.1}%
+\contentsline {subsection}{\numberline {16.18}Build Performance}{151}{subsection.16.18}%
+\contentsline {subsubsection}{\numberline {16.18.1}Build Times (Approximate)}{151}{subsubsection.16.18.1}%
+\contentsline {subsubsection}{\numberline {16.18.2}Build Size}{151}{subsubsection.16.18.2}%
+\contentsline {subsection}{\numberline {16.19}Continuous Integration}{151}{subsection.16.19}%
+\contentsline {subsection}{\numberline {16.20}Additional Resources}{151}{subsection.16.20}%
+\contentsline {subsection}{\numberline {16.21}Success!}{151}{subsection.16.21}%
+\contentsline {section}{\numberline {17}Model manifests, wire identity, and progress}{151}{section.17}%
+\contentsline {subsection}{\numberline {17.1}Why this file exists}{151}{subsection.17.1}%
+\contentsline {subsection}{\numberline {17.2}Legacy names}{151}{subsection.17.2}%
+\contentsline {subsection}{\numberline {17.3}Wire layout}{151}{subsection.17.3}%
+\contentsline {subsection}{\numberline {17.4}JSON body (version 1)}{151}{subsection.17.4}%
+\contentsline {subsection}{\numberline {17.5}Compatibility rules}{151}{subsection.17.5}%
+\contentsline {subsection}{\numberline {17.6}Current implementation state}{152}{subsection.17.6}%
+\contentsline {subsection}{\numberline {17.7}Goal}{152}{subsection.17.7}%
+\contentsline {subsection}{\numberline {17.8}Done}{152}{subsection.17.8}%
+\contentsline {subsection}{\numberline {17.9}Next}{153}{subsection.17.9}%
+\contentsline {subsection}{\numberline {17.10}Key facts (verified with evidence)}{153}{subsection.17.10}%
+\contentsline {subsection}{\numberline {17.11}Open questions}{154}{subsection.17.11}%
+\contentsline {subsection}{\numberline {17.12}Rules I am holding myself to}{154}{subsection.17.12}%
+\contentsline {section}{\numberline {18}The engine release record}{154}{section.18}%
+\contentsline {subsubsection}{\numberline {18.0.1}Build Status (R0001.01)}{154}{subsubsection.18.0.1}%
+\contentsline {subsubsection}{\numberline {18.0.2}Quick Start}{154}{subsubsection.18.0.2}%
+\contentsline {subsubsection}{\numberline {18.0.3}Prerequisites}{154}{subsubsection.18.0.3}%
+\contentsline {subsection}{\numberline {18.1}Table of Contents}{154}{subsection.18.1}%
+\contentsline {subsection}{\numberline {18.2}Vision}{155}{subsection.18.2}%
+\contentsline {subsubsection}{\numberline {18.2.1}Core Vision (from Research)}{155}{subsubsection.18.2.1}%
+\contentsline {subsubsection}{\numberline {18.2.2}Why?}{155}{subsubsection.18.2.2}%
+\contentsline {subsection}{\numberline {18.3}The Problem}{155}{subsection.18.3}%
+\contentsline {subsubsection}{\numberline {18.3.1}The QUANT Answer}{155}{subsubsection.18.3.1}%
+\contentsline {subsection}{\numberline {18.4}What is QUANT?}{155}{subsection.18.4}%
+\contentsline {subsubsection}{\numberline {18.4.1}Format Options}{155}{subsubsection.18.4.1}%
+\contentsline {subsubsection}{\numberline {18.4.2}Why Mixed Formats?}{156}{subsubsection.18.4.2}%
+\contentsline {subsubsection}{\numberline {18.4.3}In-House Format Family}{156}{subsubsection.18.4.3}%
+\contentsline {subsection}{\numberline {18.5}Research Foundation}{156}{subsection.18.5}%
+\contentsline {subsubsection}{\numberline {18.5.1}Native STE Training (in-house core proof)}{156}{subsubsection.18.5.1}%
+\contentsline {subsubsection}{\numberline {18.5.2}Importance-Based Per-Block Routing (in-house FormatPlanner)}{156}{subsubsection.18.5.2}%
+\contentsline {subsubsection}{\numberline {18.5.3}VQ-VAE (NeurIPS 2017)}{156}{subsubsection.18.5.3}%
+\contentsline {subsubsection}{\numberline {18.5.4}BitsMoE (arXiv:2410.01045)}{156}{subsubsection.18.5.4}%
+\contentsline {subsubsection}{\numberline {18.5.5}Custom Fine-Tuning System}{156}{subsubsection.18.5.5}%
+\contentsline {subsubsection}{\numberline {18.5.6}Complete Research Archive}{156}{subsubsection.18.5.6}%
+\contentsline {subsection}{\numberline {18.6}Architecture}{160}{subsection.18.6}%
+\contentsline {subsubsection}{\numberline {18.6.1}Data Flow: Training Inference}{160}{subsubsection.18.6.1}%
+\contentsline {subsection}{\numberline {18.7}Clone}{164}{subsection.18.7}%
+\contentsline {subsection}{\numberline {18.8}Configure \& Build}{164}{subsection.18.8}%
+\contentsline {subsection}{\numberline {18.9}With debug symbols}{164}{subsection.18.9}%
+\contentsline {subsection}{\numberline {18.10}With address sanitizer}{164}{subsection.18.10}%
+\contentsline {subsection}{\numberline {18.11}Convert a model to QUANT format}{165}{subsection.18.11}%
+\contentsline {subsection}{\numberline {18.12}Run inference}{165}{subsection.18.12}%
+\contentsline {subsection}{\numberline {18.13}Train from scratch}{165}{subsection.18.13}%
+\contentsline {subsection}{\numberline {18.14}Fine-tune natively in QUANT format}{165}{subsection.18.14}%
+\contentsline {subsection}{\numberline {18.15}Inspect any .quant file}{166}{subsection.18.15}%
+\contentsline {subsection}{\numberline {18.16}Verbose inference (shows timing breakdown)}{166}{subsection.18.16}%
+\contentsline {subsection}{\numberline {18.17}Run specific test}{166}{subsection.18.17}%
+\contentsline {subsection}{\numberline {18.18}Linux Windows cross build (x86\_64)}{166}{subsection.18.18}%
+\contentsline {subsection}{\numberline {18.19}ARM64 build (Raspberry Pi, AWS Graviton)}{166}{subsection.18.19}%
+\contentsline {subsection}{\numberline {18.20}include}{166}{subsection.18.20}%
+\contentsline {subsection}{\numberline {18.21}include}{166}{subsection.18.21}%
+\contentsline {subsection}{\numberline {18.22}include}{166}{subsection.18.22}%
+\contentsline {subsection}{\numberline {18.23}include}{166}{subsection.18.23}%
+\contentsline {subsection}{\numberline {18.24}include}{166}{subsection.18.24}%
+\contentsline {subsection}{\numberline {18.25}include}{166}{subsection.18.25}%
+\contentsline {subsection}{\numberline {18.26}include}{166}{subsection.18.26}%
+\contentsline {subsection}{\numberline {18.27}include}{166}{subsection.18.27}%
+\contentsline {section}{\numberline {19}The engine in its own words}{172}{section.19}%
+\contentsline {subsection}{\numberline {19.1}1. What this engine is}{172}{subsection.19.1}%
+\contentsline {subsection}{\numberline {19.2}2. How to read this README}{173}{subsection.19.2}%
+\contentsline {subsection}{\numberline {19.3}3. Repository layout}{173}{subsection.19.3}%
+\contentsline {subsection}{\numberline {19.4}4. The two engine trees}{173}{subsection.19.4}%
+\contentsline {subsection}{\numberline {19.5}5. Build system}{173}{subsection.19.5}%
+\contentsline {subsection}{\numberline {19.6}6. The executables}{173}{subsection.19.6}%
+\contentsline {subsection}{\numberline {19.7}7. The libraries}{174}{subsection.19.7}%
+\contentsline {subsection}{\numberline {19.8}8. The test suite}{174}{subsection.19.8}%
+\contentsline {subsection}{\numberline {19.9}9. Git state and the working tree}{174}{subsection.19.9}%
+\contentsline {subsection}{\numberline {19.10}10. The dtype contract}{174}{subsection.19.10}%
+\contentsline {subsection}{\numberline {19.11}11. Two different counts that must never be confused}{175}{subsection.19.11}%
+\contentsline {subsection}{\numberline {19.12}12. The format registry}{175}{subsection.19.12}%
+\contentsline {subsection}{\numberline {19.13}13. The block codec}{175}{subsection.19.13}%
+\contentsline {subsection}{\numberline {19.14}14. The codebook}{175}{subsection.19.14}%
+\contentsline {subsection}{\numberline {19.15}15. The quantization engines}{175}{subsection.19.15}%
+\contentsline {subsection}{\numberline {19.16}16. Quantization-aware training}{176}{subsection.19.16}%
+\contentsline {subsection}{\numberline {19.17}17. The integer path}{176}{subsection.19.17}%
+\contentsline {subsection}{\numberline {19.18}18. The floating-point path}{176}{subsection.19.18}%
+\contentsline {subsection}{\numberline {19.19}19. The FP8 special-value problem}{176}{subsection.19.19}%
+\contentsline {subsection}{\numberline {19.20}20. FP8 in the attention path}{176}{subsection.19.20}%
+\contentsline {subsection}{\numberline {19.21}21. The backends}{177}{subsection.19.21}%
+\contentsline {subsection}{\numberline {19.22}22. The GPU capability contract}{177}{subsection.19.22}%
+\contentsline {subsection}{\numberline {19.23}23. The model layer}{177}{subsection.19.23}%
+\contentsline {subsection}{\numberline {19.24}24. Attention, and why the plan keeps coming back to it}{177}{subsection.19.24}%
+\contentsline {subsection}{\numberline {19.25}25. The KV cache}{177}{subsection.19.25}%
+\contentsline {subsection}{\numberline {19.26}26. The inference engine}{178}{subsection.19.26}%
+\contentsline {subsection}{\numberline {19.27}27. The trainer}{178}{subsection.19.27}%
+\contentsline {subsection}{\numberline {19.28}28. The code generator}{178}{subsection.19.28}%
+\contentsline {subsection}{\numberline {19.29}29. Training engines, MoE and multimodal}{178}{subsection.19.29}%
+\contentsline {subsection}{\numberline {19.30}30. The AGI and continual-learning layer}{178}{subsection.19.30}%
+\contentsline {subsection}{\numberline {19.31}31. The telemetry layer}{178}{subsection.19.31}%
+\contentsline {subsection}{\numberline {19.32}32. Production and serving}{179}{subsection.19.32}%
+\contentsline {subsection}{\numberline {19.33}33. The tokenizer}{179}{subsection.19.33}%
+\contentsline {subsection}{\numberline {19.34}34. Distributed training and parallelism}{179}{subsection.19.34}%
+\contentsline {subsection}{\numberline {19.35}35. The optimizer}{179}{subsection.19.35}%
+\contentsline {subsection}{\numberline {19.36}36. Continual learning}{179}{subsection.19.36}%
+\contentsline {subsection}{\numberline {19.37}37. Inference optimisation}{180}{subsection.19.37}%
+\contentsline {subsection}{\numberline {19.38}38. The math library}{180}{subsection.19.38}%
+\contentsline {subsection}{\numberline {19.39}39. The GLE tree}{180}{subsection.19.39}%
+\contentsline {subsection}{\numberline {19.40}40. The native weight path}{180}{subsection.19.40}%
+\contentsline {subsection}{\numberline {19.41}41. The lifecycle of a quantized tensor}{180}{subsection.19.41}%
+\contentsline {subsection}{\numberline {19.42}42. The wire format and the reader contract}{181}{subsection.19.42}%
+\contentsline {subsection}{\numberline {19.43}43. The ladder arithmetic}{181}{subsection.19.43}%
+\contentsline {subsection}{\numberline {19.44}44. The MX quarantine (D-13)}{181}{subsection.19.44}%
+\contentsline {subsection}{\numberline {19.45}45. The retired-id policy}{181}{subsection.19.45}%
+\contentsline {subsection}{\numberline {19.46}46. The compatibility layer}{182}{subsection.19.46}%
+\contentsline {subsection}{\numberline {19.47}47. The KAT protocol}{182}{subsection.19.47}%
+\contentsline {subsection}{\numberline {19.48}48. The benchmark protocol}{182}{subsection.19.48}%
+\contentsline {subsection}{\numberline {19.49}49. The security audit surface}{183}{subsection.19.49}%
+\contentsline {subsection}{\numberline {19.50}50. The build matrix}{183}{subsection.19.50}%
+\contentsline {subsection}{\numberline {19.51}51. The telemetry and evidence chain}{183}{subsection.19.51}%
+\contentsline {subsection}{\numberline {19.52}52. The documentation programme (D-31)}{183}{subsection.19.52}%
+\contentsline {subsection}{\numberline {19.53}53. Format Q\_1}{183}{subsection.19.53}%
+\contentsline {subsection}{\numberline {19.54}54. Format Q\_2}{184}{subsection.19.54}%
+\contentsline {subsection}{\numberline {19.55}55. Format Q\_3}{184}{subsection.19.55}%
+\contentsline {subsection}{\numberline {19.56}56. Format Q\_4}{184}{subsection.19.56}%
+\contentsline {subsection}{\numberline {19.57}57. Format Q\_6}{184}{subsection.19.57}%
+\contentsline {subsection}{\numberline {19.58}58. Format Q\_8}{184}{subsection.19.58}%
+\contentsline {subsection}{\numberline {19.59}59. Format Q\_12}{184}{subsection.19.59}%
+\contentsline {subsection}{\numberline {19.60}60. Format Q\_16}{184}{subsection.19.60}%
+\contentsline {subsection}{\numberline {19.61}61. Format Q\_24}{185}{subsection.19.61}%
+\contentsline {subsection}{\numberline {19.62}62. Format Q\_32}{185}{subsection.19.62}%
+\contentsline {subsection}{\numberline {19.63}63. Format Q\_1\_K\_M}{185}{subsection.19.63}%
+\contentsline {subsection}{\numberline {19.64}64. Format Q\_1\_K\_H}{185}{subsection.19.64}%
+\contentsline {subsection}{\numberline {19.65}65. Format Q\_2\_K\_M}{185}{subsection.19.65}%
+\contentsline {subsection}{\numberline {19.66}66. Format Q\_2\_K\_H}{185}{subsection.19.66}%
+\contentsline {subsection}{\numberline {19.67}67. Format Q\_3\_K\_M}{185}{subsection.19.67}%
+\contentsline {subsection}{\numberline {19.68}68. Format Q\_3\_K\_H}{186}{subsection.19.68}%
+\contentsline {subsection}{\numberline {19.69}69. Format Q\_4\_K\_M}{186}{subsection.19.69}%
+\contentsline {subsection}{\numberline {19.70}70. Format Q\_4\_K\_H}{186}{subsection.19.70}%
+\contentsline {subsection}{\numberline {19.71}71. Format Q\_6\_K\_M}{186}{subsection.19.71}%
+\contentsline {subsection}{\numberline {19.72}72. Format Q\_6\_K\_H}{186}{subsection.19.72}%
+\contentsline {subsection}{\numberline {19.73}73. Format Q\_8\_K\_M}{186}{subsection.19.73}%
+\contentsline {subsection}{\numberline {19.74}74. Format Q\_8\_K\_H}{186}{subsection.19.74}%
+\contentsline {subsection}{\numberline {19.75}75. Format Q\_12\_K\_M}{186}{subsection.19.75}%
+\contentsline {subsection}{\numberline {19.76}76. Format Q\_12\_K\_H}{187}{subsection.19.76}%
+\contentsline {subsection}{\numberline {19.77}77. Format Q\_16\_K\_M}{187}{subsection.19.77}%
+\contentsline {subsection}{\numberline {19.78}78. Format Q\_16\_K\_H}{187}{subsection.19.78}%
+\contentsline {subsection}{\numberline {19.79}79. Format Q\_24\_K\_M}{187}{subsection.19.79}%
+\contentsline {subsection}{\numberline {19.80}80. Format Q\_24\_K\_H}{187}{subsection.19.80}%
+\contentsline {subsection}{\numberline {19.81}81. Format Q\_G\_1}{187}{subsection.19.81}%
+\contentsline {subsection}{\numberline {19.82}82. Format Q\_G\_2}{187}{subsection.19.82}%
+\contentsline {subsection}{\numberline {19.83}83. Format Q\_G\_3}{187}{subsection.19.83}%
+\contentsline {subsection}{\numberline {19.84}84. Format Q\_G\_4}{188}{subsection.19.84}%
+\contentsline {subsection}{\numberline {19.85}85. Format Q\_G\_6}{188}{subsection.19.85}%
+\contentsline {subsection}{\numberline {19.86}86. Format Q\_G\_8}{188}{subsection.19.86}%
+\contentsline {subsection}{\numberline {19.87}87. Format Q\_G\_12}{188}{subsection.19.87}%
+\contentsline {subsection}{\numberline {19.88}88. Format Q\_G\_16}{188}{subsection.19.88}%
+\contentsline {subsection}{\numberline {19.89}89. Format Q\_G\_24}{188}{subsection.19.89}%
+\contentsline {subsection}{\numberline {19.90}90. Format Q\_G\_1\_K\_M}{189}{subsection.19.90}%
+\contentsline {subsection}{\numberline {19.91}91. Format Q\_G\_1\_K\_H}{189}{subsection.19.91}%
+\contentsline {subsection}{\numberline {19.92}92. Format Q\_G\_2\_K\_M}{189}{subsection.19.92}%
+\contentsline {subsection}{\numberline {19.93}93. Format Q\_G\_2\_K\_H}{189}{subsection.19.93}%
+\contentsline {subsection}{\numberline {19.94}94. Format Q\_G\_3\_K\_M}{189}{subsection.19.94}%
+\contentsline {subsection}{\numberline {19.95}95. Format Q\_G\_3\_K\_H}{189}{subsection.19.95}%
+\contentsline {subsection}{\numberline {19.96}96. Format Q\_G\_4\_K\_M}{189}{subsection.19.96}%
+\contentsline {subsection}{\numberline {19.97}97. Format Q\_G\_4\_K\_H}{189}{subsection.19.97}%
+\contentsline {subsection}{\numberline {19.98}98. Format Q\_G\_6\_K\_M}{190}{subsection.19.98}%
+\contentsline {subsection}{\numberline {19.99}99. Format Q\_G\_6\_K\_H}{190}{subsection.19.99}%
+\contentsline {subsection}{\numberline {19.100}100. Format Q\_G\_8\_K\_M}{190}{subsection.19.100}%
+\contentsline {subsection}{\numberline {19.101}101. Format Q\_G\_8\_K\_H}{190}{subsection.19.101}%
+\contentsline {subsection}{\numberline {19.102}102. Format Q\_G\_12\_K\_M}{190}{subsection.19.102}%
+\contentsline {subsection}{\numberline {19.103}103. Format Q\_G\_12\_K\_H}{190}{subsection.19.103}%
+\contentsline {subsection}{\numberline {19.104}104. Format Q\_G\_16\_K\_M}{190}{subsection.19.104}%
+\contentsline {subsection}{\numberline {19.105}105. Format Q\_G\_16\_K\_H}{191}{subsection.19.105}%
+\contentsline {subsection}{\numberline {19.106}106. Format Q\_G\_24\_K\_M}{191}{subsection.19.106}%
+\contentsline {subsection}{\numberline {19.107}107. Format Q\_G\_24\_K\_H}{191}{subsection.19.107}%
+\contentsline {subsection}{\numberline {19.108}108. Format Q\_MX\_3\_5}{191}{subsection.19.108}%
+\contentsline {subsection}{\numberline {19.109}109. Format Q\_MX\_4\_5}{191}{subsection.19.109}%
+\contentsline {subsection}{\numberline {19.110}110. Format Q\_MX\_6\_5}{191}{subsection.19.110}%
+\contentsline {subsection}{\numberline {19.111}111. Format Q\_MX\_8\_5}{191}{subsection.19.111}%
+\contentsline {subsection}{\numberline {19.112}112. Format Q\_MX\_12\_5}{191}{subsection.19.112}%
+\contentsline {subsection}{\numberline {19.113}113. Format Q\_MX\_16\_5}{191}{subsection.19.113}%
+\contentsline {subsection}{\numberline {19.114}114. Format Q\_MX\_24\_5}{192}{subsection.19.114}%
+\contentsline {subsection}{\numberline {19.115}115. Format Q\_G\_MX\_3\_5}{192}{subsection.19.115}%
+\contentsline {subsection}{\numberline {19.116}116. Format Q\_G\_MX\_4\_5}{192}{subsection.19.116}%
+\contentsline {subsection}{\numberline {19.117}117. Format Q\_G\_MX\_6\_5}{192}{subsection.19.117}%
+\contentsline {subsection}{\numberline {19.118}118. Format Q\_G\_MX\_8\_5}{192}{subsection.19.118}%
+\contentsline {subsection}{\numberline {19.119}119. Format Q\_G\_MX\_12\_5}{192}{subsection.19.119}%
+\contentsline {subsection}{\numberline {19.120}120. Format Q\_G\_MX\_16\_5}{192}{subsection.19.120}%
+\contentsline {subsection}{\numberline {19.121}121. Format Q\_G\_MX\_24\_5}{192}{subsection.19.121}%
+\contentsline {subsection}{\numberline {19.122}122. The quant\_agi library}{193}{subsection.19.122}%
+\contentsline {subsection}{\numberline {19.123}123. The quant\_backend library}{193}{subsection.19.123}%
+\contentsline {subsection}{\numberline {19.124}124. The quant\_config library}{193}{subsection.19.124}%
+\contentsline {subsection}{\numberline {19.125}125. The quant\_continual library}{193}{subsection.19.125}%
+\contentsline {subsection}{\numberline {19.126}126. The quant\_core library}{193}{subsection.19.126}%
+\contentsline {subsection}{\numberline {19.127}127. The quant\_dense library}{193}{subsection.19.127}%
+\contentsline {subsection}{\numberline {19.128}128. The quant\_distributed library}{194}{subsection.19.128}%
+\contentsline {subsection}{\numberline {19.129}129. The quant\_engine library}{194}{subsection.19.129}%
+\contentsline {subsection}{\numberline {19.130}130. The quant\_format library}{194}{subsection.19.130}%
+\contentsline {subsection}{\numberline {19.131}131. The quant\_gle library}{194}{subsection.19.131}%
+\contentsline {subsection}{\numberline {19.132}132. The quant\_gpu library}{194}{subsection.19.132}%
+\contentsline {subsection}{\numberline {19.133}133. The quant\_inference library}{194}{subsection.19.133}%
+\contentsline {subsection}{\numberline {19.134}134. The quant\_inference\_opt library}{195}{subsection.19.134}%
+\contentsline {subsection}{\numberline {19.135}135. The quant\_inferno library}{195}{subsection.19.135}%
+\contentsline {subsection}{\numberline {19.136}136. The quant\_kernel library}{195}{subsection.19.136}%
+\contentsline {subsection}{\numberline {19.137}137. The quant\_math library}{195}{subsection.19.137}%
+\contentsline {subsection}{\numberline {19.138}138. The quant\_model library}{195}{subsection.19.138}%
+\contentsline {subsection}{\numberline {19.139}139. The quant\_moe library}{195}{subsection.19.139}%
+\contentsline {subsection}{\numberline {19.140}140. The quant\_moe\_enhance library}{196}{subsection.19.140}%
+\contentsline {subsection}{\numberline {19.141}141. The quant\_moe\_variants library}{196}{subsection.19.141}%
+\contentsline {subsection}{\numberline {19.142}142. The quant\_multimodal library}{196}{subsection.19.142}%
+\contentsline {subsection}{\numberline {19.143}143. The quant\_production library}{196}{subsection.19.143}%
+\contentsline {subsection}{\numberline {19.144}144. The quant\_speculative library}{196}{subsection.19.144}%
+\contentsline {subsection}{\numberline {19.145}145. The quant\_thread\_safety library}{196}{subsection.19.145}%
+\contentsline {subsection}{\numberline {19.146}146. The quant\_tokenizer library}{196}{subsection.19.146}%
+\contentsline {subsection}{\numberline {19.147}147. The quant\_trainer library}{197}{subsection.19.147}%
+\contentsline {subsection}{\numberline {19.148}148. The bench\_format\_comparison executable}{197}{subsection.19.148}%
+\contentsline {subsection}{\numberline {19.149}149. The bench\_inferno executable}{197}{subsection.19.149}%
+\contentsline {subsection}{\numberline {19.150}150. The bench\_quality executable}{197}{subsection.19.150}%
+\contentsline {subsection}{\numberline {19.151}151. The generate\_comparison\_visuals executable}{197}{subsection.19.151}%
+\contentsline {subsection}{\numberline {19.152}152. The gle\_report executable}{197}{subsection.19.152}%
+\contentsline {subsection}{\numberline {19.153}153. The inferno\_info executable}{198}{subsection.19.153}%
+\contentsline {subsection}{\numberline {19.154}154. The inferno\_train\_sim executable}{198}{subsection.19.154}%
+\contentsline {subsection}{\numberline {19.155}155. The probe\_mi\_extraction executable}{198}{subsection.19.155}%
+\contentsline {subsection}{\numberline {19.156}156. The quant\_bench executable}{198}{subsection.19.156}%
+\contentsline {subsection}{\numberline {19.157}157. The quant\_convert executable}{198}{subsection.19.157}%
+\contentsline {subsection}{\numberline {19.158}158. The quant\_evaluate executable}{198}{subsection.19.158}%
+\contentsline {subsection}{\numberline {19.159}159. The quant\_finetune executable}{199}{subsection.19.159}%
+\contentsline {subsection}{\numberline {19.160}160. The quant\_format\_list executable}{199}{subsection.19.160}%
+\contentsline {subsection}{\numberline {19.161}161. The quant\_infer executable}{199}{subsection.19.161}%
+\contentsline {subsection}{\numberline {19.162}162. The quant\_info executable}{199}{subsection.19.162}%
+\contentsline {subsection}{\numberline {19.163}163. The quant\_quantize executable}{199}{subsection.19.163}%
+\contentsline {subsection}{\numberline {19.164}164. The quant\_serve executable}{199}{subsection.19.164}%
+\contentsline {subsection}{\numberline {19.165}165. The quant\_server executable}{200}{subsection.19.165}%
+\contentsline {subsection}{\numberline {19.166}166. The quant\_train executable}{200}{subsection.19.166}%
+\contentsline {subsection}{\numberline {19.167}167. The train\_64m executable}{200}{subsection.19.167}%
+\contentsline {subsection}{\numberline {19.168}168. The src/adapters/ tree}{200}{subsection.19.168}%
+\contentsline {subsection}{\numberline {19.169}169. The src/agi/ tree}{200}{subsection.19.169}%
+\contentsline {subsection}{\numberline {19.170}170. The src/backend/ tree}{200}{subsection.19.170}%
+\contentsline {subsection}{\numberline {19.171}171. The src/codec/ tree}{201}{subsection.19.171}%
+\contentsline {subsection}{\numberline {19.172}172. The src/core/ tree}{201}{subsection.19.172}%
+\contentsline {subsection}{\numberline {19.173}173. The src/gle/ tree}{201}{subsection.19.173}%
+\contentsline {subsection}{\numberline {19.174}174. The src/inference/ tree}{201}{subsection.19.174}%
+\contentsline {subsection}{\numberline {19.175}175. The src/kernel/ tree}{201}{subsection.19.175}%
+\contentsline {subsection}{\numberline {19.176}176. The src/math/ tree}{201}{subsection.19.176}%
+\contentsline {subsection}{\numberline {19.177}177. The src/model/ tree}{201}{subsection.19.177}%
+\contentsline {subsection}{\numberline {19.178}178. The src/multimodal/ tree}{202}{subsection.19.178}%
+\contentsline {subsection}{\numberline {19.179}179. The src/server/ tree}{202}{subsection.19.179}%
+\contentsline {subsection}{\numberline {19.180}180. The src/tokenizer/ tree}{202}{subsection.19.180}%
+\contentsline {subsection}{\numberline {19.181}181. The src/trainer/ tree}{202}{subsection.19.181}%
+\contentsline {subsection}{\numberline {19.182}182. The engines/inference/ tree}{202}{subsection.19.182}%
+\contentsline {subsection}{\numberline {19.183}183. The engines/quant/ tree}{202}{subsection.19.183}%
+\contentsline {subsection}{\numberline {19.184}184. The engines/trainer/ tree}{203}{subsection.19.184}%
+\contentsline {subsection}{\numberline {19.185}185. Appendix A . The build-target index}{203}{subsection.19.185}%
+\contentsline {subsection}{\numberline {19.186}186. Appendix B . The library index}{203}{subsection.19.186}%
+\contentsline {subsection}{\numberline {19.187}187. Appendix C . The test index, part 1}{203}{subsection.19.187}%
+\contentsline {subsection}{\numberline {19.188}188. Appendix D . The test index, part 2}{204}{subsection.19.188}%
+\contentsline {subsection}{\numberline {19.189}189. Appendix E . The test index, part 3}{204}{subsection.19.189}%
+\contentsline {subsection}{\numberline {19.190}190. Appendix F . The retired-id index}{204}{subsection.19.190}%
+\contentsline {subsection}{\numberline {19.191}Document control}{204}{subsection.19.191}%
+\contentsline {subsection}{\numberline {19.192}Colophon}{204}{subsection.19.192}%
+\contentsline {section}{Part IV \textperiodcentered {} Quantization science}{204}{subsection.19.192}%
+\contentsline {section}{\numberline {20}Native mixed-precision training via quantization barriers}{204}{section.20}%
+\contentsline {subsection}{\numberline {20.1}Abstract}{205}{subsection.20.1}%
+\contentsline {subsection}{\numberline {20.2}1. Introduction}{205}{subsection.20.2}%
+\contentsline {subsubsection}{\numberline {20.2.1}1.1 The Problem with the Current AI Stack}{205}{subsubsection.20.2.1}%
+\contentsline {subsubsection}{\numberline {20.2.2}1.2 QUANT: The Answer}{205}{subsubsection.20.2.2}%
+\contentsline {subsubsection}{\numberline {20.2.3}1.3 Central Claim}{205}{subsubsection.20.2.3}%
+\contentsline {subsubsection}{\numberline {20.2.4}1.4 Contributions}{205}{subsubsection.20.2.4}%
+\contentsline {subsubsection}{\numberline {20.2.5}1.5 Paper Organization}{206}{subsubsection.20.2.5}%
+\contentsline {subsection}{\numberline {20.3}2. Related Work}{206}{subsection.20.3}%
+\contentsline {subsubsection}{\numberline {20.3.1}2.1 Quantization Methods}{206}{subsubsection.20.3.1}%
+\contentsline {subsubsection}{\numberline {20.3.2}2.2 Training-Aware Quantization}{206}{subsubsection.20.3.2}%
+\contentsline {subsubsection}{\numberline {20.3.3}2.3 Mixed-Precision Training}{206}{subsubsection.20.3.3}%
+\contentsline {subsubsection}{\numberline {20.3.4}2.4 Information-Theoretic Bounds}{206}{subsubsection.20.3.4}%
+\contentsline {subsubsection}{\numberline {20.3.5}2.5 Sparse Mixture of Experts}{206}{subsubsection.20.3.5}%
+\contentsline {subsection}{\numberline {20.4}3. Background and Preliminaries}{206}{subsection.20.4}%
+\contentsline {subsubsection}{\numberline {20.4.1}3.1 Notation and Setup}{206}{subsubsection.20.4.1}%
+\contentsline {subsubsection}{\numberline {20.4.2}3.2 PAC-Bayes Framework}{207}{subsubsection.20.4.2}%
+\contentsline {subsubsection}{\numberline {20.4.3}3.3 Algorithmic Stability}{207}{subsubsection.20.4.3}%
+\contentsline {subsubsection}{\numberline {20.4.4}3.4 Lloyd-Max Quantization}{207}{subsubsection.20.4.4}%
+\contentsline {subsubsection}{\numberline {20.4.5}3.5 Information-Theoretic Mutual Information Bounds}{207}{subsubsection.20.4.5}%
+\contentsline {subsection}{\numberline {20.5}4. The QUANT Framework}{207}{subsection.20.5}%
+\contentsline {subsubsection}{\numberline {20.5.1}4.1 Format Definitions}{207}{subsubsection.20.5.1}%
+\contentsline {subsubsection}{\numberline {20.5.2}4.2 Codebook Design and Training}{208}{subsubsection.20.5.2}%
+\contentsline {subsubsection}{\numberline {20.5.3}4.3 FormatPlanner with Importance Scoring}{208}{subsubsection.20.5.3}%
+\contentsline {subsubsection}{\numberline {20.5.4}4.4 Native Training with Straight-Through Estimator}{208}{subsubsection.20.5.4}%
+\contentsline {subsubsection}{\numberline {20.5.5}4.5 The Quantization Barrier Mechanism}{208}{subsubsection.20.5.5}%
+\contentsline {subsubsection}{\numberline {20.5.6}4.6 Binary File Format Specification}{209}{subsubsection.20.5.6}%
+\contentsline {subsection}{\numberline {20.6}5. Theoretical Analysis}{209}{subsection.20.6}%
+\contentsline {subsubsection}{\numberline {20.6.1}5.1 Formal Setup and Risk Decomposition}{209}{subsubsection.20.6.1}%
+\contentsline {subsubsection}{\numberline {20.6.2}5.2 PAC-Bayes Bounds with Exact Constants}{209}{subsubsection.20.6.2}%
+\contentsline {subsubsection}{\numberline {20.6.3}5.3 Delta\textbackslash {}\_train: Approximation Error of the QUANT Hypothesis Class}{210}{subsubsection.20.6.3}%
+\contentsline {subsubsection}{\numberline {20.6.4}5.4 Delta\textbackslash {}\_opt: SGD Optimization Error in ℋ\textbackslash {}\_m}{210}{subsubsection.20.6.4}%
+\contentsline {subsubsection}{\numberline {20.6.5}5.5 Effective Degrees of Freedom}{210}{subsubsection.20.6.5}%
+\contentsline {subsubsection}{\numberline {20.6.6}5.6 Optimization Landscape under Codebook Constraints}{211}{subsubsection.20.6.6}%
+\contentsline {subsubsection}{\numberline {20.6.7}5.7 Dynamical Systems Analysis of the Quantization Barrier}{211}{subsubsection.20.6.7}%
+\contentsline {subsubsection}{\numberline {20.6.8}5.8 Gradient Dead Zone Algorithmic Stability}{211}{subsubsection.20.6.8}%
+\contentsline {subsubsection}{\numberline {20.6.9}5.9 Confidence Interval for Risk Difference}{212}{subsubsection.20.6.9}%
+\contentsline {subsubsection}{\numberline {20.6.10}5.10 Expressivity and Sensitivity Preservation}{212}{subsubsection.20.6.10}%
+\contentsline {subsubsection}{\numberline {20.6.11}5.11 Confidence Interval for Risk Difference (Complete)}{213}{subsubsection.20.6.11}%
+\contentsline {subsection}{\numberline {20.7}6. CID: Critical Importance Distribution}{213}{subsection.20.7}%
+\contentsline {subsubsection}{\numberline {20.7.1}6.1 The Power-Law Sensitivity Assumption}{213}{subsubsection.20.7.1}%
+\contentsline {subsubsection}{\numberline {20.7.2}6.2 Theorem C.1: CID from Structured Data Covariance}{213}{subsubsection.20.7.2}%
+\contentsline {subsubsection}{\numberline {20.7.3}6.3 NTK Spectral Inheritance}{213}{subsubsection.20.7.3}%
+\contentsline {subsubsection}{\numberline {20.7.4}6.4 Empirical Verification Across 8 Studies}{213}{subsubsection.20.7.4}%
+\contentsline {subsubsection}{\numberline {20.7.5}6.5 Domain-Specific CID Exponents}{214}{subsubsection.20.7.5}%
+\contentsline {subsection}{\numberline {20.8}7. Experimental Results}{214}{subsection.20.8}%
+\contentsline {subsubsection}{\numberline {20.8.1}7.1 Proof-of-Concept: Multi-Scale Linear Regression}{214}{subsubsection.20.8.1}%
+\contentsline {subsubsection}{\numberline {20.8.2}7.2 Real Transformer Weights: GPT-2 Benchmark}{214}{subsubsection.20.8.2}%
+\contentsline {subsubsection}{\numberline {20.8.3}7.3 Cross-BPW Wins: QUANT X Beating Industry 2X}{214}{subsubsection.20.8.3}%
+\contentsline {subsubsection}{\numberline {20.8.4}7.4 Per-Layer Analysis Across 24 Transformer Layers}{214}{subsubsection.20.8.4}%
+\contentsline {subsubsection}{\numberline {20.8.5}7.5 Why Native Quantized Training}{214}{subsubsection.20.8.5}%
+\contentsline {subsubsection}{\numberline {20.8.6}7.6 Memory and Storage Analysis at Scale}{215}{subsubsection.20.8.6}%
+\contentsline {subsection}{\numberline {20.9}8. The Transcender Engine}{215}{subsection.20.9}%
+\contentsline {subsubsection}{\numberline {20.9.1}8.1 Architecture Overview}{215}{subsubsection.20.9.1}%
+\contentsline {subsubsection}{\numberline {20.9.2}8.2 QUANT Format Binary Specification}{215}{subsubsection.20.9.2}%
+\contentsline {subsubsection}{\numberline {20.9.3}8.3 Kernel Design}{215}{subsubsection.20.9.3}%
+\contentsline {subsubsection}{\numberline {20.9.4}8.4 Training Pipeline}{215}{subsubsection.20.9.4}%
+\contentsline {subsubsection}{\numberline {20.9.5}8.5 Inference Pipeline}{215}{subsubsection.20.9.5}%
+\contentsline {subsubsection}{\numberline {20.9.6}8.6 Mixture of Experts with 24 Variants}{215}{subsubsection.20.9.6}%
+\contentsline {subsubsection}{\numberline {20.9.7}8.7 Multimodal Pipeline}{216}{subsubsection.20.9.7}%
+\contentsline {subsection}{\numberline {20.10}9. In-House Format Benchmark}{216}{subsection.20.10}%
+\contentsline {subsubsection}{\numberline {20.10.1}9.1 Native Training vs Post-Training Quantization}{216}{subsubsection.20.10.1}%
+\contentsline {subsubsection}{\numberline {20.10.2}9.2 Per-Block Format Routing}{216}{subsubsection.20.10.2}%
+\contentsline {subsubsection}{\numberline {20.10.3}9.3 Measured Results (reproducible via bench\_poc)}{216}{subsubsection.20.10.3}%
+\contentsline {subsection}{\numberline {20.11}10. Production Deployment}{216}{subsection.20.11}%
+\contentsline {subsubsection}{\numberline {20.11.1}10.1 HTTP API Server Design}{216}{subsubsection.20.11.1}%
+\contentsline {subsubsection}{\numberline {20.11.2}10.2 Single-Binary Deployment}{216}{subsubsection.20.11.2}%
+\contentsline {subsubsection}{\numberline {20.11.3}10.3 Cross-Platform Support}{217}{subsubsection.20.11.3}%
+\contentsline {subsubsection}{\numberline {20.11.4}10.4 Scaling to 48T+ Parameters}{217}{subsubsection.20.11.4}%
+\contentsline {subsection}{\numberline {20.12}11. Safety and Alignment}{217}{subsection.20.12}%
+\contentsline {subsubsection}{\numberline {20.12.1}11.1 Air-Gapped Training}{217}{subsubsection.20.12.1}%
+\contentsline {subsubsection}{\numberline {20.12.2}11.2 Model Provenance via SHA256}{217}{subsubsection.20.12.2}%
+\contentsline {subsubsection}{\numberline {20.12.3}11.3 Value Preservation in Self-Improvement}{217}{subsubsection.20.12.3}%
+\contentsline {subsubsection}{\numberline {20.12.4}11.4 Capability Control}{217}{subsubsection.20.12.4}%
+\contentsline {subsection}{\numberline {20.13}12. Limitations and Future Work}{217}{subsection.20.13}%
+\contentsline {subsubsection}{\numberline {20.13.1}12.1 Open Problems}{217}{subsubsection.20.13.1}%
+\contentsline {subsubsection}{\numberline {20.13.2}12.2 GPU Acceleration Path}{217}{subsubsection.20.13.2}%
+\contentsline {subsubsection}{\numberline {20.13.3}12.3 Scale to 7B+ Models}{217}{subsubsection.20.13.3}%
+\contentsline {subsubsection}{\numberline {20.13.4}12.4 Publication Roadmap}{217}{subsubsection.20.13.4}%
+\contentsline {subsection}{\numberline {20.14}13. Conclusion}{217}{subsection.20.14}%
+\contentsline {subsection}{\numberline {20.15}References}{217}{subsection.20.15}%
+\contentsline {subsection}{\numberline {20.16}Appendices}{219}{subsection.20.16}%
+\contentsline {subsubsection}{\numberline {20.16.1}Appendix A: Full PAC-Bayes Derivation}{219}{subsubsection.20.16.1}%
+\contentsline {subsubsection}{\numberline {20.16.2}Appendix B: Practical Significance (Storage/Compute Analysis)}{219}{subsubsection.20.16.2}%
+\contentsline {subsubsection}{\numberline {20.16.3}Appendix C: CID Proof Details}{219}{subsubsection.20.16.3}%
+\contentsline {subsubsection}{\numberline {20.16.4}Appendix D: Kernel Performance Analysis}{219}{subsubsection.20.16.4}%
+\contentsline {subsubsection}{\numberline {20.16.5}Appendix E: Complete Format Specification}{219}{subsubsection.20.16.5}%
+\contentsline {section}{\numberline {21}The format ladder and the bit-per-weight contract}{220}{section.21}%
+\contentsline {subsection}{\numberline {21.1}Rules the ladder encodes}{220}{subsection.21.1}%
+\contentsline {subsection}{\numberline {21.2}Wire-count arithmetic (n = 256 block, bytes per block = BPW x 256 / 8)}{220}{subsection.21.2}%
+\contentsline {subsubsection}{\numberline {21.2.1}GRP K\_G family (takes M/H tiers; K\_L retires)}{221}{subsubsection.21.2.1}%
+\contentsline {subsection}{\numberline {21.3}Final ladder table (69 formats — L1 writes this into the enum)}{221}{subsection.21.3}%
+\contentsline {subsubsection}{\numberline {21.3.1}Keep (69 ids — every id below survives; nothing renumbers)}{221}{subsubsection.21.3.1}%
+\contentsline {subsubsection}{\numberline {21.3.2}Retire (36 id holes — format\_is\_valid() = false; decode maps via L4)}{221}{subsubsection.21.3.2}%
+\contentsline {subsubsection}{\numberline {21.3.3}Q\_1\_K\_H ternary wire contract (the operator's H example, made exact)}{221}{subsubsection.21.3.3}%
+\contentsline {subsection}{\numberline {21.4}formerly-known-as map (renames with provenance comments in code)}{221}{subsection.21.4}%
+\contentsline {subsection}{\numberline {21.5}Registry means every format is REACHABLE}{221}{subsection.21.5}%
+\contentsline {section}{\numberline {22}SOPS: a compute unit for quantized training}{221}{section.22}%
+\contentsline {subsection}{\numberline {22.1}A New Compute Unit for Quantized Model Training on CPU}{221}{subsection.22.1}%
+\contentsline {subsubsection}{\numberline {22.1.1}Version 1.0 — Specification Document}{221}{subsubsection.22.1.1}%
+\contentsline {subsubsection}{\numberline {22.1.2}Transcender Project}{221}{subsubsection.22.1.2}%
+\contentsline {subsection}{\numberline {22.2}Table of Contents}{221}{subsection.22.2}%
+\contentsline {subsection}{\numberline {22.3}1. Executive Summary}{222}{subsection.22.3}%
+\contentsline {subsection}{\numberline {22.4}2. Motivation: Why FLOPS is Broken}{222}{subsection.22.4}%
+\contentsline {subsubsection}{\numberline {22.4.1}2.1 The FLOPS Deception}{222}{subsubsection.22.4.1}%
+\contentsline {subsubsection}{\numberline {22.4.2}2.2 The Memory Bandwidth Reality}{222}{subsubsection.22.4.2}%
+\contentsline {subsubsection}{\numberline {22.4.3}2.3 The Quantization Spectrum}{222}{subsubsection.22.4.3}%
+\contentsline {subsection}{\numberline {22.5}3. SOPS Definition}{222}{subsection.22.5}%
+\contentsline {subsubsection}{\numberline {22.5.1}3.1 Formal Definition}{222}{subsubsection.22.5.1}%
+\contentsline {subsubsection}{\numberline {22.5.2}3.2 The SOPS Formula}{222}{subsubsection.22.5.2}%
+\contentsline {subsubsection}{\numberline {22.5.3}3.3 Derived Quantities}{222}{subsubsection.22.5.3}%
+\contentsline {subsubsection}{\numberline {22.5.4}3.4 Why 32 as the Normalizer?}{222}{subsubsection.22.5.4}%
+\contentsline {subsubsection}{\numberline {22.5.5}3.5 Physical Meaning of Info Weight}{222}{subsubsection.22.5.5}%
+\contentsline {subsection}{\numberline {22.6}4. The Info Weight Formula}{223}{subsection.22.6}%
+\contentsline {subsubsection}{\numberline {22.6.1}4.1 Core Formula}{223}{subsubsection.22.6.1}%
+\contentsline {subsubsection}{\numberline {22.6.2}4.2 Proof of Correctness}{223}{subsubsection.22.6.2}%
+\contentsline {subsubsection}{\numberline {22.6.3}4.3 Why Not Use SIMD Lanes?}{223}{subsubsection.22.6.3}%
+\contentsline {subsubsection}{\numberline {22.6.4}4.4 Formal Properties}{223}{subsubsection.22.6.4}%
+\contentsline {subsection}{\numberline {22.7}5. Complete Format Reference}{223}{subsection.22.7}%
+\contentsline {subsubsection}{\numberline {22.7.1}5.1 Base Formats (RegFormat enum)}{223}{subsubsection.22.7.1}%
+\contentsline {subsubsection}{\numberline {22.7.2}5.2 Info Weight Summary Table}{223}{subsubsection.22.7.2}%
+\contentsline {subsubsection}{\numberline {22.7.3}5.3 Visual Comparison}{223}{subsubsection.22.7.3}%
+\contentsline {subsection}{\numberline {22.8}6. Mix Format Support}{223}{subsection.22.8}%
+\contentsline {subsubsection}{\numberline {22.8.1}6.1 Two-Tier Mixes}{223}{subsubsection.22.8.1}%
+\contentsline {subsubsection}{\numberline {22.8.2}6.2 Effective BPW Calculation}{223}{subsubsection.22.8.2}%
+\contentsline {subsubsection}{\numberline {22.8.3}6.3 Quad-Tier Mixes}{224}{subsubsection.22.8.3}%
+\contentsline {subsubsection}{\numberline {22.8.4}6.4 Mix Format SOPS}{224}{subsubsection.22.8.4}%
+\contentsline {subsection}{\numberline {22.9}7. Memory Bandwidth Analysis}{224}{subsection.22.9}%
+\contentsline {subsubsection}{\numberline {22.9.1}7.1 Bandwidth Formula}{224}{subsubsection.22.9.1}%
+\contentsline {subsubsection}{\numberline {22.9.2}7.2 Bandwidth Requirements for 1 SOPS}{224}{subsubsection.22.9.2}%
+\contentsline {subsubsection}{\numberline {22.9.3}7.3 Bandwidth Advantage of Lower BPW}{224}{subsubsection.22.9.3}%
+\contentsline {subsubsection}{\numberline {22.9.4}7.4 CPU Memory Hierarchy Impact}{224}{subsubsection.22.9.4}%
+\contentsline {subsection}{\numberline {22.10}8. SIMD and Compute Analysis}{224}{subsection.22.10}%
+\contentsline {subsubsection}{\numberline {22.10.1}8.1 SIMD Lanes per Format}{224}{subsubsection.22.10.1}%
+\contentsline {subsubsection}{\numberline {22.10.2}8.2 Compute Throughput per Format}{224}{subsubsection.22.10.2}%
+\contentsline {subsubsection}{\numberline {22.10.3}8.3 The SIMD-Info Weight Independence}{224}{subsubsection.22.10.3}%
+\contentsline {subsubsection}{\numberline {22.10.4}8.4 FMA Pipeline Utilization}{224}{subsubsection.22.10.4}%
+\contentsline {subsection}{\numberline {22.11}9. SOPS Unit Scales}{224}{subsection.22.11}%
+\contentsline {subsubsection}{\numberline {22.11.1}9.1 SI-Prefix SOPS}{224}{subsubsection.22.11.1}%
+\contentsline {subsubsection}{\numberline {22.11.2}9.2 Human-Readable Formatting}{224}{subsubsection.22.11.2}%
+\contentsline {subsubsection}{\numberline {22.11.3}9.3 Current PC Measurements}{224}{subsubsection.22.11.3}%
+\contentsline {subsection}{\numberline {22.12}10. Implementation: SopsCounter API}{224}{subsection.22.12}%
+\contentsline {subsubsection}{\numberline {22.12.1}10.1 Header Location}{224}{subsubsection.22.12.1}%
+\contentsline {subsubsection}{\numberline {22.12.2}10.2 Creating a Counter}{225}{subsubsection.22.12.2}%
+\contentsline {subsubsection}{\numberline {22.12.3}10.3 Basic Usage}{225}{subsubsection.22.12.3}%
+\contentsline {subsubsection}{\numberline {22.12.4}10.4 Format Index Reference}{225}{subsubsection.22.12.4}%
+\contentsline {subsubsection}{\numberline {22.12.5}10.5 Recording Operations}{225}{subsubsection.22.12.5}%
+\contentsline {subsubsection}{\numberline {22.12.6}10.6 Thread Safety}{225}{subsubsection.22.12.6}%
+\contentsline {subsubsection}{\numberline {22.12.7}10.7 Multi-Thread Usage}{225}{subsubsection.22.12.7}%
+\contentsline {subsubsection}{\numberline {22.12.8}10.8 Result Accessors}{225}{subsubsection.22.12.8}%
+\contentsline {subsubsection}{\numberline {22.12.9}10.9 Timer Resolution}{225}{subsubsection.22.12.9}%
+\contentsline {subsection}{\numberline {22.13}11. Benchmark Methodology}{225}{subsection.22.13}%
+\contentsline {subsubsection}{\numberline {22.13.1}11.1 Benchmark Types}{225}{subsubsection.22.13.1}%
+\contentsline {subsubsection}{\numberline {22.13.2}11.2 Synthetic Stress Test}{225}{subsubsection.22.13.2}%
+\contentsline {subsubsection}{\numberline {22.13.3}11.3 Accuracy Considerations}{225}{subsubsection.22.13.3}%
+\contentsline {subsubsection}{\numberline {22.13.4}11.4 Running the Benchmark}{225}{subsubsection.22.13.4}%
+\contentsline {subsection}{\numberline {22.14}12. Theoretical Maximum SOPS}{225}{subsection.22.14}%
+\contentsline {subsubsection}{\numberline {22.14.1}12.1 Formula}{225}{subsubsection.22.14.1}%
+\contentsline {subsubsection}{\numberline {22.14.2}12.2 Calculation for 12-Core AVX2}{225}{subsubsection.22.14.2}%
+\contentsline {subsubsection}{\numberline {22.14.3}12.3 Why Theoretical != Actual}{225}{subsubsection.22.14.3}%
+\contentsline {subsubsection}{\numberline {22.14.4}12.4 Optimization Opportunities}{225}{subsubsection.22.14.4}%
+\contentsline {subsection}{\numberline {22.15}13. Gap Analysis: Current PC to ZSOPS}{225}{subsection.22.15}%
+\contentsline {subsubsection}{\numberline {22.15.1}13.1 Current State}{226}{subsubsection.22.15.1}%
+\contentsline {subsubsection}{\numberline {22.15.2}13.2 Scaling Path}{226}{subsubsection.22.15.2}%
+\contentsline {subsubsection}{\numberline {22.15.3}13.3 Fundamental Limits}{226}{subsubsection.22.15.3}%
+\contentsline {subsection}{\numberline {22.16}14. Comparison with Existing Metrics}{226}{subsection.22.16}%
+\contentsline {subsubsection}{\numberline {22.16.1}14.1 FLOPS}{226}{subsubsection.22.16.1}%
+\contentsline {subsubsection}{\numberline {22.16.2}14.2 TOPS (Tera Operations Per Second)}{226}{subsubsection.22.16.2}%
+\contentsline {subsubsection}{\numberline {22.16.3}14.3 Tokens/Second}{226}{subsubsection.22.16.3}%
+\contentsline {subsubsection}{\numberline {22.16.4}14.4 Memory Bandwidth Utilization}{226}{subsubsection.22.16.4}%
+\contentsline {subsection}{\numberline {22.17}15. Integration with Transcender Training Pipeline}{226}{subsection.22.17}%
+\contentsline {subsubsection}{\numberline {22.17.1}15.1 Training Loop Integration}{226}{subsubsection.22.17.1}%
+\contentsline {subsubsection}{\numberline {22.17.2}15.2 Format-Aware SOPS}{226}{subsubsection.22.17.2}%
+\contentsline {subsubsection}{\numberline {22.17.3}15.3 Format Planner Integration}{226}{subsubsection.22.17.3}%
+\contentsline {subsubsection}{\numberline {22.17.4}15.4 Comparison: QUANT4 vs FP32 Training}{226}{subsubsection.22.17.4}%
+\contentsline {subsection}{\numberline {22.18}16. Path to 1 SOPS}{226}{subsection.22.18}%
+\contentsline {subsubsection}{\numberline {22.18.1}16.1 Hardware Roadmap}{226}{subsubsection.22.18.1}%
+\contentsline {subsubsection}{\numberline {22.18.2}16.2 Software Roadmap}{227}{subsubsection.22.18.2}%
+\contentsline {subsection}{\numberline {22.19}17. What 1 SOPS Enables}{227}{subsection.22.19}%
+\contentsline {subsubsection}{\numberline {22.19.1}17.1 Training Speed}{227}{subsubsection.22.19.1}%
+\contentsline {subsubsection}{\numberline {22.19.2}17.2 Real-Time Learning}{227}{subsubsection.22.19.2}%
+\contentsline {subsubsection}{\numberline {22.19.3}17.3 Brain-Scale Compute}{227}{subsubsection.22.19.3}%
+\contentsline {subsubsection}{\numberline {22.19.4}17.4 vs Current Supercomputers}{227}{subsubsection.22.19.4}%
+\contentsline {subsection}{\numberline {22.20}Appendix A: Mathematical Proofs}{227}{subsection.22.20}%
+\contentsline {subsubsection}{\numberline {22.20.1}A.1 Proof: Info Weight = Memory Bandwidth Ratio}{227}{subsubsection.22.20.1}%
+\contentsline {subsubsection}{\numberline {22.20.2}A.2 Proof: Conservation Law}{227}{subsubsection.22.20.2}%
+\contentsline {subsubsection}{\numberline {22.20.3}A.3 Proof: SOPS vs FLOPS Ratio}{227}{subsubsection.22.20.3}%
+\contentsline {subsection}{\numberline {22.21}Appendix B: Benchmark Results}{227}{subsection.22.21}%
+\contentsline {subsubsection}{\numberline {22.21.1}B.1 Test System}{227}{subsubsection.22.21.1}%
+\contentsline {subsubsection}{\numberline {22.21.2}B.2 Results}{227}{subsubsection.22.21.2}%
+\contentsline {subsubsection}{\numberline {22.21.3}B.3 Format Comparison (64M model)}{227}{subsubsection.22.21.3}%
+\contentsline {subsection}{\numberline {22.22}Appendix C: API Reference}{227}{subsection.22.22}%
+\contentsline {subsubsection}{\numberline {22.22.1}C.1 SopsCounter Methods}{227}{subsubsection.22.22.1}%
+\contentsline {subsubsection}{\numberline {22.22.2}C.2 Free Functions}{228}{subsubsection.22.22.2}%
+\contentsline {subsubsection}{\numberline {22.22.3}C.3 Format Data}{228}{subsubsection.22.22.3}%
+\contentsline {subsubsection}{\numberline {22.22.4}C.4 SopsFormat Struct}{228}{subsubsection.22.22.4}%
+\contentsline {subsection}{\numberline {22.23}Document Information}{228}{subsection.22.23}%
+\contentsline {section}{\numberline {23}The claim verification ledger}{228}{section.23}%
+\contentsline {subsection}{\numberline {23.1}FULL AUDIT ADDENDUM — 2026-08-26 (research/audit\_full\_20260825.md)}{229}{subsection.23.1}%
+\contentsline {subsubsection}{\numberline {23.1.1}A-table reconciliation — 2026-09-12 (every row re-checked against the tree)}{229}{subsubsection.23.1.1}%
+\contentsline {subsection}{\numberline {23.2}FAKE Rebuild Backlog Map}{229}{subsection.23.2}%
+\contentsline {subsection}{\numberline {23.3}Phase 7 — Decode Slowness Fix (2026-09-02): >=2x Faster — VERIFIED}{229}{subsection.23.3}%
+\contentsline {subsection}{\numberline {23.4}Phase 15 Wave 6 — Model Features L050-L061 exit (2026-09-07, Wave-6 owner)}{231}{subsection.23.4}%
+\contentsline {subsection}{\numberline {23.5}Production-hardening round — 2026-09-11 (this session, Windows Release)}{231}{subsection.23.5}%
+\contentsline {subsection}{\numberline {23.6}100\%-production round 1 — 2026-09-11 (7-crew file audit P0/P1/P2 fixes)}{232}{subsection.23.6}%
+\contentsline {subsection}{\numberline {23.7}100\%-production round 2 — 2026-09-11 (dedup + stub losses + vacuous tests)}{232}{subsection.23.7}%
+\contentsline {subsection}{\numberline {23.8}100\%-production round 3 — 2026-09-11 (leaks, honesty, vacuous asserts)}{232}{subsection.23.8}%
+\contentsline {subsection}{\numberline {23.9}100\%-production round 4 — 2026-09-11 (last vacuous asserts + header docs)}{233}{subsection.23.9}%
+\contentsline {subsection}{\numberline {23.10}100\%-production round 5 — 2026-09-11 (stale PARTIAL re-verdicts: C-03/C-15/C-17)}{233}{subsection.23.10}%
+\contentsline {subsection}{\numberline {23.11}100\%-production round 6 — 2026-09-11 (C-16 retired, C-21 re-verified)}{233}{subsection.23.11}%
+\contentsline {subsection}{\numberline {23.12}100\%-production round 7 — 2026-09-11 (C-22: two REAL concurrency bugs fixed)}{233}{subsection.23.12}%
+\contentsline {subsection}{\numberline {23.13}100\%-production round 8 (FINAL) — 2026-09-11 (C-23/C-24 close-out)}{233}{subsection.23.13}%
+\contentsline {subsection}{\numberline {23.14}Round 9 — 2026-09-12 (Adafactor silently no-ops on every non-2-D parameter)}{233}{subsection.23.14}%
+\contentsline {subsection}{\numberline {23.15}Round 10 — 2026-09-12 (C-13: DoRA implemented)}{233}{subsection.23.15}%
+\contentsline {subsection}{\numberline {23.16}Round 11 — 2026-09-12 (CRITICAL: 26 test files were passing vacuously in Release)}{234}{subsection.23.16}%
+\contentsline {subsection}{\numberline {23.17}Round 12 — 2026-09-12 (C-20: real async KV-cache offload pipeline)}{234}{subsection.23.17}%
+\contentsline {subsection}{\numberline {23.18}1000-bug sweep round 1 — 2026-09-12 (census: \textasciitilde {}230 defects + 88 warnings)}{234}{subsection.23.18}%
+\contentsline {subsection}{\numberline {23.19}1000-bug sweep round 2 — 2026-09-12 (bounds + strict JSON + server types)}{234}{subsection.23.19}%
+\contentsline {subsection}{\numberline {23.20}1000-bug sweep round 3 — 2026-09-12 (locks, stub-throws, nested-lock abort)}{235}{subsection.23.20}%
+\contentsline {subsection}{\numberline {23.21}1000-bug sweep round 4 — 2026-09-12 (RPC scalars + C4244 CUDA wave)}{235}{subsection.23.21}%
+\contentsline {subsection}{\numberline {23.22}1000-bug sweep round 5 — 2026-09-12 (allocator + dataset races)}{235}{subsection.23.22}%
+\contentsline {subsection}{\numberline {23.23}1000-bug sweep round 6 — 2026-09-12 (MoE bounds, EMA honesty, sandbox contract)}{235}{subsection.23.23}%
+\contentsline {subsection}{\numberline {23.24}1000-bug sweep round 7 — 2026-09-12 (hybrid stubs, MoE flags, shader params)}{235}{subsection.23.24}%
+\contentsline {subsection}{\numberline {23.25}1000-bug sweep round 8 — 2026-09-12 (prefetch bounds, offload, expert-file bounds)}{235}{subsection.23.25}%
+\contentsline {subsection}{\numberline {23.26}1000-bug sweep round 9 — 2026-09-12 (server config races + logger)}{235}{subsection.23.26}%
+\contentsline {subsection}{\numberline {23.27}1000-bug sweep round 10 — 2026-09-12 (dataset/zoo/seeds races)}{235}{subsection.23.27}%
+\contentsline {subsection}{\numberline {23.28}1000-bug sweep round 11 — 2026-09-12 (flywheel/log/prefetch + own nested-lock)}{235}{subsection.23.28}%
+\contentsline {subsection}{\numberline {23.29}1000-bug sweep round 12 — 2026-09-13 (tensor/data/checkpoint races)}{235}{subsection.23.29}%
+\contentsline {subsection}{\numberline {23.30}1000-bug sweep round 13 — 2026-09-13 (adapters IO + MoE alloc)}{235}{subsection.23.30}%
+\contentsline {subsection}{\numberline {23.31}1000-bug sweep round 14 — 2026-09-13 (DPO docs, stream validation, pin\_memory, flaky seed)}{235}{subsection.23.31}%
+\contentsline {subsection}{\numberline {23.32}1000-bug sweep round 15 — 2026-09-13 (crew wave: attention numerics + MoE import)}{235}{subsection.23.32}%
+\contentsline {subsection}{\numberline {23.33}1000-bug sweep round 16 — 2026-09-13 (untracked tree + crew wave 2)}{236}{subsection.23.33}%
+\contentsline {subsection}{\numberline {23.34}1000-bug sweep round 17 — 2026-09-13 (tokenizer load + crew verdicts)}{236}{subsection.23.34}%
+\contentsline {subsection}{\numberline {23.35}1000-bug sweep round 18 — 2026-09-13 (HTTP parser: 5 bugs, 1 caught by new test)}{236}{subsection.23.35}%
+\contentsline {subsection}{\numberline {23.36}1000-bug sweep round 19 — 2026-09-13 (chunked scope + WS broadcast)}{236}{subsection.23.36}%
+\contentsline {subsection}{\numberline {23.37}1000-bug sweep round 20 — 2026-09-13 (docs staleness + vacuous asserts)}{236}{subsection.23.37}%
+\contentsline {subsection}{\numberline {23.38}1000-bug sweep round 21 — 2026-09-13 (quantize/infer/evaluate tools)}{236}{subsection.23.38}%
+\contentsline {subsection}{\numberline {23.39}1000-bug sweep round 22 — 2026-09-13 (serve/bench tools)}{236}{subsection.23.39}%
+\contentsline {subsection}{\numberline {23.40}1000-bug sweep round 23 — 2026-09-13 (train tool)}{236}{subsection.23.40}%
+\contentsline {subsection}{\numberline {23.41}1000-bug sweep round 24 — 2026-09-13 (convert/ptq/verify CLI)}{236}{subsection.23.41}%
+\contentsline {subsection}{\numberline {23.42}1000-bug sweep round 25 — 2026-09-13 (codec discards)}{236}{subsection.23.42}%
+\contentsline {subsection}{\numberline {23.43}1000-bug sweep round 26 — 2026-09-13 (shell escape, C-API, tokenizer load)}{236}{subsection.23.43}%
+\contentsline {subsection}{\numberline {23.44}1000-bug sweep round 27 — 2026-09-13 (offload free + state snapshot)}{236}{subsection.23.44}%
+\contentsline {subsection}{\numberline {23.45}80\%-production push round 1 — 2026-09-13 (C-15 narrowed further: true KV truncate)}{236}{subsection.23.45}%
+\contentsline {subsection}{\numberline {23.46}1000-bug sweep round 28 — 2026-09-13 (tokenizer decode/sscanf)}{237}{subsection.23.46}%
+\contentsline {subsection}{\numberline {23.47}1000-bug sweep round 29 — 2026-09-13 (engine discards + dataset/parquet + own revert)}{237}{subsection.23.47}%
+\contentsline {subsection}{\numberline {23.48}1000-bug sweep round 30 — 2026-09-13 (finetune blind training)}{237}{subsection.23.48}%
+\contentsline {subsection}{\numberline {23.49}80\%-production push round 2 — 2026-09-13 (bench CSV committed + charts regen)}{237}{subsection.23.49}%
+\contentsline {subsection}{\numberline {23.50}1000-bug sweep round 31 — 2026-09-13 (FSDP barrier + MoE div-zero)}{237}{subsection.23.50}%
+\contentsline {subsection}{\numberline {23.51}1000-bug sweep round 32 — 2026-09-13 (inference logprobs + generator)}{237}{subsection.23.51}%
+\contentsline {subsection}{\numberline {23.52}1000-bug sweep round 33 — 2026-09-13 (discard documentation)}{237}{subsection.23.52}%
+\contentsline {subsection}{\numberline {23.53}1000-bug sweep round 34 — 2026-09-13 (stub unnamed params + stale-binary flake)}{237}{subsection.23.53}%
+\contentsline {subsection}{\numberline {23.54}1000-bug sweep round 35 — 2026-09-13 (AVX512 + SYCL stub params)}{237}{subsection.23.54}%
+\contentsline {subsection}{\numberline {23.55}1000-bug sweep round 36 — 2026-09-13 (CANN stub params)}{237}{subsection.23.55}%
+\contentsline {subsection}{\numberline {23.56}1000-bug sweep round 37 — 2026-09-13 (RPC + OpenVINO stubs, dead sizes)}{237}{subsection.23.56}%
+\contentsline {subsection}{\numberline {23.57}1000-bug sweep round 38 — 2026-09-13 (VirtGPU + WebGPU stubs)}{237}{subsection.23.57}%
+\contentsline {subsection}{\numberline {23.58}1000-bug sweep round 39 — 2026-09-13 (Vulkan + HIP stubs)}{237}{subsection.23.58}%
+\contentsline {subsection}{\numberline {23.59}1000-bug sweep round 40 — 2026-09-13 (Hexagon stub)}{237}{subsection.23.59}%
+\contentsline {subsection}{\numberline {23.60}80\%-production push round 3 — 2026-09-13 (first real Linux build+test, WSL2/GCC15)}{237}{subsection.23.60}%
+\contentsline {subsection}{\numberline {23.61}1000-bug sweep round 41 — 2026-09-13 (zDNN stub)}{238}{subsection.23.61}%
+\contentsline {subsection}{\numberline {23.62}1000-bug sweep round 42 — 2026-09-13 (MUSA + sampling/curriculum stubs)}{238}{subsection.23.62}%
+\contentsline {subsection}{\numberline {23.63}1000-bug sweep round 43 — 2026-09-13 (OpenCL stubs)}{238}{subsection.23.63}%
+\contentsline {subsection}{\numberline {23.64}1000-bug sweep round 44 — 2026-09-13 (cpuid/connect/device discards)}{238}{subsection.23.64}%
+\contentsline {subsection}{\numberline {23.65}1000-bug sweep round 45 — 2026-09-13 (D3D12 Map guards)}{238}{subsection.23.65}%
+\contentsline {subsection}{\numberline {23.66}1000-bug sweep round 46 — 2026-09-13 (Qwen .at() throws)}{238}{subsection.23.66}%
+\contentsline {subsection}{\numberline {23.67}1000-bug sweep round 47 — 2026-09-13 (multimodal: leak, div-zero, dead fusion)}{238}{subsection.23.67}%
+\contentsline {subsection}{\numberline {23.68}1000-bug sweep round 48 — 2026-09-13 (multimodal generate fusion)}{238}{subsection.23.68}%
+\contentsline {subsection}{\numberline {23.69}1000-bug sweep round 49 — 2026-09-13 (PIMPL double-free)}{238}{subsection.23.69}%
+\contentsline {subsection}{\numberline {23.70}1000-bug sweep round 50 — 2026-09-13 (throwing-new audit)}{238}{subsection.23.70}%
+\contentsline {subsection}{\numberline {23.71}1000-bug sweep round 51 — 2026-09-13 (telemetry time + chain)}{239}{subsection.23.71}%
+\contentsline {subsection}{\numberline {23.72}1000-bug sweep round 52 — 2026-09-13 (JSON parser hardening)}{239}{subsection.23.72}%
+\contentsline {subsection}{\numberline {23.73}100\%-production push round 4 — 2026-09-13 (crafted-.quant P0 + CI/docs close-out)}{239}{subsection.23.73}%
+\contentsline {subsection}{\numberline {23.74}CI-fix round 5 — 2026-09-13 (GitHub Actions red flags fixes, API-verified)}{239}{subsection.23.74}%
+\contentsline {subsection}{\numberline {23.75}Fresh full-suite re-verification — 2026-09-13 (all round-4/5/CI fixes in)}{240}{subsection.23.75}%
+\contentsline {subsection}{\numberline {23.76}CI-fix round 6 — 2026-09-13 (CI Full remaining red legs fixes, pushed)}{240}{subsection.23.76}%
+\contentsline {subsection}{\numberline {23.77}CI-fix round 9 — 2026-09-13 (macOS BUILD GREEN + ios env-coupled fix)}{240}{subsection.23.77}%
+\contentsline {subsection}{\numberline {23.78}CI-fix round 10 — 2026-09-13 (ASAN link error missing dep declared)}{240}{subsection.23.78}%
+\contentsline {subsection}{\numberline {23.79}CI-fix round 11 — 2026-09-14 (ASAN heap-overflow in RoPE window clamp; bench timeout informational)}{241}{subsection.23.79}%
+\contentsline {subsection}{\numberline {23.80}CI-fix round 12 — 2026-09-14 (near-full green: 6/7 CI Full legs + macOS dedicated)}{241}{subsection.23.80}%
+\contentsline {subsection}{\numberline {23.81}CI-fix round 7 — 2026-09-13 (macOS exact error fix, owner-provided log)}{241}{subsection.23.81}%
+\contentsline {subsection}{\numberline {23.82}CI-fix round 8 — 2026-09-13 (triple-log day: metal-next, docker-parse, win-cache)}{241}{subsection.23.82}%
+\contentsline {subsection}{\numberline {23.83}CI-fix round 8 notes — 2026-09-13 (K3 revert; ledger is mine)}{241}{subsection.23.83}%
+\contentsline {subsection}{\numberline {23.84}CI-fix round 13 — 2026-09-14 (all-green CI + fresh local proof)}{241}{subsection.23.84}%
+\contentsline {subsection}{\numberline {23.85}CI-fix round 14 — 2026-09-14 (HEAD re-verified: RoPE+iOS+K3 era 72/72)}{241}{subsection.23.85}%
+\contentsline {subsection}{\numberline {23.86}CI-fix round 15 — 2026-09-14 (C-15 acceptance scope clarified)}{241}{subsection.23.86}%
+\contentsline {subsection}{\numberline {23.87}CI-fix round 16 — 2026-09-14 (all-platforms green: Full + macOS + Build)}{242}{subsection.23.87}%
+\contentsline {subsection}{\numberline {23.88}CI-fix round 17 — 2026-09-14 (6/7 green on round-16 commit; ASAN pending)}{242}{subsection.23.88}%
+\contentsline {subsection}{\numberline {23.89}CI-fix round 18 — 2026-09-14 (Clang-18 leg SUCCESS; ASAN the last red)}{242}{subsection.23.89}%
+\contentsline {subsection}{\numberline {23.90}CI-fix round 19 — 2026-09-14 (FULL GREEN: all 3 workflows SUCCESS)}{242}{subsection.23.90}%
+\contentsline {subsection}{\numberline {23.91}Scorecard round - 2026-09-14 (ledger-derived production composite + LOC truth)}{242}{subsection.23.91}%
+\contentsline {section}{\numberline {24}Comparison charts and measured quality}{242}{section.24}%
+\contentsline {subsection}{\numberline {24.1}Gaussian weights — PSNR vs BPW}{242}{subsection.24.1}%
+\contentsline {subsection}{\numberline {24.2}Real trained weights — PSNR vs BPW}{243}{subsection.24.2}%
+\contentsline {subsection}{\numberline {24.3}Competitor landscape}{243}{subsection.24.3}%
+\contentsline {section}{\numberline {25}Proof expansions and formal notes}{243}{section.25}%
+\contentsline {subsection}{\numberline {25.1}T30: Hajnal–Szemerédi Partition and Weight Assignment}{243}{subsection.25.1}%
+\contentsline {subsubsection}{\numberline {25.1.1}T30.1 Statement (Hajnal–Szemerédi, 1970)}{243}{subsubsection.25.1.1}%
+\contentsline {subsubsection}{\numberline {25.1.2}T30.2 Connection to QUANT Weight Partitioning}{243}{subsubsection.25.1.2}%
+\contentsline {subsubsection}{\numberline {25.1.3}T30.3 Weight Partition Bound}{243}{subsubsection.25.1.3}%
+\contentsline {subsubsection}{\numberline {25.1.4}T30.4 Approximation Error Under Partition}{243}{subsubsection.25.1.4}%
+\contentsline {subsection}{\numberline {25.2}T31: QUANT KL Divergence — Exact Numerical Constants}{243}{subsection.25.2}%
+\contentsline {subsubsection}{\numberline {25.2.1}T31.1 Framework}{243}{subsubsection.25.2.1}%
+\contentsline {subsubsection}{\numberline {25.2.2}T31.2 Index KL by Format}{243}{subsubsection.25.2.2}%
+\contentsline {subsubsection}{\numberline {25.2.3}T31.3 Scale KL — Log-Normal Prior}{243}{subsubsection.25.2.3}%
+\contentsline {subsubsection}{\numberline {25.2.4}T31.4 Total KL per Weight}{244}{subsubsection.25.2.4}%
+\contentsline {subsubsection}{\numberline {25.2.5}T31.5 Pinsker Upper Bound Comparison}{244}{subsubsection.25.2.5}%
+\contentsline {subsubsection}{\numberline {25.2.6}T31.6 Sensitivity to Allocation Proportions}{244}{subsubsection.25.2.6}%
+\contentsline {subsection}{\numberline {25.3}T32: Empirical vs Theoretical epsilon-Mismatch}{244}{subsection.25.3}%
+\contentsline {subsubsection}{\numberline {25.3.1}T32.1 Comparison Setup}{244}{subsubsection.25.3.1}%
+\contentsline {subsubsection}{\numberline {25.3.2}T32.2 Sources of Looseness in the Theoretical Bound}{244}{subsubsection.25.3.2}%
+\contentsline {subsubsection}{\numberline {25.3.3}T32.3 Quantified Gap Budget}{244}{subsubsection.25.3.3}%
+\contentsline {subsubsection}{\numberline {25.3.4}T32.4 Proposed Tighter Bound}{245}{subsubsection.25.3.4}%
+\contentsline {subsubsection}{\numberline {25.3.5}T32.5 Recommendations}{245}{subsubsection.25.3.5}%
+\contentsline {subsection}{\numberline {25.4}T33: Verification Plan for the Proof Chain}{245}{subsection.25.4}%
+\contentsline {subsubsection}{\numberline {25.4.1}T33.1 Proof Chain Map}{245}{subsubsection.25.4.1}%
+\contentsline {subsubsection}{\numberline {25.4.2}T33.2 Theorem-to-Test Mapping}{245}{subsubsection.25.4.2}%
+\contentsline {subsubsection}{\numberline {25.4.3}T33.3 Proposed Test Structure: test\_mixed\_precision\_proof.cpp Additions}{245}{subsubsection.25.4.3}%
+\contentsline {subsubsection}{\numberline {25.4.4}T33.4 Tight vs Loose Bounds}{245}{subsubsection.25.4.4}%
+\contentsline {subsubsection}{\numberline {25.4.5}T33.5 Verification Priority}{246}{subsubsection.25.4.5}%
+\contentsline {subsection}{\numberline {25.5}References}{246}{subsection.25.5}%
+\contentsline {section}{\numberline {26}Research notes on formats, agents, and systems}{246}{section.26}%
+\contentsline {subsection}{\numberline {26.1}Overview}{246}{subsection.26.1}%
+\contentsline {subsection}{\numberline {26.2}Core Research Papers}{246}{subsection.26.2}%
+\contentsline {subsubsection}{\numberline {26.2.1}1. BitNet b1.58 - 1-bit Large Language Models}{246}{subsubsection.26.2.1}%
+\contentsline {subsubsection}{\numberline {26.2.2}2. Bitnet.cpp - Optimizing Ternary Inference}{246}{subsubsection.26.2.2}%
+\contentsline {subsubsection}{\numberline {26.2.3}3. AWQ - Activation-Aware Weight Quantization}{246}{subsubsection.26.2.3}%
+\contentsline {subsubsection}{\numberline {26.2.4}4. VQ-VAE - Vector Quantization}{247}{subsubsection.26.2.4}%
+\contentsline {subsubsection}{\numberline {26.2.5}5. BitsMoE - Bit-Width Mixture of Experts}{247}{subsubsection.26.2.5}%
+\contentsline {subsection}{\numberline {26.3}Quantization Research Comparison}{247}{subsection.26.3}%
+\contentsline {subsection}{\numberline {26.4}Architecture Research}{247}{subsection.26.4}%
+\contentsline {subsubsection}{\numberline {26.4.1}6. Transformer Architecture}{247}{subsubsection.26.4.1}%
+\contentsline {subsubsection}{\numberline {26.4.2}7. Mixture of Experts (MoE)}{247}{subsubsection.26.4.2}%
+\contentsline {subsubsection}{\numberline {26.4.3}8. Rotary Position Embedding (RoPE)}{247}{subsubsection.26.4.3}%
+\contentsline {subsection}{\numberline {26.5}Optimization Research}{247}{subsection.26.5}%
+\contentsline {subsubsection}{\numberline {26.5.1}9. Adam Optimizer}{247}{subsubsection.26.5.1}%
+\contentsline {subsubsection}{\numberline {26.5.2}10. AdamW - Fixing Weight Decay in Adam}{247}{subsubsection.26.5.2}%
+\contentsline {subsection}{\numberline {26.6}Transcender Original Research}{247}{subsection.26.6}%
+\contentsline {subsubsection}{\numberline {26.6.1}1. QUANT Format - Mixed-Precision Binary Container}{248}{subsubsection.26.6.1}%
+\contentsline {subsubsection}{\numberline {26.6.2}2. Format Planner}{248}{subsubsection.26.6.2}%
+\contentsline {subsubsection}{\numberline {26.6.3}3. Zero-Dependency Design}{248}{subsubsection.26.6.3}%
+\contentsline {subsection}{\numberline {26.7}Reading List}{248}{subsection.26.7}%
+\contentsline {subsubsection}{\numberline {26.7.1}Must-Read Papers (In Order)}{248}{subsubsection.26.7.1}%
+\contentsline {subsubsection}{\numberline {26.7.2}Recommended Books}{248}{subsubsection.26.7.2}%
+\contentsline {subsection}{\numberline {26.8}Research Directions}{248}{subsection.26.8}%
+\contentsline {subsubsection}{\numberline {26.8.1}1. New Quantization Formats}{248}{subsubsection.26.8.1}%
+\contentsline {subsubsection}{\numberline {26.8.2}2. Architecture Improvements}{248}{subsubsection.26.8.2}%
+\contentsline {subsubsection}{\numberline {26.8.3}3. Training Improvements}{248}{subsubsection.26.8.3}%
+\contentsline {subsubsection}{\numberline {26.8.4}4. Inference Optimizations}{248}{subsubsection.26.8.4}%
+\contentsline {subsubsection}{\numberline {26.8.5}5. Hardware Optimizations}{248}{subsubsection.26.8.5}%
+\contentsline {subsection}{\numberline {26.9}Performance Targets}{248}{subsection.26.9}%
+\contentsline {subsection}{\numberline {26.10}How to Cite Transcender}{248}{subsection.26.10}%
+\contentsline {subsection}{\numberline {26.11}Research Tools}{249}{subsection.26.11}%
+\contentsline {subsection}{\numberline {26.12}Collaboration}{249}{subsection.26.12}%
+\contentsline {subsection}{\numberline {26.13}Additional Resources}{249}{subsection.26.13}%
+\contentsline {subsection}{\numberline {26.14}Overview}{249}{subsection.26.14}%
+\contentsline {subsection}{\numberline {26.15}Available Documents}{249}{subsection.26.15}%
+\contentsline {subsection}{\numberline {26.16}Purpose of Internal Documentation}{249}{subsection.26.16}%
+\contentsline {subsubsection}{\numberline {26.16.1}Why We Need This}{249}{subsubsection.26.16.1}%
+\contentsline {subsubsection}{\numberline {26.16.2}What Belongs Here}{249}{subsubsection.26.16.2}%
+\contentsline {subsection}{\numberline {26.17}Document Templates}{249}{subsection.26.17}%
+\contentsline {subsubsection}{\numberline {26.17.1}Design Decision Document}{249}{subsubsection.26.17.1}%
+\contentsline {subsubsection}{\numberline {26.17.2}Technical Deep Dive}{249}{subsubsection.26.17.2}%
+\contentsline {subsection}{\numberline {26.18}Design Principles}{249}{subsection.26.18}%
+\contentsline {subsubsection}{\numberline {26.18.1}1. Zero Dependencies}{249}{subsubsection.26.18.1}%
+\contentsline {subsubsection}{\numberline {26.18.2}2. Single Format Truth}{250}{subsubsection.26.18.2}%
+\contentsline {subsubsection}{\numberline {26.18.3}3. Research-Driven Design}{250}{subsubsection.26.18.3}%
+\contentsline {subsubsection}{\numberline {26.18.4}4. Performance-First}{250}{subsubsection.26.18.4}%
+\contentsline {subsubsection}{\numberline {26.18.5}5. Modularity}{250}{subsubsection.26.18.5}%
+\contentsline {subsection}{\numberline {26.19}Key Design Decisions}{250}{subsection.26.19}%
+\contentsline {subsubsection}{\numberline {26.19.1}Why C++20?}{250}{subsubsection.26.19.1}%
+\contentsline {subsubsection}{\numberline {26.19.2}Why Not Use PyTorch/TensorFlow?}{250}{subsubsection.26.19.2}%
+\contentsline {subsubsection}{\numberline {26.19.3}Why the QUANT Format?}{250}{subsubsection.26.19.3}%
+\contentsline {subsubsection}{\numberline {26.19.4}Why AVX2 Instead of AVX-512?}{250}{subsubsection.26.19.4}%
+\contentsline {subsubsection}{\numberline {26.19.5}Why DirectX 12 for GPU?}{251}{subsubsection.26.19.5}%
+\contentsline {subsection}{\numberline {26.20}Architecture Decisions}{251}{subsection.26.20}%
+\contentsline {subsubsection}{\numberline {26.20.1}Layered Architecture}{251}{subsubsection.26.20.1}%
+\contentsline {subsubsection}{\numberline {26.20.2}Engine Separation}{251}{subsubsection.26.20.2}%
+\contentsline {subsubsection}{\numberline {26.20.3}Format Planner}{251}{subsubsection.26.20.3}%
+\contentsline {subsection}{\numberline {26.21}Technical Deep Dives}{251}{subsection.26.21}%
+\contentsline {subsubsection}{\numberline {26.21.1}Memory Layout}{251}{subsubsection.26.21.1}%
+\contentsline {subsubsection}{\numberline {26.21.2}Kernel Optimization}{251}{subsubsection.26.21.2}%
+\contentsline {subsubsection}{\numberline {26.21.3}Autograd Implementation}{251}{subsubsection.26.21.3}%
+\contentsline {subsubsection}{\numberline {26.21.4}Quantization Strategy}{251}{subsubsection.26.21.4}%
+\contentsline {subsection}{\numberline {26.22}How to Add a New Design Document}{251}{subsection.26.22}%
+\contentsline {subsection}{\numberline {26.23}Best Practices for Design Documents}{251}{subsection.26.23}%
+\contentsline {subsubsection}{\numberline {26.23.1}1. Be Clear}{251}{subsubsection.26.23.1}%
+\contentsline {subsubsection}{\numberline {26.23.2}2. Be Comprehensive}{251}{subsubsection.26.23.2}%
+\contentsline {subsubsection}{\numberline {26.23.3}3. Be Current}{251}{subsubsection.26.23.3}%
+\contentsline {subsubsection}{\numberline {26.23.4}4. Be Accessible}{252}{subsubsection.26.23.4}%
+\contentsline {subsection}{\numberline {26.24}Additional Resources}{252}{subsection.26.24}%
+\contentsline {section}{Part V \textperiodcentered {} Research compendium}{252}{subsection.26.24}%
+\contentsline {section}{\numberline {27}Quantization: formats, scaling, and low-bit training}{252}{section.27}%
+\contentsline {subsection}{\numberline {27.1}The register}{252}{subsection.27.1}%
+\contentsline {subsection}{\numberline {27.2}Structured digests}{252}{subsection.27.2}%
+\contentsline {subsubsection}{\numberline {27.2.1}LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale}{252}{subsubsection.27.2.1}%
+\contentsline {subsubsection}{\numberline {27.2.2}FP8 Formats for Deep Learning}{252}{subsubsection.27.2.2}%
+\contentsline {subsubsection}{\numberline {27.2.3}GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers}{252}{subsubsection.27.2.3}%
+\contentsline {subsubsection}{\numberline {27.2.4}SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models}{252}{subsubsection.27.2.4}%
+\contentsline {subsubsection}{\numberline {27.2.5}QLoRA: Efficient Finetuning of Quantized LLMs}{252}{subsubsection.27.2.5}%
+\contentsline {subsubsection}{\numberline {27.2.6}AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration}{253}{subsubsection.27.2.6}%
+\contentsline {subsubsection}{\numberline {27.2.7}KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache}{253}{subsubsection.27.2.7}%
+\contentsline {subsubsection}{\numberline {27.2.8}The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits}{253}{subsubsection.27.2.8}%
+\contentsline {section}{\numberline {28}Training: adaptation, scaling, and optimisation memory}{253}{section.28}%
+\contentsline {subsection}{\numberline {28.1}The register}{253}{subsection.28.1}%
+\contentsline {subsection}{\numberline {28.2}Structured digests}{253}{subsection.28.2}%
+\contentsline {subsubsection}{\numberline {28.2.1}LoRA: Low-Rank Adaptation of Large Language Models}{253}{subsubsection.28.2.1}%
+\contentsline {subsubsection}{\numberline {28.2.2}Training Compute-Optimal Large Language Models}{253}{subsubsection.28.2.2}%
+\contentsline {subsubsection}{\numberline {28.2.3}QuIP\#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks}{253}{subsubsection.28.2.3}%
+\contentsline {subsubsection}{\numberline {28.2.4}DoRA: Weight-Decomposed Low-Rank Adaptation}{253}{subsubsection.28.2.4}%
+\contentsline {section}{\numberline {29}Attention and sequence mixers}{254}{section.29}%
+\contentsline {subsection}{\numberline {29.1}The register}{254}{subsection.29.1}%
+\contentsline {subsection}{\numberline {29.2}Structured digests}{254}{subsection.29.2}%
+\contentsline {subsubsection}{\numberline {29.2.1}Longformer: The Long-Document Transformer}{254}{subsubsection.29.2.1}%
+\contentsline {subsubsection}{\numberline {29.2.2}Perceiver: General Perception with Iterative Attention}{254}{subsubsection.29.2.2}%
+\contentsline {subsubsection}{\numberline {29.2.3}RoFormer: Enhanced Transformer with Rotary Position Embedding}{254}{subsubsection.29.2.3}%
+\contentsline {subsubsection}{\numberline {29.2.4}Improving language models by retrieving from trillions of tokens}{254}{subsubsection.29.2.4}%
+\contentsline {subsubsection}{\numberline {29.2.5}Memorizing Transformers}{254}{subsubsection.29.2.5}%
+\contentsline {subsubsection}{\numberline {29.2.6}FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness}{254}{subsubsection.29.2.6}%
+\contentsline {subsubsection}{\numberline {29.2.7}RWKV: Reinventing RNNs for the Transformer Era}{255}{subsubsection.29.2.7}%
+\contentsline {subsubsection}{\numberline {29.2.8}Retentive Network: A Successor to Transformer for Large Language Models}{255}{subsubsection.29.2.8}%
+\contentsline {subsubsection}{\numberline {29.2.9}Ring Attention with Blockwise Transformers for Near-Infinite Context}{255}{subsubsection.29.2.9}%
+\contentsline {subsubsection}{\numberline {29.2.10}Mamba: Linear-Time Sequence Modeling with Selective State Spaces}{255}{subsubsection.29.2.10}%
+\contentsline {section}{\numberline {30}Long context, position, and retrieval}{255}{section.30}%
+\contentsline {subsection}{\numberline {30.1}The register}{255}{subsection.30.1}%
+\contentsline {subsection}{\numberline {30.2}Structured digests}{255}{subsection.30.2}%
+\contentsline {subsubsection}{\numberline {30.2.1}Lost in the Middle: How Language Models Use Long Contexts}{255}{subsubsection.30.2.1}%
+\contentsline {subsubsection}{\numberline {30.2.2}RULER: What's the Real Context Size of Your Long-Context Language Models?}{255}{subsubsection.30.2.2}%
+\contentsline {subsubsection}{\numberline {30.2.3}Leave No Document Behind: Benchmarking Long-Context LLMs with Extended Multi-Doc QA}{256}{subsubsection.30.2.3}%
+\contentsline {section}{\numberline {31}Agents, tools, and instruction following}{256}{section.31}%
+\contentsline {subsection}{\numberline {31.1}The register}{256}{subsection.31.1}%
+\contentsline {subsection}{\numberline {31.2}Structured digests}{256}{subsection.31.2}%
+\contentsline {subsubsection}{\numberline {31.2.1}Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}{256}{subsubsection.31.2.1}%
+\contentsline {subsubsection}{\numberline {31.2.2}ReAct: Synergizing Reasoning and Acting in Language Models}{256}{subsubsection.31.2.2}%
+\contentsline {subsubsection}{\numberline {31.2.3}Toolformer: Language Models Can Teach Themselves to Use Tools}{256}{subsubsection.31.2.3}%
+\contentsline {subsubsection}{\numberline {31.2.4}DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model}{256}{subsubsection.31.2.4}%
+\contentsline {subsubsection}{\numberline {31.2.5}DeepSeek-V3 Technical Report}{256}{subsubsection.31.2.5}%
+\contentsline {subsubsection}{\numberline {31.2.6}DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning}{256}{subsubsection.31.2.6}%
+\contentsline {section}{\numberline {32}Inference serving and speculative decoding}{256}{section.32}%
+\contentsline {subsection}{\numberline {32.1}The register}{256}{subsection.32.1}%
+\contentsline {subsection}{\numberline {32.2}Structured digests}{257}{subsection.32.2}%
+\contentsline {subsubsection}{\numberline {32.2.1}Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity}{257}{subsubsection.32.2.1}%
+\contentsline {subsubsection}{\numberline {32.2.2}Fast Inference from Transformers via Speculative Decoding}{257}{subsubsection.32.2.2}%
+\contentsline {subsubsection}{\numberline {32.2.3}Accelerating Large Language Model Decoding with Speculative Sampling}{257}{subsubsection.32.2.3}%
+\contentsline {subsubsection}{\numberline {32.2.4}Efficient Memory Management for Large Language Model Serving with PagedAttention}{257}{subsubsection.32.2.4}%
+\contentsline {subsubsection}{\numberline {32.2.5}SGLang: Efficient Execution of Structured Language Model Programs}{257}{subsubsection.32.2.5}%
+\contentsline {subsubsection}{\numberline {32.2.6}Mixtral of Experts}{257}{subsubsection.32.2.6}%
+\contentsline {subsubsection}{\numberline {32.2.7}Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads}{257}{subsubsection.32.2.7}%
+\contentsline {subsubsection}{\numberline {32.2.8}EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty}{257}{subsubsection.32.2.8}%
+\contentsline {section}{Part VI \textperiodcentered {} Theorem note}{257}{subsubsection.32.2.8}%
+\contentsline {section}{\numberline {33}Context, memory, and the cost of attention}{257}{section.33}%
+\contentsline {subsection}{\numberline {33.1}Definitions}{258}{subsection.33.1}%
+\contentsline {subsection}{\numberline {33.2}A finite-state bound}{258}{subsection.33.2}%
+\contentsline {subsection}{\numberline {33.3}The attention output is a low-rank read}{258}{subsection.33.3}%
+\contentsline {subsection}{\numberline {33.4}The Cender recurrence}{258}{subsection.33.4}%
+\contentsline {subsection}{\numberline {33.5}What is implemented, and what is not}{258}{subsection.33.5}%
+\contentsline {subsection}{\numberline {33.6}Experimental protocol}{258}{subsection.33.6}%
+\contentsline {section}{\numberline {34}The wire identity theorem}{258}{section.34}%
+\contentsline {subsection}{\numberline {34.1}The accepted set}{258}{subsection.34.1}%
+\contentsline {subsection}{\numberline {34.2}No prefix ambiguity}{259}{subsection.34.2}%
+\contentsline {subsection}{\numberline {34.3}The parser state machine}{259}{subsection.34.3}%
+\contentsline {subsection}{\numberline {34.4}Why the distinction matters}{259}{subsection.34.4}%
+\contentsline {subsection}{\numberline {34.5}Regression evidence}{259}{subsection.34.5}%
+\contentsline {section}{\numberline {35}Evidence, falsification, and the limits of the theorem}{259}{section.35}%
+\contentsline {subsection}{\numberline {35.1}The three evidence classes}{259}{subsection.35.1}%
+\contentsline {subsection}{\numberline {35.2}Falsifiers}{259}{subsection.35.2}%
+\contentsline {subsection}{\numberline {35.3}Statistics}{259}{subsection.35.3}%
+\contentsline {subsection}{\numberline {35.4}What the current tree supports}{259}{subsection.35.4}%
+\contentsline {section}{Part VII \textperiodcentered {} Method and evidence}{259}{subsection.35.4}%
+\contentsline {section}{\numberline {36}The research method}{259}{section.36}%
+\contentsline {subsection}{\numberline {36.1}Research is evidence collection}{259}{subsection.36.1}%
+\contentsline {subsection}{\numberline {36.2}Design writes the contract}{259}{subsection.36.2}%
+\contentsline {subsection}{\numberline {36.3}Implementation lands in the owner}{260}{subsection.36.3}%
+\contentsline {subsection}{\numberline {36.4}The audit passes}{260}{subsection.36.4}%
+\contentsline {subsection}{\numberline {36.5}Closure is a state change}{260}{subsection.36.5}%
+\contentsline {section}{\numberline {37}The evidence register}{260}{section.37}%
+\contentsline {subsection}{\numberline {37.1}The standing instruments}{260}{subsection.37.1}%
+\contentsline {subsection}{\numberline {37.2}The counts}{260}{subsection.37.2}%
+\contentsline {subsection}{\numberline {37.3}What the numbers mean}{260}{subsection.37.3}%
+\contentsline {subsection}{\numberline {37.4}The claim ledger}{260}{subsection.37.4}%
+\contentsline {section}{\numberline {38}Threats to validity}{260}{section.38}%
+\contentsline {subsection}{\numberline {38.1}Source drift}{260}{subsection.38.1}%
+\contentsline {subsection}{\numberline {38.2}Generated prose}{260}{subsection.38.2}%
+\contentsline {subsection}{\numberline {38.3}Unverified literature}{260}{subsection.38.3}%
+\contentsline {subsection}{\numberline {38.4}Hardware limits}{260}{subsection.38.4}%
+\contentsline {subsection}{\numberline {38.5}The 1.0 BPW goal}{260}{subsection.38.5}%
+\contentsline {section}{Part VIII \textperiodcentered {} Reference apparatus}{260}{subsection.38.5}%
+\contentsline {section}{\numberline {39}Format register}{260}{section.39}%
+\contentsline {subsection}{\numberline {39.1}Valid formats}{261}{subsection.39.1}%
+\contentsline {subsection}{\numberline {39.2}Retired formats}{261}{subsection.39.2}%
+\contentsline {section}{\numberline {40}Test register}{261}{section.40}%
+\contentsline {section}{\numberline {41}Libraries, targets, and backends}{262}{section.41}%
+\contentsline {subsection}{\numberline {41.1}Libraries}{262}{subsection.41.1}%
+\contentsline {subsection}{\numberline {41.2}Targets}{262}{subsection.41.2}%
+\contentsline {subsection}{\numberline {41.3}Compute backends}{263}{subsection.41.3}%
+\contentsline {section}{\numberline {42}Seat register}{263}{section.42}%
+\contentsline {section}{\numberline {43}Decision register}{263}{section.43}%
+\contentsline {section}{\numberline {44}Research register}{263}{section.44}%
+\contentsline {section}{\numberline {45}Glossary}{264}{section.45}%
+\contentsline {section}{\numberline {46}Bibliography}{265}{section.46}%
+\contentsline {subsection}{\numberline {46.1}arXiv records}{265}{subsection.46.1}%
+\contentsline {subsection}{\numberline {46.2}Project records}{266}{subsection.46.2}%
+\contentsline {section}{\numberline {47}Index of chapters}{266}{section.47}%
+\contentsline {subsection}{\numberline {47.1}Chapters}{266}{subsection.47.1}%
+\contentsline {subsection}{\numberline {47.2}How to use the index}{266}{subsection.47.2}%

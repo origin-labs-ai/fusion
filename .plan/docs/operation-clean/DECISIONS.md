@@ -94,21 +94,42 @@ Implementation: task Z1 with the exception list.
 - Writers assert validity before write — this catches the MoE `format = 5 with FP32
   payload` label bug at write time, not on some future read.
 
-## D-09 · M-tier encoder (design decision, pre-authorized)
+## D-09 · M-tier encoder (SUPERSEDED by D-32 on 2026-11-13)
 
-**Rule:** M tier = base layout + 1 refinement byte per 32 weights
-(4 × 2-bit sub-block scale multipliers {×0.75, ×1.0, ×1.25, ×1.5}) — engine-agnostic,
-provably +0.25 BPW exact. Per-family alternatives (e.g. soft-threshold for the binary
-family) may supersede ONLY if measurably better; acceptance gate stays: PSNR strictly
-between L and H on 4 fuzz distributions + real weights.
+**Original rule (historical, no longer the shipped layout):** M tier = base layout +
+1 refinement byte per 32 weights, carrying 4 × 2-bit sub-block scale multipliers
+{×0.75, ×1.0, ×1.25, ×1.5} — engine-agnostic, provably +0.25 BPW exact.
 
-## D-10 · Ternary tail policy (design decision)
+**Shipped rule (`DECISIONS.md` D-32, `block_codec.cpp:2649 tier_refine_layout`):** the
+refinement region carries **signed additive per-span DC corrections**, not multiplicative
+gains. Plain spans are 8 weights with a 2-bit q; GRP spans are 32 weights with an 8-bit
+q. A multiplicative gain cannot express a DC offset at all, and the dominant residual of
+a global-scale codec is exactly that offset; additive corrections dominate at identical
+byte cost and make `q = 0` bit-identical to the base decode, which turns
+`NMSE(L) ≥ NMSE(M) ≥ NMSE(H)` into a construction guarantee.
+
+The D-09 acceptance gate was kept and strengthened: the shipped test measures **NMSE**
+(not PSNR) with strict `M < L` everywhere, strict `H < M` for `b < 24`, and aggregate
+strictness at every rung/family on 4 fuzz distributions + trained real weights
+(`tests/test_tier_order.cpp`, 433 lines). The only allowance is per-case `H == M` ties
+at `b = 24`, a proven FP32-output floor (D-32).
+
+## D-10 · Ternary tail policy (design decision; shipped form noted 2026-11-14)
 
 **Rule:** for block sizes where the exact-1.50 ternary layout doesn't decompose
 (cleanly), the encoder NEVER inflates: it drops to the largest tier that fits the
 name's wire budget exactly (ternary → M → L, per-size). Same policy for every
 rewired format: budget guard pattern of `quant_grp16:879-884` (a real budget test,
 never the `has_d = (n >= 8)` non-test that caused the quant_6k overrun).
+
+**Shipped form (`Q_1_K_H`, D-32 / `LADDER.md` §ternary tail):** the tail rule is
+`budget = ⌈1.5·n⌉ - 16`, `k = ⌊budget / log2(3)⌋` trits, `z = n - k` implicit-zero
+slots, with `log2(3)` rounded slightly **up** so `3^k ≤ 2^budget` holds by
+construction. No M-tier fallback is ever needed: the wire is exactly
+`⌈1.5·n/8⌉` bytes for every `n = 1..512` (pinned by `tests/test_ternary_tail.cpp`).
+Below `n = 12` a 16-bit scale plus a trit cannot fit, so the encoder writes the
+`Q_1` binary payload (prefix-identical) zero-padded to the same wire; the decoder
+returns ±1. That is the L tier of this ladder, i.e. the same never-inflate policy.
 
 ## D-11 · K-variant honesty (design decision)
 
@@ -563,3 +584,79 @@ refuse to write a file whose count is off by even one line or one page.
   ke liye! Python bhi hai! Look wisse bhi jagah hona chahiye!"*
 - Implementation: `.plan/telemetry/TODO-TREE.md` T10 (READMEs), T13.2 (512-page package), T14
   (hygiene) and T15 (verification).
+
+---
+
+## D-32 · L2 tier codec: additive per-span DC refinement, adaptive H width, b=24 floor (implementation ruling, 2026-11-13)
+
+**Rule (wire).** A K-tier payload is `[L-tier payload][refinement region]`, where
+`region = ceil((base_bpw + delta)·n/8) - ceil(base_bpw·n/8)` — exactly 8 B for M and
+16 B for H at n=256. The region carries signed per-span DC corrections; the unit is
+`span_max/div` derived from the base decode, so no scale is stored and no payload can
+exceed its name. Layout is resolved from `(n, base_bpw, region_bytes)` alone
+(`block_codec.cpp:2649 tier_refine_layout`), so encoder and decoder agree from the wire.
+
+**Why additive, not the planned multiplicative gain.** The LADDER draft specified 2-bit
+sub-block scale multipliers `{×0.75, ×1.0, ×1.25, ×1.5}`. A global-scale codec's
+dominant residual is a per-span DC offset; a multiplicative gain cannot express an
+offset at all. Additive corrections dominate at identical byte cost, and they make
+`q = 0` a bit-identical fallback to the base decode — which is what turns tier ordering
+into a construction guarantee instead of a measurement.
+
+**Correction quanta** (`block_codec.cpp:2616 tier_corr_div_m`):
+
+| Family | M | H |
+|---|---|---|
+| plain | `2^(B+1)`, q ∈ [-2,1] | `2^(B+2)`, q ∈ [-8,7] (or adaptive narrower) |
+| GRP | `2^(B+3)`, q ∈ [-128,127] | `2^(B+4)` = `2·div_M` when adaptive width > 8 |
+
+GRP needed one bit finer than the first cut: at span 32, `2^(B+2)` rounded every q to 0
+on a Q_8 uniform block (`nz = 0/8`, gain 0.000%); `2^(B+3)` gives 0.689%. Evidence:
+`.plan/.rea-tmp/probe_grp8.cpp` → `span=32 shift=10 nz=0/8 ... gain 0.000%`,
+`shift=11 nz=5/8 ... gain 0.689%`.
+
+**Adaptive H width (n=48 coverage bug).** With a fixed 16-bit GRP H field, a 3-byte H
+region at n=48 funds only ONE span while M's 2-byte region funds two 8-bit spans. H
+therefore skipped a span M refined and lost 17.785% on a real trained bias
+(`chunk@0 n=48 M=0.22645648 H=0.266731497`, span `[32,48)` worse). Fix: H picks the
+largest width in `[9,16]` (GRP) / `[3,4]` (plain) that still funds `spans_m`; if even
+`bits_min` cannot, it uses the exact M layout and ties instead of losing. The H seed is
+the M winner scaled by `kdiv = div_H/div_M = 2`, which is exactly representable in
+float, so `MSE(H) ≤ MSE(M)` holds span by span. After the fix: `bad(H>M)=0` over all
+chunks of the trained model, and `test_tier_order` reports 0 strict failures.
+
+**b=24 float floor.** `Q_24` is the top 24 bits of an FP32 (16-bit mantissa). The
+M-vs-H correction difference is ~0.03 float ULP at the span max, so the decoder's
+float32 add rounds both to the same values (`corrM == corrH` bit-for-bit on all 8 spans
+of the tied block; probe `.plan/.rea-tmp/probe_grp24.cpp`). Contract: strict `M < L`
+everywhere, strict `H < M` for `b < 24`, per-case tie allowed at `b = 24` (4/66
+measured), and AGGREGATE `H < M` strictly at every rung in both families. This is a
+float-output limit, not a wire shortfall: the H payload is still 8 bytes wider.
+
+**D-22a cap raise (contract change, not a relaxed test).** `Q_G_3` is now a
+byte-identical alias of `Q_3`, so its fuzz cap must cover the plain codec's worst
+measured NMSE (0.9522 on the deterministic outlier corpus). Cap raised 0.80 → 1.00 in
+`tests/test_fuzz_codec.cpp:146` with the provenance comment at `:140-145`. The old 0.80
+belonged to the pre-D-22a grouped encoder, which is no longer the layout under that id.
+
+**L2d invariants pinned** (`tests/test_format.cpp`): exactly 36 invalid ids out of
+`FORMAT_ID_SLOTS = 105`, invalid + `FORMAT_COUNT` == slots, the exact retired set is
+invalid with `format_bpw == 0`, and `format_is_half` is false for every id.
+
+**Evidence (commands + results):**
+- `test_tier_order.exe` → exit 0; `aggregate NMSE strictly decreases at every rung and
+  family`; `min relative gain b<24: M<L 0.0465%, H<M 0.0001%`; `b=24 ... 4/66 H==M ties`.
+- `test_ternary_tail.exe` → exit 0; `n=1..512 store exactly ceil(1.5n/8) bytes`;
+  `n=256: 48 B, 16 b scale + 368 b base-3 trits + 24 slots`.
+- `test_format_audit.exe` → exit 0; 69 rows `ok`, `BPW violations: 0`.
+- `test_fuzz_codec.exe` → exit 0; `69 formats, 10052 generated tensors, 693588
+  roundtrips, 0 crashes`.
+- `grp_proof_test.exe` → exit 0; `QG3 real-weights PSNR: 29.8756 dB (Q3 plain:
+  29.8756 dB)`.
+- `test_block_codec.exe` → exit 0; `ALL BLOCK CODEC TESTS PASSED!`.
+- **Full gate:** `ctest --test-dir build-gate --output-on-failure -j 4` → `100% tests passed,
+  0 tests failed out of 78`, `Total Test time (real) = 97.00 sec` (78 = 76 before
+  `test_tier_order` + `test_ternary_tail`).
+- **Full technical record:** [L2-CLOSEOUT.md](L2-CLOSEOUT.md) — scope, wire contract, both
+  bugs with before/after evidence, every test assertion, files touched, and the explicit
+  pending queue.

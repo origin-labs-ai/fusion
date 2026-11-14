@@ -1,0 +1,91 @@
+\chapter{The industrial research landscape (live-verified)}
+
+Every claim in this chapter was verified live against the arXiv abstract pages on 2026-11-14
+via the in-app browser. No number is from memory; each method's headline result is quoted
+from its own abstract.
+
+\section{The three pillars of industrial quantization}
+
+\begin{tabular}{@{}p{2.1cm}p{1.1cm}p{4.6cm}p{6.4cm}@{}}
+\toprule
+Method & BPW & Core mechanism (verified) & Verified headline result \\
+\midrule
+BitNet b1.58 (2402.17764) & 1.58 & every weight ternary $\{-1,0,1\}$ & matches FP16/BF16
+Transformers of the same size and training tokens in perplexity and end-task performance;
+defines a new scaling law and enables hardware optimized for 1-bit LLMs \\
+GPTQ (2210.17323) & 3--4 & one-shot weight quantization on approximate second-order
+information (the Hessian) & quantizes a 175B-parameter model in ${\approx}4$ GPU hours to 3
+or 4 bits with negligible degradation; more than doubles compression vs prior one-shot
+methods; runs 175B on a single GPU \\
+AWQ (2306.00978) & 4 & activation-aware: protect the ${\sim}1\%$ salient channels by scaling
+them (scales from offline activation statistics) & no backprop or reconstruction; generalizes
+across domains and modalities; outperforms prior work on language and domain benchmarks \\
+\bottomrule
+\end{tabular}
+
+\medskip
+The project's answer to each: BitNet's ternary is $Q_{1\_K\_H}$ at the exact 1.50 grid (the
+1.58 name carries a gap; ours does not --- D-03); GPTQ's Hessian is exactly the machinery the
+loop findings (2609.30820) show must be \emph{accumulated across recurrence steps}
+(Theorem~\ref{thm:hessian}); AWQ's salient-channel insight is the same observation behind the
+FormatPlanner's per-block allocation --- the planner is tested, with the column-knapsack floor
+bounding $Q_0$ near $4.3\times10^{-4}$ MSE.
+
+\section{Where each method sits on the BPW axis}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.94\textwidth, height=6.8cm,
+  xlabel={bits per weight}, ylabel={},
+  xmin=0, xmax=17, ymin=-1, ymax=1,
+  xtick={1.0,1.5,1.58,2.0,3.0,3.5,4.0,6.0,8.0,16.0},
+  symbolic y coords={Binary, BitNet, GPTQ, AWQ, $Q_1$, $Q_{1\_K\_H}$, $Q_4$, $Q_8$, FP16},
+  ytick=data,
+  scatter/classes={
+    a={mark=*,draw=white,fill=fusionred},
+    b={mark=square*,draw=white,fill=fusionamber},
+    c={mark=triangle*,draw=white,fill=fusionteal},
+    d={mark=diamond*,draw=white,fill=fusionblue}
+  },
+  tick label style={font=\small},
+  label style={font=\small},
+]
+\addplot[scatter,only marks,scatter src=explicit symbolic] coordinates {
+  (1.0,Binary) [a] (1.58,BitNet) [b] (3.5,GPTQ) [b] (4.0,AWQ) [b]
+  (1.0,$Q_1$) [d] (1.5,$Q_{1\_K\_H}$) [d] (4.0,$Q_4$) [d] (8.0,$Q_8$) [d] (16.0,FP16) [c]
+};
+\end{axis}
+\end{tikzpicture}
+
+\small Figure 6: the industrial methods (amber/red) against this project's formats (blue) on
+the BPW axis. The red Binary point and the blue $Q_1$ point coincide at 1.00; BitNet's 1.58
+sits between our exact 1.50 and 2.00 grid points --- the gap our wire contract forbids.
+\end{center}
+
+\section{What the verified numbers mean for the ladder}
+
+\begin{enumerate}
+\item \textbf{The ternary floor is real.} BitNet b1.58 matches FP16 at equal training budget
+--- the ternary family is a legitimate target, and the pure-ternary $Q_{1\_K\_H}$ at exact
+1.50 is the project's honest version of the same idea.
+\item \textbf{Second-order information is the quality engine.} GPTQ's result (175B in 4
+hours, negligible loss) rests on the Hessian; the Track-B obligation is the same statistic
+accumulated over the recurrence, not a single step.
+\item \textbf{Salience is per-channel, not per-format.} AWQ's $1\%$-salient observation and
+the FormatPlanner's allocation agree: precision goes where activations say it must.
+\item \textbf{The MX family is not yet honest.} The project measured the MX tier allocator at
+$-21$..$-37$~dB (D-13) --- quarantined until reworked; the shared-exponent idea (2310.10537)
+is sound, the allocator is not.
+\end{enumerate}
+
+\section{The verified loop-side landscape}
+
+LoopQ (2605.16343): W4A4 $+67.8\%$ five-task accuracy, $+75.2\%$ perplexity vs the strongest
+static PTQ across four backbones. LoopQuant (2610.16368): W4A4 beats every W4A8 baseline on
+Ouro-2.6B, $-65.3\%$ memory, $1.7\times$ decode over BF16. 2609.30820: feedback exposure ---
+the loop-entry adapter fails first --- and calibration blindness; Hessian accumulation wins
+9/9 and recovers bf16 on Huginn-3.5B. DeltaNet (2406.06484): the delta-rule algorithm behind
+the constant-memory theorems. NCM (2610.14162): coarse-to-fine VQ-VAE generation, 21--31$\times$
+faster. MX (2310.10537): the quarantined family's source. Every identifier was re-resolved
+live on 2026-11-14.

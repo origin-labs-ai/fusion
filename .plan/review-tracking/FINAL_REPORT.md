@@ -291,11 +291,20 @@ Parts and alias ladder (Lite → Plus → Pro → Studio → Max → Ultra):
 > **Naming update (2026-11-13, D-29):** this row was `Zenix CC` / `windows/zenix-cc` in the
 > 2026-10-27 snapshot; the `CC` suffix is retired and the seat is now **Zenix**.
 
+> **Naming update (2026-11-14, D-29 follow-up):** the Onyx row above reflects the
+> 2026-10-31 snapshot and is superseded — Onyx's executable was renamed `CodeFusion.exe`
+> → `Onyx.exe` (review-tracking D3), and Onyx's present content is the VS Code OSS 1.147.0
+> source at `SOURCE/vscode-main`; the RE'd Qoder desktop build is retired (`code/BRAND.md`).
+
+> **Path update (2026-11-14, D-24):** findings and paths written before 2026-11-12 reference
+> `code-fusion/…` (e.g. `code-fusion/BRAND.md`, `CF-Desktop/…`); the tree was renamed
+> `code-fusion/` → `code/` (D-24). Read those paths as their `code/` equivalents.
+
 Rules now enforced by the registry (`arch/windows.json` is the single source of
 truth; `launcher/launch.ps1` and every `window.json` are derived from it):
 
-- No part is named "CodeFusion"; the only surviving string is the Obsidian/Onyx executable
-  name `CodeFusion.exe`.
+- No part is named "CodeFusion"; Onyx's executable is `Onyx.exe` — the `CodeFusion.exe`
+  name was retired (review-tracking D3; superseded by `code/BRAND.md`).
 - An alias resolves to exactly one part; `#` means the alias seat is retired (`Core`,
   and Chromix/GSX-CLI hold none).
 - Roles are not assigned: **Ingot is not the main part**.

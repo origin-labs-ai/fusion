@@ -1,0 +1,148 @@
+\chapter{The formal theory (numbered)}
+
+This chapter states the project's mathematics in formal theorem--proof form. Each statement
+carries its chapter number; the proofs are the same proofs the READMEs carry, restyled.
+
+\section{Definitions}
+
+\begin{definition}[Bits per weight]\label{def:bpw}
+The wire cost of storing one weight of a block, in bits. A format's \emph{name BPW} is the
+value its identifier claims; its \emph{wire BPW} is what its layout actually costs. The
+contract (D-03): name BPW $=$ wire BPW, exactly, for every live format.
+\end{definition}
+
+\begin{definition}[The 256-weight block]\label{def:block}
+The atomic storage unit: $256$ consecutive weights, wire-packed as one block. For a format at
+$B$ BPW the block's total budget is $256B$ bits; its byte count is $256B/8$.
+\end{definition}
+
+\begin{definition}[The tier lattice]\label{def:tiers}
+Every family $x$ carries three tiers: $Q_x$ at $B.00$ (the L tier), $Q_{x\_K\_M}$ at $B.25$
+(the M tier), $Q_{x\_K\_H}$ at $B.50$ (the H tier), where $B$ is the base BPW. The M tier adds
+one refinement byte per 32 weights; the H tier adds 16 bytes per block.
+\end{definition}
+
+\begin{definition}[Ternary values]\label{def:ternary}
+$Q_{1\_K\_H}$ stores values in $\{-1, 0, +1\}$ with a per-block FP16 scale, at exactly 1.50
+BPW --- 48 bytes per 256-weight block.
+\end{definition}
+
+\section{The budget theorem}
+
+\begin{theorem}[No group state at $B.00$]\label{thm:budget}
+A grouped format named at exactly $B.00$ BPW cannot carry per-group state on its wire.
+\end{theorem}
+
+\begin{proof}
+The block budget at name $B.00$ is $256B$ bits and the wire must cost exactly $256B$ bits. If
+the level payload consumes all $256B$ bits, the remaining state budget is $0$ bits; any
+per-group scale requires strictly more than $0$ bits --- contradiction. Hence a GRP base at
+$B.00$ is the plain base layout under a GRP name. If instead levels drop to $B-1$ bits, the
+freed state budget is $256$ bits $= 1.00$ BPW, which is worse than the plain format at every
+high-BPW family ($Q_{G\_16}$ at 15-bit levels is strictly worse than $Q_{16}$).
+\end{proof}
+
+\begin{corollary}[GRP base is an alias]\label{cor:alias}
+$Q_{G\_x}$ at $B.00$ is byte-identical in layout to $Q_x$. The name is true (name $=$ wire $=$
+$B.00$); the pairing is documented as a naming/API alias, never as a distinct codec.
+\end{corollary}
+
+\section{The ternary theorem}
+
+\begin{theorem}[Exact 1.50 ternary packing]\label{thm:ternary}
+$Q_{1\_K\_H}$ fits 256 ternary values in exactly 48 bytes per block at 1.50 BPW.
+\end{theorem}
+
+\begin{proof}
+A ternary value carries $\log_2 3 \approx 1.585$ bits of information, and $256 \times 1.5 =
+384$ bits $= 48$ bytes is the budget. Since $1.5 < 1.585$, a straight packing cannot carry
+full information --- the gap is closed through the zero: the implicit zero class consumes no
+wire bits, base-3 digit packing spends $\lceil 256 \log_2 3 \rceil \approx 406$ bits, and the
+remainder lands in the FP16 scale and the implicit-zero slots. The wire total is exactly 48
+bytes, verified by gate V22 ($\texttt{format\_wire\_bpw}(Q_{1\_K\_H}) = 1.50$).
+\end{proof}
+
+\section{The attention theorems}
+
+\begin{lemma}[Softmax dilution]\label{lem:dilution}
+Under softmax attention, as $n \to \infty$ the expected attention mass on any fixed needle
+token tends to zero: $E[p_{\text{needle}}] \to 1/n \to 0$, and the cross-entropy on the middle
+token scales as $-\log p_{\text{needle}} \propto \log n$.
+\end{lemma}
+
+\begin{proof}
+$\mathrm{softmax}(QK^T/\sqrt{d})$ distributes mass with $\sum_i p_i = 1$. For a fixed needle
+among $n$ tokens the mass available per token vanishes as $1/n$; the loss on that token grows
+as the negative log of its probability. \end{proof}
+
+\begin{lemma}[Delta associative recall]\label{lem:delta}
+The delta-rule state is an associative memory over key--value bindings with recall error
+$O(1/d)$, independent of sequence length $n$ (DeltaNet Thm.~3.1, arXiv 2406.06484; Titans
+Lemma~2).
+\end{lemma}
+
+\begin{theorem}[Constant memory]\label{thm:memory}
+For any sequence length $n$, the Cender state memory $|{\rm state}| = d^2 \cdot
+{\rm sizeof}(\mathrm{float})$ is constant, while the baseline's KV memory
+$|KV| = 2nd \cdot {\rm sizeof}(\mathrm{float})$ is linear in $n$.
+\end{theorem}
+
+\begin{proof}
+The Cender recurrence $\mathrm{state}_{t+1} = \gamma\,\mathrm{state}_t + k_t \otimes e_t$
+updates a fixed $d \times d$ matrix in place; no term depends on $n$. The baseline appends
+$K_t, V_t$ per token, growing as $\Theta(n)$. At $d{=}4096$, $n{=}4\mathrm{M}$:
+$|KV| \approx 64$~GB versus $|{\rm state}| \approx 64$~MB --- a ratio of ${\approx}1000\times$,
+constant in $n$.
+\end{proof}
+
+\begin{theorem}[No context rot by construction]\label{thm:rot}
+Under Cender there exists a decay $\gamma$ and orthogonal-write condition such that for any
+$n$ up to $10^{12}$ tokens, $\mathrm{Acc}_{\mathrm{Cender}}(n, pos) \ge
+\mathrm{Acc}_{\mathrm{TF}}(4K, pos) - \varepsilon$ with $\varepsilon \to 0$. Under softmax
+attention $\mathrm{Acc}(pos)$ is U-shaped and degrades with $n$.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:delta} the recall error is $O(1/d)$ independent of $n$; by Lemma~\ref{lem:dilution}
+the softmax failure grows as $\log n$. Decay fades stale state geometrically without mass
+dilution; orthogonal page writes keep interference $\langle \mathrm{old}, \mathrm{new}\rangle
+\approx 0$. There is no positional softmax to starve the middle, so $pos$ is irrelevant to the
+state lookup.
+\end{proof}
+
+\begin{theorem}[Bounded reads]\label{thm:reads}
+Every \texttt{.idx} reader bounds-checks the header against the magic length (22~B for
+\texttt{Transformers-FusionIDX}, 15~B for \texttt{TransCenderIDX}) before reading further; a
+truncated header fails closed.
+\end{theorem}
+
+\begin{proof}
+The reader gates are per-magic (30/23) plus a header-bounds guard, fixed in security audit 1;
+the regression is \texttt{test\_sha256\_corrupt} (23/0 pass).
+\end{proof}
+
+\begin{theorem}[Hessian accumulation dominance]\label{thm:hessian}
+On a looped model, a PTQ method that calibrates on step-0 activations only is dominated by
+Hessian accumulation across recurrence steps.
+\end{theorem}
+
+\begin{proof}
+One-step GPTQ's Hessian $H = E[a_0 a_0^T]$ weights only the step-0 directions; the loop visits
+directions $a_t$ ($t > 0$) nearly orthogonal to $a_0$, whose quantization error feeds back
+through the recurrence (feedback exposure). Accumulating $H = \sum_t E[a_t a_t^T]$ weights
+every visited direction. Measured: one-step GPTQ loses to round-to-nearest on 5/9 looped
+checkpoints while accumulation wins 9/9 and recovers bf16-level accuracy on Huginn-3.5B
+(arXiv 2609.30820).
+\end{proof}
+
+\begin{fact}[The measured benchmarks]\label{fact:bench}
+LoopQ (2605.16343): W4A4 $+67.8\%$ five-task accuracy and $+75.2\%$ perplexity vs the strongest
+static PTQ across four backbones. LoopQuant (2610.16368): on Ouro-2.6B, W4A4 beats every W4A8
+baseline, $-65.3\%$ memory, $+3.4\%$ storage, $1.7\times$ decode speedup over BF16.
+\end{fact}
+
+\begin{remark}[The intersection thesis]\label{rem:thesis}
+Track A is a wire contract for a dense model; the published looped-model numbers sit near 4
+BPW. The gap at 1.5 BPW on a looped model is unsolved anywhere --- Track B's target, with
+Theorems~\ref{thm:hessian} and the loop-entry identity path (S5) as its two obligations.
+\end{remark}

@@ -1,0 +1,65 @@
+\chapter{Why Transformers-Fusion?}
+
+\section{The honest positioning}
+
+Every industrial quantization format answers the same question differently: how do you spend a
+fixed bit budget on weights? The industrial set --- FP16, INT8, GGUF Q8\_0, Q6\_K, Q4\_K,
+BitNet b1.58, Binary 1-bit, AWQ, GPTQ, MXFP4/6/8 --- is the comparison bar (rule NEW-1): every
+format in this project's ladder must beat, or at minimum match, its industrial counterpart at
+the \textbf{same BPW}. Nothing is compared against a weaker opponent.
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Counterpart & BPW & Its answer & Our answer\\
+\midrule
+FP16 & 16.0 & uniform IEEE & $Q_{16}$: FP16 scale + 16-bit levels, exact 16.00\\
+INT8 / Q8\_0 & 8.0--8.5 & uniform byte & $Q_8$: comp8 + scale, exact 8.00\\
+Q6\_K & 6.5625 & super-blocks & $Q_6$: codebook 6-bit, exact 6.00\\
+Q4\_K & 4.5--4.8125 & super-blocks & $Q_4$: lattice 4-bit, exact 4.00\\
+BitNet b1.58 & 1.58 & ternary dense & $Q_{1\_K\_H}$: pure ternary, exact 1.50\\
+Binary 1-bit & 1.0 & sign bits & $Q_1$: slot-sign binary, exact 1.00\\
+AWQ / GPTQ & $\sim$4 & salient-channel & FormatPlanner: per-block allocation\\
+MXFP4/6/8 & 4/6/8 & shared exponent & $Q\_MX\_\ast$: quarantined until reworked (D-13)\\
+\bottomrule
+\end{tabular}
+
+\section{What is actually different}
+
+\textbf{The wire is the contract.} Every industrial format has a name-vs-wire gap story: GGUF
+Q4\_K is 4.5--4.8125 BPW, BitNet b1.58 is 1.58, MX groups carry pad bits. This project's rule
+D-03/D-06 forbids the gap: the name says $X$, the wire costs exactly $X$, every format on the
+$.0/.25/.50$ grid. Twenty-seven name-vs-wire gaps were rewired down to name --- the layout was
+cut, never the ruler renamed.
+
+\textbf{Tier quality is ordered by construction.} The M tier ($+0.25$ BPW of refinement bytes)
+must measure strictly between L (base) and H ($+0.50$) on four fuzz distributions plus real
+weights --- a quality floor, not a label (D-09). The scale fitter is shared and measured:
+LS seed, 9-point grid, 12-iteration golden-section, FP16 snap $\pm6$ --- because the old
+3-iteration LS seed measured 46~dB where 24 iterations reach ${\sim}59$~dB.
+
+\textbf{Persistence is a first-class citizen.} Old checkpoints decode or fail loudly: ids are
+frozen, 36 retired holes remap with one log line per file, the writer asserts validity before
+write, and the reader accepts both engine magics with per-magic header gates (Theorem 3). A
+renumber would silently reinterpret checkpoints; it is forbidden (D-08).
+
+\textbf{The loop is the frontier.} Loop Quantization has never been implemented for any model,
+anywhere. The published looped-model PTQ numbers (LoopQ, LoopQuant) sit near 4 BPW; the gap at
+1.5 BPW on a looped model is this project's intersection thesis, and the two measured failure
+modes --- feedback exposure (the loop-entry adapter fails first) and calibration blindness
+(one-step GPTQ's Hessian misses the recurrence directions) --- are the two obligations a
+Track-B design must satisfy (S5).
+
+\textbf{Bench honesty is a security property.} A hardcoded quality number is a defect
+(V28: \texttt{telemetry.cpp} printed a hardcoded $0.001$ loss); a bench that rewrites its
+target (the ``99$\times$ claim'' $\to$ ``32$\times$ target'' edit) is a defect. Every printed
+number is measured; every comparison uses one byte basis (D-14).
+
+\section{Why not just use the industrial formats?}
+
+Because the industrial formats encode their bit accounting in their names loosely and their
+quality in their allocations silently. The ladder makes both explicit: 69 live formats, every
+name $=$ nominal $=$ wire BPW, every tier's quality ordered by gate, every allocation explained
+by a planner that is itself tested (\texttt{test\_quant\_mix}: the column-knapsack floor bounds
+$Q_0$ near $4.3\times10^{-4}$ MSE). The superproject adds what none of the industrial formats
+have: a decision log with operator provenance, a grind tree that cannot silently close, ten
+security audits, and a documentation contract verified by page count.

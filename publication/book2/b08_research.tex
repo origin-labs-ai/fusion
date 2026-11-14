@@ -1,0 +1,59 @@
+\chapter{The research foundation}
+
+Every format decision cites a source. The six external anchors were re-verified live on
+2026-11-14 against the arXiv abstract pages; the internal anchors are the project's own audit
+trail.
+
+\section{The six live-verified papers}
+
+\begin{description}
+\item[NCM (2610.14162).] A multiscale residual VQ-VAE encodes text into a hierarchy of
+discrete codes; a transformer generates one level at a time, predicting all codes within a
+level in parallel. LM1B: better generative perplexity than the strongest diffusion baseline at
+21$\times$ faster; OpenWebText 10$\times$; XSum ROUGE-L matched at 31$\times$ faster; Sudoku
+beats autoregressive and diffusion baselines with fewer function evaluations.
+\item[LoopQ (2605.16343).] Looped models are PTQ-sensitive for three reasons: distribution
+shift across roles, state reuse across loop transitions, and recursive error accumulation.
+LoopQ answers with loop-aware activation scaling, cross-loop state alignment and
+trajectory-aware calibration. W4A4: 67.8\% average relative five-task accuracy improvement
+across four backbones; 75.2\% conservative average relative perplexity reduction across eight
+backbone-dataset pairs vs the strongest static PTQ.
+\item[LoopQuant (2610.16368).] Three components: Cross-Loop Distribution Canonicalization
+(CLDC), Interaction-Aware Loop-wise Precision Allocation (ILPA), Loop-Conditioned Task
+Calibration (LCTC). On Ouro-2.6B, W4A4 surpasses all W4A8 baselines with $-65.3\%$ memory,
+only $+3.4\%$ storage over naive INT4, and a 1.7$\times$ decode speedup over BF16.
+\item[Feedback exposure (2609.30820).] Two failure modes of standard PTQ on looped
+transformers: the non-residual loop-entry adapter fails first because a quantized layer
+perturbs the recurrent state without an identity path and the error feeds back at later steps;
+and calibration blindness --- one-step GPTQ builds its Hessian from step-0 activations, so on
+9 checkpoints from 7 looped architectures it is worse than RTN on 5. Accumulating the Hessian
+across recurrence steps wins 9/9 and recovers bf16-level accuracy on Huginn-3.5B.
+\item[MX formats (2310.10537).] A per-block shared exponent with narrow FP/INT element types;
+the first sub-8-bit weights+activations+gradients training with no recipe change. This is the
+family the project quarantined (D-13) after measuring its 2-iteration-LS tier allocator at
+$-21$ to $-37$~dB.
+\item[DeltaNet (2406.06484).] Delta-rule linear transformers with a hardware-efficient
+Householder-product algorithm; 1.3B/100B tokens beats Mamba and GLA on perplexity and
+zero-shot tasks. The proof basis for the delta associative lemma of Theorem~2.
+\end{description}
+
+\section{The internal research record}
+
+The research index tracks 18 items (R-01..R-18). The audit-ready half: the master-plan loop
+(R-01: 117-row source coverage map, 13 gaps, KAT inventory, 156 line-anchors, 7-tree audit,
+8 decision gates, arXiv re-resolve 67/67), loop transformers research (R-02: three loop shapes,
+G/S formulations as master plan §5c.6), the traditional baseline (R-03), Track A ladder (R-04),
+CodeFusion per-part research (R-05: 64 sections $\times$ 32 lines of prose), the seven-seat
+reverse-engineering record (R-06), the effort-slider RE (R-07), Claude Code effort-slider
+archaeology (R-08), deleted-docs recovery (R-09), and the workspace rename (R-10).
+
+The open half: INT $\times$ FP programme (R-11), loop quantization Track B (R-12), mix
+quantization (R-13), NCM Appendix F.1.1 + I read (R-14), EAIN (R-15), Inferno deep breakdown
+(R-16), the 512-page report (R-17) and the three READMEs (R-18).
+
+\section{The Track B thesis}
+
+Track A is a wire contract for a dense model; Track B's published numbers sit near 4 BPW. The
+gap neither track closes is \textbf{1.5 BPW on a looped model} --- the project's intersection
+thesis. The two verified failure modes (feedback exposure, calibration blindness) are the two
+obligations a Track-B design must satisfy.

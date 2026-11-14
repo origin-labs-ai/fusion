@@ -1,0 +1,1379 @@
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026) 
+ restricted system commands enabled.
+(./Fusion-Report-512.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2026-01-19>
+ (c:/texlive/2026/texmf-dist/tex/latex/extsizes/extarticle.cls
+Document Class: extarticle 1996/10/08 v1.0 Non Standard LaTeX document class
+(c:/texlive/2026/texmf-dist/tex/latex/base/size10.clo)
+(c:/texlive/2026/texmf-dist/tex/latex/base/exscale.sty))
+(c:/texlive/2026/texmf-dist/tex/latex/geometry/geometry.sty
+(c:/texlive/2026/texmf-dist/tex/latex/graphics/keyval.sty)
+(c:/texlive/2026/texmf-dist/tex/generic/iftex/ifvtex.sty
+(c:/texlive/2026/texmf-dist/tex/generic/iftex/iftex.sty)))
+(c:/texlive/2026/texmf-dist/tex/latex/fontspec/fontspec.sty
+(c:/texlive/2026/texmf-dist/tex/latex/l3packages/xparse/xparse.sty
+(c:/texlive/2026/texmf-dist/tex/latex/l3kernel/expl3.sty
+(c:/texlive/2026/texmf-dist/tex/latex/l3backend/l3backend-luatex.def)))
+(c:/texlive/2026/texmf-dist/tex/latex/fontspec/fontspec-luatex.sty
+(c:/texlive/2026/texmf-dist/tex/latex/base/fontenc.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/fontspec/fontspec.cfg)))
+(c:/texlive/2026/texmf-dist/tex/latex/unicode-math/unicode-math.sty
+(c:/texlive/2026/texmf-dist/tex/latex/unicode-math/unicode-math-luatex.sty
+(c:/texlive/2026/texmf-dist/tex/latex/l3packages/l3keys2e/l3keys2e.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/base/fix-cm.sty
+(c:/texlive/2026/texmf-dist/tex/latex/base/ts1enc.def))
+(c:/texlive/2026/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(c:/texlive/2026/texmf-dist/tex/latex/amsmath/amstext.sty
+(c:/texlive/2026/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(c:/texlive/2026/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(c:/texlive/2026/texmf-dist/tex/lualatex/lualatex-math/lualatex-math.sty
+(c:/texlive/2026/texmf-dist/tex/latex/etoolbox/etoolbox.sty))
+(c:/texlive/2026/texmf-dist/tex/latex/unicode-math/unicode-math-table.tex)))
+(c:/texlive/2026/texmf-dist/tex/latex/microtype/microtype.sty
+(c:/texlive/2026/texmf-dist/tex/latex/microtype/microtype-luatex.def)
+(c:/texlive/2026/texmf-dist/tex/latex/microtype/microtype.cfg))
+(c:/texlive/2026/texmf-dist/tex/latex/xcolor/xcolor.sty
+(c:/texlive/2026/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(c:/texlive/2026/texmf-dist/tex/latex/graphics-def/luatex.def)
+(c:/texlive/2026/texmf-dist/tex/latex/graphics/mathcolor.ltx))
+(c:/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/tools/array.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/ragged2e/ragged2e.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/enumitem/enumitem.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/fvextra/fvextra.sty
+(c:/texlive/2026/texmf-dist/tex/latex/fancyvrb/fancyvrb.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/upquote/upquote.sty
+(c:/texlive/2026/texmf-dist/tex/latex/base/textcomp.sty))
+(c:/texlive/2026/texmf-dist/tex/latex/lineno/lineno.sty
+(c:/texlive/2026/texmf-dist/tex/latex/kvoptions/kvoptions.sty
+(c:/texlive/2026/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty))))
+(c:/texlive/2026/texmf-dist/tex/latex/titlesec/titlesec.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/amscls/amsthm.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/pgf.revision.tex)))
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+(c:/texlive/2026/texmf-dist/tex/latex/graphics/graphicx.sty
+(c:/texlive/2026/texmf-dist/tex/latex/graphics/graphics.sty
+(c:/texlive/2026/texmf-dist/tex/latex/graphics/trig.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)))
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfiltered.co
+de.tex)) (c:/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-luatex.def
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def))
+)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+)) (c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code.te
+x)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonometric
+.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.code.t
+ex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison.co
+de.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.tex
+)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code.te
+x)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex
+)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerarithm
+etics.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex))
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.cod
+e.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code.te
+x)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code
+.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.c
+ode.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex)
+
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing.co
+de.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex
+) (c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex
+)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code
+.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex
+) (c:/texlive/2026/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex)))
+ (c:/texlive/2026/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.tex)
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65.st
+y)
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18.st
+y)) (c:/texlive/2026/texmf-dist/tex/latex/pgf/utilities/pgffor.sty
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex))
+(c:/texlive/2026/texmf-dist/tex/latex/pgf/math/pgfmath.sty
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex))
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex))
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers.co
+de.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex)
+(c:/texlive/2026/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzli
+brarytopaths.code.tex)))
+(c:/texlive/2026/texmf-dist/tex/latex/needspace/needspace.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/hyperref/hyperref.sty
+(c:/texlive/2026/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty)
+(c:/texlive/2026/texmf-dist/tex/generic/pdfescape/pdfescape.sty
+(c:/texlive/2026/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+(c:/texlive/2026/texmf-dist/tex/generic/infwarerr/infwarerr.sty)))
+(c:/texlive/2026/texmf-dist/tex/latex/hycolor/hycolor.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/hyperref/nameref.sty
+(c:/texlive/2026/texmf-dist/tex/latex/refcount/refcount.sty)
+(c:/texlive/2026/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty))
+(c:/texlive/2026/texmf-dist/tex/generic/stringenc/stringenc.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(c:/texlive/2026/texmf-dist/tex/generic/intcalc/intcalc.sty)
+(c:/texlive/2026/texmf-dist/tex/latex/hyperref/puenc.def)
+(c:/texlive/2026/texmf-dist/tex/latex/url/url.sty)
+(c:/texlive/2026/texmf-dist/tex/generic/bitset/bitset.sty
+(c:/texlive/2026/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty)))
+(c:/texlive/2026/texmf-dist/tex/latex/hyperref/hluatex.def
+(c:/texlive/2026/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
+(c:/texlive/2026/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty)))
+No file Fusion-Report-512.aux.
+*geometry* driver: auto-detecting
+*geometry* detected driver: luatex
+(c:/texlive/2026/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (c:/texlive/2026/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+(c:/texlive/2026/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+
+LaTeX Warning: Reference `part:I' on page 1 undefined on input line 174.
+
+
+LaTeX Warning: Reference `part:II' on page 1 undefined on input line 175.
+
+
+LaTeX Warning: Reference `part:III' on page 1 undefined on input line 176.
+
+
+LaTeX Warning: Reference `part:IV' on page 1 undefined on input line 177.
+
+
+LaTeX Warning: Reference `part:V' on page 1 undefined on input line 178.
+
+
+LaTeX Warning: Reference `part:VI' on page 1 undefined on input line 179.
+
+
+LaTeX Warning: Reference `part:VII' on page 1 undefined on input line 180.
+
+
+LaTeX Warning: Reference `part:VIII' on page 1 undefined on input line 181.
+
+
+Overfull \hbox (1.66667pt too wide) in paragraph at lines 111--190
+[][] [] 
+[1{c:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+No file Fusion-Report-512.toc.
+[2] [3]
+Underfull \hbox (badness 10000) in paragraph at lines 318--318
+\TU/TeXGyreTermes(0)/m/n/10 (live state), \TU/DejaVuSansMono(0)/m/n/10 telemetr
+y/TODO-TREE.md \TU/TeXGyreTermes(0)/m/n/10 (the grind queue),
+
+Underfull \hbox (badness 1888) in paragraph at lines 318--318
+\TU/DejaVuSansMono(0)/m/n/10 docs/operation-clean/DECISIONS.md \TU/TeXGyreTerme
+s(0)/m/n/10 (rul-ings), mas-ter plan
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 378--378
+[]|\TU/TeXGyreTermes(0)/m/n/8 T1|  
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 379--379
+[]|\TU/TeXGyreTermes(0)/m/n/8 T2|  
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 380--380
+[]|\TU/TeXGyreTermes(0)/m/n/8 T3|  
+
+Overfull \hbox (1.13618pt too wide) in paragraph at lines 380--380
+[]|\TU/TeXGyreTermes(0)/m/n/8 open|  
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 381--381
+[]|\TU/TeXGyreTermes(0)/m/n/8 T4|  
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 382--382
+[]|\TU/TeXGyreTermes(0)/m/n/8 T5|  
+
+Overfull \hbox (1.13618pt too wide) in paragraph at lines 382--382
+[]|\TU/TeXGyreTermes(0)/m/n/8 open|  
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 383--383
+[]|\TU/TeXGyreTermes(0)/m/n/8 T6|  
+
+Overfull \hbox (1.13618pt too wide) in paragraph at lines 383--383
+[]|\TU/TeXGyreTermes(0)/m/n/8 open|  
+
+Overfull \hbox (0.92601pt too wide) in paragraph at lines 384--384
+[]|\TU/TeXGyreTermes(0)/m/n/8 T7|  
+
+Overfull \hbox (0.7853pt too wide) in paragraph at lines 384--384
+\TU/TeXGyreTermes(0)/m/n/8 DESIGN|  
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 431--431
+\TU/DejaVuSansMono(0)/m/n/10 src/math/\TU/TeXGyreTermes(0)/m/n/10 , \TU/DejaVuS
+ansMono(0)/m/n/10 src/code_gen/\TU/TeXGyreTermes(0)/m/n/10 , \TU/DejaVuSansMono
+(0)/m/n/10 src/trainer/code_gen.cpp\TU/TeXGyreTermes(0)/m/n/10 ,
+
+Underfull \hbox (badness 2671) in paragraph at lines 431--431
+\TU/DejaVuSansMono(0)/m/n/10 src/model/autograd_functions.cpp\TU/TeXGyreTermes(
+0)/m/n/10 ; write ev-ery site with
+
+Overfull \hbox (1.79416pt too wide) in paragraph at lines 435--435
+\TU/TeXGyreTermes(0)/b/n/10 Ac-tion. \TU/TeXGyreTermes(0)/m/n/10 Au-dit \TU/Dej
+aVuSansMono(0)/m/n/10 src/server/\TU/TeXGyreTermes(0)/m/n/10 , \TU/DejaVuSansMo
+no(0)/m/n/10 src/gle/\TU/TeXGyreTermes(0)/m/n/10 , \TU/DejaVuSansMono(0)/m/n/10
+ src/core/telemetry.cpp\TU/TeXGyreTermes(0)/m/n/10 ,
+
+Underfull \hbox (badness 1092) in paragraph at lines 439--439
+\TU/TeXGyreTermes(0)/m/n/10 cor-rup-tion mark-ers, live arXiv re-resolution, ev
+-ery Phase-
+
+Underfull \hbox (badness 10000) in paragraph at lines 439--439
+\TU/TeXGyreTermes(0)/m/n/10 0 bul-let answered-or-explicitly-UNKNOWN); ap-pend 
+a
+
+Underfull \hbox (badness 1895) in paragraph at lines 439--439
+\TU/TeXGyreTermes(0)/m/n/10 dated §16 audit-trail en-try; ap-pend one progress
+ line to
+[5]
+Overfull \hbox (6.86984pt too wide) in paragraph at lines 472--472
+[]|\TU/TeXGyreTermes(0)/m/n/5 Step|  
+
+Overfull \hbox (4.86078pt too wide) in paragraph at lines 472--472
+[]|\TU/TeXGyreTermes(0)/m/n/5 State|  
+
+Overfull \hbox (0.70966pt too wide) in paragraph at lines 474--474
+[]|\TU/TeXGyreTermes(0)/m/n/5 2|  
+
+Overfull \hbox (5.23718pt too wide) in paragraph at lines 474--474
+[]|\TU/TeXGyreTermes(0)/b/n/5 done|  
+
+Overfull \hbox (0.70966pt too wide) in paragraph at lines 475--475
+[]|\TU/TeXGyreTermes(0)/m/n/5 4|  
+
+Overfull \hbox (5.23718pt too wide) in paragraph at lines 475--475
+[]|\TU/TeXGyreTermes(0)/b/n/5 done|  
+
+Underfull \hbox (badness 2012) in paragraph at lines 506--506
+\TU/TeXGyreTermes(0)/m/n/10 The ses-sion \TU/DejaVuSansMono(0)/m/n/10 mvs_02206
+1eb8f2c428697f43df4a5fd8d9f \TU/TeXGyreTermes(0)/m/n/10 ended
+[6] [7]
+Underfull \hbox (badness 1546) in paragraph at lines 707--707
+[]\TU/TeXGyreTermes(0)/m/n/10 This is a \TU/TeXGyreTermes(0)/b/n/10 whole-sale 
+re-place-ment sweep\TU/TeXGyreTermes(0)/m/n/10 , not a patch to
+
+Underfull \hbox (badness 2875) in paragraph at lines 708--708
+\TU/TeXGyreTermes(0)/b/n/10 CORE / SUP-PORT-ING / DEAD\TU/TeXGyreTermes(0)/m/n/
+10 , per-directory counts,
+
+Underfull \hbox (badness 10000) in paragraph at lines 708--708
+\TU/DejaVuSansMono(0)/m/n/10 src/model\TU/TeXGyreTermes(0)/m/n/10 , \TU/DejaVuS
+ansMono(0)/m/n/10 engines/trainer/dense\TU/TeXGyreTermes(0)/m/n/10 , \TU/DejaVu
+SansMono(0)/m/n/10 engines/trainer/moe\TU/TeXGyreTermes(0)/m/n/10 ,
+
+Overfull \hbox (6.30003pt too wide) in paragraph at lines 739--739
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/transformer.cpp|  
+
+Overfull \hbox (1.72447pt too wide) in paragraph at lines 741--741
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/moe_model.cpp|  
+
+Overfull \hbox (8.58781pt too wide) in paragraph at lines 742--742
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/hybrid_block.cpp 
+
+Overfull \hbox (13.16338pt too wide) in paragraph at lines 742--742
+\TU/DejaVuSansMono(0)/m/n/5 include/quant/hybrid_block.h|  
+
+Overfull \hbox (17.73894pt too wide) in paragraph at lines 743--743
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/hybrid_moe_model.cpp 
+
+Overfull \hbox (22.3145pt too wide) in paragraph at lines 743--743
+\TU/DejaVuSansMono(0)/m/n/5 include/quant/hybrid_moe_model.h|  
+
+Overfull \hbox (8.58781pt too wide) in paragraph at lines 744--744
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/moe_variants.cpp 
+
+Overfull \hbox (13.16338pt too wide) in paragraph at lines 744--744
+\TU/DejaVuSansMono(0)/m/n/5 include/quant/moe_variants.h|  
+
+Overfull \hbox (8.58781pt too wide) in paragraph at lines 745--745
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/mommoe_block.cpp 
+
+Overfull \hbox (13.16338pt too wide) in paragraph at lines 745--745
+\TU/DejaVuSansMono(0)/m/n/5 include/quant/mommoe_block.h|  
+
+Overfull \hbox (17.73894pt too wide) in paragraph at lines 746--746
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/native_quant_moe.cpp|  
+[8]
+Overfull \hbox (31.46562pt too wide) in paragraph at lines 759--759
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/adapters/tools/qwen35_engine.cpp 
+
+Overfull \hbox (40.61674pt too wide) in paragraph at lines 760--760
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/multimodal/multimodal_cross_attn.cpp 
+
+Overfull \hbox (15.45116pt too wide) in paragraph at lines 761--761
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/multimodal/multimodal.cpp 
+
+Overfull \hbox (31.46562pt too wide) in paragraph at lines 762--762
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/multimodal/multimodal_fusion.cpp 
+
+Overfull \hbox (47.48009pt too wide) in paragraph at lines 763--763
+[]|\TU/DejaVuSansMono(0)/m/n/5 engines/trainer/multimodal/dense/vision.cpp 
+
+Overfull \hbox (56.63121pt too wide) in paragraph at lines 764--764
+[]|\TU/DejaVuSansMono(0)/m/n/5 engines/trainer/multimodal/dense/projection.cpp 
+
+
+Overfull \hbox (63.49455pt too wide) in paragraph at lines 765--765
+[]|\TU/DejaVuSansMono(0)/m/n/5 engines/trainer/multimodal/dense/fusion_layers.c
+pp 
+
+Overfull \hbox (26.89006pt too wide) in paragraph at lines 766--766
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/inference/inference_paging.cpp|  
+
+Overfull \hbox (17.73894pt too wide) in paragraph at lines 779--779
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/inference/inference_kv.cpp|  
+
+Overfull \hbox (6.30003pt too wide) in paragraph at lines 780--780
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/moe_enhance.cpp 
+
+Overfull \hbox (10.8756pt too wide) in paragraph at lines 780--780
+\TU/DejaVuSansMono(0)/m/n/5 include/quant/moe_enhance.h|  
+
+Overfull \hbox (15.45116pt too wide) in paragraph at lines 781--781
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/expert_parallel.cpp|  
+
+Overfull \hbox (26.89006pt too wide) in paragraph at lines 782--782
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/moe_advanced_support.cpp 
+
+Overfull \hbox (20.02672pt too wide) in paragraph at lines 784--784
+[]|\TU/DejaVuSansMono(0)/m/n/5 engines/trainer/moe/routers.cpp|  
+
+Underfull \hbox (badness 4048) in paragraph at lines 794--795
+\TU/TeXGyreTermes(0)/b/n/10 2.1b.1 KAT-layer in-ven-tory --- MAPPED (read from
+
+Overfull \hbox (6.05444pt too wide) in paragraph at lines 801--801
+[]|\TU/TeXGyreTermes(0)/m/n/5 Layer|  
+
+Overfull \hbox (11.54866pt too wide) in paragraph at lines 803--803
+[]|\TU/TeXGyreTermes(0)/b/n/5 TRAIN- 
+
+Overfull \hbox (4.13876pt too wide) in paragraph at lines 803--803
+\TU/TeXGyreTermes(0)/b/n/5 ING|  
+
+Overfull \hbox (5.16878pt too wide) in paragraph at lines 803--803
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/model/autograd_functions.cpp:17 
+
+Overfull \hbox (21.29724pt too wide) in paragraph at lines 803--803
+\TU/DejaVuSansMono(0)/m/n/5 ScaledDotProductAttentionFunction::forward|  
+
+Overfull \hbox (2.41858pt too wide) in paragraph at lines 804--804
+[]|\TU/TeXGyreTermes(0)/b/n/5 JIT 
+
+Overfull \hbox (5.28644pt too wide) in paragraph at lines 804--804
+\TU/TeXGyreTermes(0)/b/n/5 code- 
+
+Overfull \hbox (2.20714pt too wide) in paragraph at lines 804--804
+\TU/TeXGyreTermes(0)/b/n/5 gen|  
+
+Overfull \hbox (46.09677pt too wide) in paragraph at lines 804--805
+\TU/DejaVuSansMono(0)/m/n/5 tests/test_code_gen.cpp::test_attention_v20_budget 
+
+
+Overfull \hbox (6.39575pt too wide) in paragraph at lines 805--805
+[]|\TU/TeXGyreTermes(0)/b/n/5 Flash 
+
+Overfull \hbox (2.55594pt too wide) in paragraph at lines 805--805
+\TU/TeXGyreTermes(0)/b/n/5 ker- 
+
+Overfull \hbox (1.22134pt too wide) in paragraph at lines 805--805
+\TU/TeXGyreTermes(0)/b/n/5 nel|  
+
+Overfull \hbox (19.42953pt too wide) in paragraph at lines 806--806
+[]|\TU/TeXGyreTermes(0)/b/n/5 Scalar/AVX 
+
+Overfull \hbox (5.84694pt too wide) in paragraph at lines 806--806
+\TU/TeXGyreTermes(0)/b/n/5 math|  
+
+Overfull \hbox (7.75305pt too wide) in paragraph at lines 807--807
+[]|\TU/TeXGyreTermes(0)/b/n/5 SIMD 
+
+Overfull \hbox (5.84694pt too wide) in paragraph at lines 807--807
+\TU/TeXGyreTermes(0)/b/n/5 math|  
+
+Overfull \hbox (7.75305pt too wide) in paragraph at lines 808--808
+[]|\TU/TeXGyreTermes(0)/b/n/5 SIMD 
+
+Overfull \hbox (5.84694pt too wide) in paragraph at lines 808--808
+\TU/TeXGyreTermes(0)/b/n/5 math 
+
+Overfull \hbox (3.85025pt too wide) in paragraph at lines 808--808
+\TU/TeXGyreTermes(0)/b/n/5 (vec- 
+
+Overfull \hbox (2.84814pt too wide) in paragraph at lines 808--808
+\TU/TeXGyreTermes(0)/b/n/5 tor)|  
+
+Overfull \hbox (5.30304pt too wide) in paragraph at lines 809--809
+[]|\TU/TeXGyreTermes(0)/b/n/5 GPU 
+
+Overfull \hbox (5.50372pt too wide) in paragraph at lines 809--809
+\TU/TeXGyreTermes(0)/b/n/5 back- 
+
+Overfull \hbox (4.48965pt too wide) in paragraph at lines 809--809
+\TU/TeXGyreTermes(0)/b/n/5 ends|  
+
+Overfull \hbox (7.57056pt too wide) in paragraph at lines 809--809
+\TU/DejaVuSansMono(0)/m/n/5 src/backend/gpu_compute_cuda.cpp:296 
+
+Overfull \hbox (5.16878pt too wide) in paragraph at lines 809--809
+\TU/DejaVuSansMono(0)/m/n/5 src/backend/gpu_compute_hip.cpp:187 
+
+Overfull \hbox (14.4339pt too wide) in paragraph at lines 809--809
+\TU/DejaVuSansMono(0)/m/n/5 src/backend/gpu_compute_vulkan.cpp:1578 
+
+Overfull \hbox (7.57056pt too wide) in paragraph at lines 809--809
+\TU/DejaVuSansMono(0)/m/n/5 src/backend/gpu_compute_full.cpp:318 
+
+Overfull \hbox (7.36864pt too wide) in paragraph at lines 810--810
+[]|\TU/TeXGyreTermes(0)/b/n/5 Other 
+
+Overfull \hbox (2.55594pt too wide) in paragraph at lines 810--810
+\TU/TeXGyreTermes(0)/b/n/5 ker- 
+
+Overfull \hbox (3.12746pt too wide) in paragraph at lines 810--810
+\TU/TeXGyreTermes(0)/b/n/5 nels|  
+
+Overfull \hbox (238.63641pt too wide) in paragraph at lines 810--810
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/kernel/{kernel_gemm,kernel_production,kernel
+_q12,kernel_q24,kernel_q3,kernel_q6,kernel_quant4,kernel_quant8,kernel_tl,int8_
+quant}.cpp|  
+
+Underfull \hbox (badness 2781) in paragraph at lines 815--815
+\TU/TeXGyreTermes(0)/m/n/10 must be ex-press-ible in \TU/TeXGyreTermes(0)/b/n/1
+0 four \TU/TeXGyreTermes(0)/m/n/10 places that cur-rently du-pli-
+
+Underfull \hbox (badness 5519) in paragraph at lines 815--815
+\TU/TeXGyreTermes(0)/m/n/10 cate it: \TU/DejaVuSansMono(0)/m/n/10 ScaledDotProd
+uctAttentionFunction \TU/TeXGyreTermes(0)/m/n/10 (train-ing) $\TU/TeXGyreTermes
+Math(1)/m/n/10 ⋅$
+
+Underfull \hbox (badness 3792) in paragraph at lines 815--815
+\TU/DejaVuSansMono(0)/m/n/10 attention_flash \TU/TeXGyreTermes(0)/b/n/10 :219 \
+TU/TeXGyreTermes(0)/m/n/10 and the \TU/DejaVuSansMono(0)/m/n/10 attention_basic
+ \TU/TeXGyreTermes(0)/m/n/10 tem-plate
+[9]
+Underfull \hbox (badness 1259) in paragraph at lines 823--823
+\TU/TeXGyreTermes(0)/b/n/10 buffer over-flow (DE-FECT FOUND 2026-11-10, \TU/TeX
+GyreTermes(0)/m/n/10 FIXED
+
+Underfull \hbox (badness 1394) in paragraph at lines 823--823
+\TU/TeXGyreTermes(0)/m/n/10 at \TU/DejaVuSansMono(0)/m/n/10 min(seq_len, 2048) 
+\TU/TeXGyreTermes(0)/m/n/10 while the gen-er-ated ker-nel’s loops
+
+Underfull \hbox (badness 1436) in paragraph at lines 823--823
+\TU/DejaVuSansMono(0)/m/n/10 spec.M \TU/TeXGyreTermes(0)/m/n/10 un-clamped with
+ no test ever ex-er-cis-ing \TU/DejaVuSansMono(0)/m/n/10 seq_len >
+
+Underfull \hbox (badness 7238) in paragraph at lines 823--823
+\TU/TeXGyreTermes(0)/m/n/10 now \TU/DejaVuSansMono(0)/m/n/10 std::vector scores
+(static_cast(seq_len), 0.0f) \TU/TeXGyreTermes(0)/m/n/10 ---
+
+Underfull \hbox (badness 10000) in paragraph at lines 823--823
+\TU/TeXGyreTermes(0)/m/n/10 (\TU/DejaVuSansMono(0)/m/n/10 src/trainer/code_gen.
+cpp:258\TU/TeXGyreTermes(0)/m/n/10 ); \TU/DejaVuSansMono(0)/m/n/10 generate_att
+ention \TU/TeXGyreTermes(0)/b/n/10 re-
+
+Underfull \hbox (badness 10000) in paragraph at lines 823--823
+\TU/DejaVuSansMono(0)/m/n/10 tests/test_code_gen.cpp::test_attention_v20_budget
+ \TU/TeXGyreTermes(0)/m/n/10 (12
+
+Overfull \hbox (32.78473pt too wide) in paragraph at lines 823--823
+\TU/TeXGyreTermes(0)/m/n/10 caller clamp, tem-plate heap buffer; pre-fix, \TU/D
+ejaVuSansMono(0)/m/n/10 tests/test_code_gen.cpp:43
+
+Overfull \hbox (5.03928pt too wide) in paragraph at lines 824--825
+\TU/DejaVuSansMono(0)/m/it/10 test_wave6_model_feats\TU/TeXGyreTermes(0)/m/it/1
+0 , \TU/DejaVuSansMono(0)/m/it/10 test_protected\TU/TeXGyreTermes(0)/m/it/10 , 
+\TU/DejaVuSansMono(0)/m/it/10 test_inference_opt\TU/TeXGyreTermes(0)/m/it/10 ,
+
+Underfull \hbox (badness 2103) in paragraph at lines 826--826
+\TU/TeXGyreTermes(0)/b/n/10 un-der-count. \TU/TeXGyreTermes(0)/m/n/10 The full 
+\TU/DejaVuSansMono(0)/m/n/10 tests/ \TU/TeXGyreTermes(0)/m/n/10 tree is \TU/TeX
+GyreTermes(0)/b/n/10 77 files / 14,832
+
+Underfull \hbox (badness 6876) in paragraph at lines 826--826
+\TU/TeXGyreTermes(0)/m/n/10 the \TU/TeXGyreTermes(0)/m/it/10 strong \TU/TeXGyre
+Termes(0)/m/n/10 implementation-shaped sites are \TU/TeXGyreTermes(0)/b/n/10 no
+t 6 but
+
+Underfull \hbox (badness 1668) in paragraph at lines 826--826
+\TU/TeXGyreTermes(0)/b/n/10 9\TU/TeXGyreTermes(0)/m/n/10 : \TU/DejaVuSansMono(0
+)/m/n/10 test_protected.cpp \TU/TeXGyreTermes(0)/m/n/10 (calls \TU/DejaVuSansMo
+no(0)/m/n/10 flash_attention_forward \TU/TeXGyreTermes(0)/m/n/10 at
+
+Underfull \hbox (badness 10000) in paragraph at lines 826--826
+\TU/DejaVuSansMono(0)/m/n/10 test_backends_realonly.cpp \TU/TeXGyreTermes(0)/m/
+n/10 (CANN \TU/DejaVuSansMono(0)/m/n/10 reference_softmax
+
+Underfull \hbox (badness 1721) in paragraph at lines 826--826
+\TU/TeXGyreTermes(0)/b/n/10 fail-loud \TU/TeXGyreTermes(0)/m/n/10 con-tract tes
+t, :29 / :300 --- this is the \TU/TeXGyreTermes(0)/b/n/10 GAP-2
+
+Underfull \hbox (badness 5064) in paragraph at lines 826--826
+\TU/TeXGyreTermes(0)/m/n/10 test sur-face), \TU/DejaVuSansMono(0)/m/n/10 test_q
+uant_mix.cpp \TU/TeXGyreTermes(0)/m/n/10 + \TU/DejaVuSansMono(0)/m/n/10 test_tr
+ainer.cpp \TU/TeXGyreTermes(0)/m/n/10 +
+
+Underfull \hbox (badness 10000) in paragraph at lines 826--826
+\TU/DejaVuSansMono(0)/m/n/10 test_training.cpp \TU/TeXGyreTermes(0)/m/n/10 (the
+ \TU/TeXGyreTermes(0)/b/n/10 attention-projection pa-ram-e-ter
+
+Underfull \hbox (badness 1590) in paragraph at lines 826--826
+\TU/TeXGyreTermes(0)/m/n/10 tion weights is as-serted, i.e. the \TU/TeXGyreTerm
+es(0)/b/n/10 Track-A \TU/TeXGyreTermes(0)/m/n/10 test sur-face),
+
+Underfull \hbox (badness 1005) in paragraph at lines 826--826
+\TU/DejaVuSansMono(0)/m/n/10 test_code_gen.cpp \TU/TeXGyreTermes(0)/m/n/10 (the
+ JIT path --- \TU/DejaVuSansMono(0)/m/n/10 seq_len=8 \TU/TeXGyreTermes(0)/m/n/1
+0 only), and
+
+Underfull \hbox (badness 1472) in paragraph at lines 827--827
+\TU/DejaVuSansMono(0)/m/n/10 include/quant/*.h \TU/TeXGyreTermes(0)/m/n/10 for 
+fur-ther declared-but-unimplemented
+
+Overfull \hbox (54.02924pt too wide) in paragraph at lines 828--829
+\TU/TeXGyreTermes(0)/b/n/10 2.1d A live dead-code vi-o-la-tion, con-firmed \TU/
+DejaVuSansMono(0)/m/n/10 include/quant/inference_opt.h
+
+Underfull \hbox (badness 1237) in paragraph at lines 828--829
+\TU/TeXGyreTermes(0)/b/n/10 de-clares \TU/DejaVuSansMono(0)/m/n/10 PagedAttenti
+on \TU/TeXGyreTermes(0)/m/n/10 (17), \TU/DejaVuSansMono(0)/m/n/10 MultiQueryAtt
+ention \TU/TeXGyreTermes(0)/m/n/10 (278),
+
+Overfull \hbox (1.16542pt too wide) in paragraph at lines 828--829
+\TU/TeXGyreTermes(0)/m/n/10 and \TU/DejaVuSansMono(0)/m/n/10 ALiBi \TU/TeXGyreT
+ermes(0)/m/n/10 (333) --- and \TU/DejaVuSansMono(0)/m/n/10 src/inference/infere
+nce_serve.cpp:5-
+
+Overfull \hbox (13.11069pt too wide) in paragraph at lines 835--836
+[]\TU/TeXGyreTermes(0)/m/n/10 If it is in the \TU/TeXGyreTermes(0)/b/n/10 KAT l
+ayer \TU/TeXGyreTermes(0)/m/n/10 and im-ple-ments \TU/DejaVuSansMono(0)/m/n/10 
+softmax(QK^T/sqrt(D))V
+
+Overfull \hbox (36.55922pt too wide) in paragraph at lines 880--880
+\TU/DejaVuSansMono(0)/m/n/10 transformers/src/model/transformer.cpp:295 \TU/TeX
+GyreTermes(0)/m/n/10 --- \TU/DejaVuSansMono(0)/m/n/10 Attention::forward\TU/TeX
+GyreTermes(0)/m/n/10 . 
+[10]
+Underfull \hbox (badness 2573) in paragraph at lines 887--888
+[]\TU/TeXGyreTermes(0)/m/n/10 Long path \TU/DejaVuSansMono(0)/m/n/10 flash_atte
+ntion_forward \TU/TeXGyreTermes(0)/m/n/10 when \TU/DejaVuSansMono(0)/m/n/10 S_f
+ull > 64
+
+Underfull \hbox (badness 5696) in paragraph at lines 889--890
+[]\TU/TeXGyreTermes(0)/m/n/10 Con-fig in \TU/DejaVuSansMono(0)/m/n/10 include/q
+uant/transformer.h\TU/TeXGyreTermes(0)/m/n/10 : \TU/DejaVuSansMono(0)/m/n/10 he
+ad_dim=64\TU/TeXGyreTermes(0)/m/n/10 ,
+
+Underfull \hbox (badness 10000) in paragraph at lines 889--890
+\TU/DejaVuSansMono(0)/m/n/10 rope_theta=10000\TU/TeXGyreTermes(0)/m/n/10 , \TU/
+DejaVuSansMono(0)/b/n/10 max_seq_len=2048\TU/TeXGyreTermes(0)/m/n/10 , \TU/Deja
+VuSansMono(0)/m/n/10 RoPEScalingMode\TU/TeXGyreTermes(0)/m/n/10 ,
+
+Underfull \hbox (badness 1253) in paragraph at lines 892--892
+[]\TU/TeXGyreTermes(0)/b/n/10 A dead \TU/DejaVuSansMono(0)/b/n/10 AttentionResi
+dual \TU/TeXGyreTermes(0)/b/n/10 ex-ists at \TU/DejaVuSansMono(0)/b/n/10 transf
+ormer.cpp:629
+[11]
+Underfull \hbox (badness 6477) in paragraph at lines 966--966
+\TU/TeXGyreTermes(0)/b/n/10 Where it lands in our en-gine: \TU/DejaVuSansMono(0
+)/m/n/10 DenseModel::forward
+
+Underfull \hbox (badness 1062) in paragraph at lines 968--968
+|[]\TU/TeXGyreTermes(0)/b/n/9 3b.6 THE FULL SPEC --- ex-tracted from the pa-per
+ (arXiv
+
+Underfull \hbox (badness 10000) in paragraph at lines 975--976
+[]\TU/TeXGyreTermes(0)/m/n/10 nearest-codebook lookup: \TU/DejaVuSansMono(0)/m/
+n/10 r_k^i = argmin_j u_k^i -
+[12]
+Underfull \hbox (badness 6825) in paragraph at lines 1064--1064
+\TU/TeXGyreTermes(0)/m/n/10 re-normalize rows $\TU/TeXGyreTermesMath(1)/m/n/10 
+→$ \TU/TeXGyreTermes(0)/m/n/10 fixed ta-ble \TU/DejaVuSansMono(0)/m/n/10 C_v 
+= normalize(_r^(-
+[13]
+Underfull \hbox (badness 1038) in paragraph at lines 1170--1171
+\TU/DejaVuSansMono(0)/m/n/10 8B-DSpine-tnt\TU/TeXGyreTermes(0)/m/n/10 ...). Dra
+fters for Qwen3-8B/4B re-leased;
+
+Underfull \hbox (badness 2418) in paragraph at lines 1184--1185
+[]\TU/TeXGyreTermes(0)/b/n/10 The ”spine” name is a di-rect fit \TU/TeXGyre
+Termes(0)/m/n/10 --- the en-gine IS
+
+Overfull \hbox (15.74579pt too wide) in paragraph at lines 1194--1195
+[]\TU/TeXGyreTermes(0)/m/n/10 Eq. 5 gated write is \TU/DejaVuSansMono(0)/m/n/10
+ h_{,t} = u_{,t} + RMS(u_{,t}).W_.(g_{,t}
+
+Underfull \hbox (badness 2617) in paragraph at lines 1202--1203
+[]\TU/TeXGyreTermes(0)/b/n/10 Lever 2: Loop rout-ing (§5) \TU/TeXGyreTermes(0)
+/m/n/10 --- per-token depth (T-
+
+Underfull \hbox (badness 1460) in paragraph at lines 1202--1203
+\TU/TeXGyreTermes(0)/m/n/10 LoopFormer token-choice rout-ing + recursion-wise K
+V
+[14]
+Underfull \hbox (badness 10000) in paragraph at lines 1305--1305
+\TU/DejaVuSansMono(0)/m/n/10 NeuralArchitectureSearch \TU/TeXGyreTermes(0)/m/n/
+10 (\TU/DejaVuSansMono(0)/m/n/10 include/quant/agi.h:378\TU/TeXGyreTermes(0)/m/
+n/10 , a
+
+Underfull \hbox (badness 10000) in paragraph at lines 1305--1305
+\TU/TeXGyreTermes(0)/m/n/10 generic NAS over \TU/DejaVuSansMono(0)/m/n/10 struc
+t Architecture { int layers;
+
+Underfull \hbox (badness 10000) in paragraph at lines 1305--1305
+\TU/DejaVuSansMono(0)/m/n/10 int hidden; float score; }\TU/TeXGyreTermes(0)/m/n
+/10 ) $\TU/TeXGyreTermesMath(1)/m/n/10 ⋅$ \TU/TeXGyreTermes(0)/m/n/10 Exa’s
+ \TU/DejaVuSansMono(0)/m/n/10 'neural' \TU/TeXGyreTermes(0)/m/n/10 search
+
+Underfull \hbox (badness 10000) in paragraph at lines 1305--1305
+\TU/TeXGyreTermes(0)/m/n/10 mode (\TU/DejaVuSansMono(0)/m/n/10 packages/web/web
+-search-exa/src/types.ts:13\TU/TeXGyreTermes(0)/m/n/10 ) $\TU/TeXGyreTermesMath
+(1)/m/n/10 ⋅$
+
+Overfull \hbox (4.80052pt too wide) in paragraph at lines 1305--1305
+\TU/TeXGyreTermes(0)/m/n/10 mem-ory dedup by co-sine > 0.95 (\TU/DejaVuSansMono
+(0)/m/n/10 src/agi/agi_extended.cpp:507\TU/TeXGyreTermes(0)/m/n/10 ,
+[15]
+Overfull \hbox (12.07565pt too wide) in paragraph at lines 1322--1322
+[]|\TU/DejaVuSansMono(0)/b/n/5 StateMemoryEntry|  
+
+Underfull \hbox (badness 2970) in paragraph at lines 1333--1334
+[]\TU/TeXGyreTermes(0)/m/n/10 plas-tic-ity $\TU/TeXGyreTermesMath(1)/m/n/10 
+→$ \TU/TeXGyreTermes(0)/m/n/10 a scalar LR fac-tor over a whole trainer
+
+Overfull \hbox (40.12885pt too wide) in paragraph at lines 1334--1335
+[]\TU/TeXGyreTermes(0)/m/n/10 im-por-tance $\TU/TeXGyreTermesMath(1)/m/n/10 
+→$ \TU/TeXGyreTermes(0)/m/n/10 a per-parameter Fisher di-ag-o-nal (\TU/DejaVu
+SansMono(0)/m/n/10 continual_engine.h:86-
+
+Underfull \hbox (badness 5077) in paragraph at lines 1379--1380
+\TU/TeXGyreTermes(0)/b/n/10 er-ror\TU/TeXGyreTermes(0)/m/n/10 , trained end-to-
+end by gra-di-ent de-scent (Back-
+[16]
+Overfull \hbox (3.80623pt too wide) in paragraph at lines 1399--1399
+[]|\TU/DejaVuSansMono(0)/m/n/5 src/adapters/src/continual_trainer.cpp:152- 
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1437--1437
+[]|\TU/TeXGyreTermes(0)/m/n/5 2409.15647|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1438--1438
+[]|\TU/TeXGyreTermes(0)/m/n/5 2605.20670|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1439--1439
+[]|\TU/TeXGyreTermes(0)/m/n/5 2607.27656|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1440--1440
+[]|\TU/TeXGyreTermes(0)/m/n/5 2602.11698|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1441--1441
+[]|\TU/TeXGyreTermes(0)/m/n/5 2609.15160|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1442--1442
+[]|\TU/TeXGyreTermes(0)/m/n/5 2609.29812|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1443--1443
+[]|\TU/TeXGyreTermes(0)/m/n/5 2607.20519|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1444--1444
+[]|\TU/TeXGyreTermes(0)/m/n/5 2609.35748|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1457--1457
+[]|\TU/TeXGyreTermes(0)/m/n/5 2609.17184|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1458--1458
+[]|\TU/TeXGyreTermes(0)/m/n/5 2407.04620|  
+
+Overfull \hbox (1.58942pt too wide) in paragraph at lines 1459--1459
+[]|\TU/TeXGyreTermes(0)/m/n/5 2502.05171|  
+
+Underfull \hbox (badness 1603) in paragraph at lines 1465--1465
+[]\TU/TeXGyreTermes(0)/b/n/10 Syn-the-sis for de-sign: \TU/DejaVuSansMono(0)/m/
+n/10 S \TU/TeXGyreTermes(0)/m/n/10 should be a \TU/TeXGyreTermes(0)/b/n/10 test
+-time-learning
+
+Underfull \hbox (badness 1824) in paragraph at lines 1465--1465
+\TU/TeXGyreTermes(0)/b/n/10 state \TU/TeXGyreTermes(0)/m/n/10 (TTT) that is \TU
+/TeXGyreTermes(0)/b/n/10 anchor-invariant \TU/TeXGyreTermes(0)/m/n/10 (SCSE), c
+ar-ried at
+
+Overfull \hbox (9.60298pt too wide) in paragraph at lines 1478--1478
+[]|\TU/DejaVuSansMono(0)/m/n/5 2603.10123|  
+
+Overfull \hbox (9.60298pt too wide) in paragraph at lines 1479--1479
+[]|\TU/DejaVuSansMono(0)/m/n/5 2605.09213|  
+
+Overfull \hbox (9.60298pt too wide) in paragraph at lines 1480--1480
+[]|\TU/DejaVuSansMono(0)/m/n/5 2607.17696|  
+
+Underfull \hbox (badness 6741) in paragraph at lines 1488--1489
+[]\TU/TeXGyreTermes(0)/b/n/10 Be-cause it is present at ini-tial-i-sa-tion and 
+RoPE-
+
+Underfull \hbox (badness 3098) in paragraph at lines 1488--1489
+\TU/TeXGyreTermes(0)/b/n/10 independent\TU/TeXGyreTermes(0)/m/n/10 , re-mov-ing
+ po-si-tional en-cod-ings will \TU/TeXGyreTermes(0)/b/n/10 not
+[17]
+Underfull \hbox (badness 6944) in paragraph at lines 1508--1508
+\TU/DejaVuSansMono(0)/m/n/10 G\TU/TeXGyreTermes(0)/m/n/10 ’s three jobs (§3.
+2): length-invariant mass, position-
+
+Underfull \hbox (badness 1038) in paragraph at lines 1557--1558
+[]\TU/TeXGyreTermes(0)/b/n/10 Ex-pect the fixed-repeat base-line to be hard to 
+beat.
+
+Underfull \hbox (badness 1137) in paragraph at lines 1558--1559
+\TU/TeXGyreTermes(0)/m/n/10 Bench-style tasks are very dif-fer-ent. Bud-get for
+ \TU/TeXGyreTermes(0)/b/n/10 task-
+[18]
+Underfull \hbox (badness 4505) in paragraph at lines 1583--1584
+[]\TU/TeXGyreTermes(0)/b/n/10 State: \TU/TeXGyreTermes(0)/m/n/10 mem-brane/ac-t
+i-va-tion \TU/DejaVuSansMono(0)/m/n/10 h\TU/TeXGyreTermes(0)/m/n/10 , \TU/TeXGy
+reTermes(0)/b/n/10 liq-uid time con-stant
+
+Underfull \hbox (badness 5316) in paragraph at lines 1585--1586
+[]\TU/TeXGyreTermes(0)/b/n/10 Plas-tic-ity: \TU/TeXGyreTermes(0)/m/n/10 weight 
+up-date \TU/TeXGyreTermes(0)/b/n/10 mod-u-lated by a reward-
+
+Underfull \hbox (badness 2065) in paragraph at lines 1585--1586
+\TU/TeXGyreTermes(0)/m/n/10 de-scent per Back-propamine \TU/DejaVuSansMono(0)/m
+/n/10 2002.10585\TU/TeXGyreTermes(0)/m/n/10 . Our ex-ist-ing
+
+Underfull \hbox (badness 10000) in paragraph at lines 1593--1594
+\TU/TeXGyreTermes(0)/m/n/10 §10V’s \TU/DejaVuSansMono(0)/m/n/10 CONTEXT_WIND
+OW_EXCEEDED -> extend \TU/TeXGyreTermes(0)/m/n/10 swap and
+
+Underfull \hbox (badness 1152) in paragraph at lines 1600--1600
+\TU/TeXGyreTermes(0)/m/n/10 AttnRes), \TU/DejaVuSansMono(0)/m/n/10 2606.18524 \
+TU/TeXGyreTermes(0)/m/n/10 (Loop-$\TU/TeXGyreTermesMath(1)/m/n/10 𝜇$\TU/TeXG
+yreTermes(0)/m/n/10 P), \TU/DejaVuSansMono(0)/m/n/10 2610.00673 \TU/TeXGyreTerm
+es(0)/m/n/10 (Clos-ing the
+
+Underfull \hbox (badness 2875) in paragraph at lines 1600--1600
+\TU/TeXGyreTermes(0)/m/n/10 Loop), \TU/DejaVuSansMono(0)/m/n/10 2605.16343 \TU/
+TeXGyreTermes(0)/m/n/10 (LoopQ), \TU/DejaVuSansMono(0)/m/n/10 2610.16368 \TU/Te
+XGyreTermes(0)/m/n/10 (LoopQuant) ---
+[19]
+Underfull \hbox (badness 2735) in paragraph at lines 1629--1629
+\TU/TeXGyreTermes(0)/m/n/10 This is a \TU/TeXGyreTermes(0)/b/n/10 de-sign re-qu
+ire-ment on the \TU/DejaVuSansMono(0)/b/n/10 HybridAttnKind \TU/TeXGyreTermes(0
+)/b/n/10 /
+
+Underfull \hbox (badness 1009) in paragraph at lines 1631--1632
+[]\TU/TeXGyreTermes(0)/b/n/10 G8 $\TU/TeXGyreTermesMath(1)/m/n/10 ⋅$ \TU/TeXG
+yreTermes(0)/b/n/10 Norm in-ter-ac-tion + Form A quar-an-tine. \TU/TeXGyreTerme
+s(0)/m/n/10 Our
+[20]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 1660.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing = inserted for \ifnum.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Improper alphabetic constant.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing = inserted for \ifnum.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Improper alphabetic constant.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing ) inserted for expression.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Undefined control sequence.
+\InCa@Div ...ase #2 0\IntCalcError:DivisionByZero 
+                                                  \else \ifcase #1 0\else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+\InCa@Div ...visionByZero \else \ifcase #1 0\else 
+                                                  \expandafter \InCa@@Div \r...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing = inserted for \ifnum.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   <
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing ) inserted for expression.
+<to be read again> 
+                   <
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   <
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                   
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+\IntCalcDiv ...numexpr (#1-(#2-1)/2)/#2\relax \fi 
+                                                  \fi  
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+\IntCalcDiv ...xpr (#1-(#2-1)/2)/#2\relax \fi \fi 
+                                                   
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   <
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Undefined control sequence.
+\InCa@Div ...ase #2 0\IntCalcError:DivisionByZero 
+                                                  \else \ifcase #1 0\else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing number, treated as zero.
+<to be read again> 
+                   <
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi   0\else \the \numexpr...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                    0\else \the \numexpr 0<\...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<argument> ...xpr 1024\fi \relax \fi \fi   0\else 
+                                                  \the \numexpr 0<\z@ \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  -(0<\z@ \expandafter ...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                   -(0<\z@ \expandafter -\nu...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  -(64-1)/2)/64*64\rela...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                   -(64-1)/2)/64*64\relax \f...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...\fi \fi  -(64-1)/2)/64*64\relax \fi 
+                                                  \fi  \expandafter 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...\fi  -(64-1)/2)/64*64\relax \fi \fi 
+                                                   \expandafter 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+\InCa@Div ...visionByZero \else \ifcase #1 0\else 
+                                                  \expandafter \InCa@@Div \r...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<argument> \else 
+                 \expandafter +\number 48\cdot -(65536)\relax -(48\cdot -(65...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Missing ) inserted for expression.
+<to be read again> 
+                   \cdot 
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi   0\else \the \numexpr...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                    0\else \the \numexpr 0<\...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<argument> ...xpr 1024\fi \relax \fi \fi   0\else 
+                                                  \the \numexpr 0<\z@ \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  -(0<\z@ \expandafter ...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                   -(0<\z@ \expandafter -\nu...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  -(64-1)/2)/64*64\rela...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                   -(64-1)/2)/64*64\relax \f...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...\fi \fi  -(64-1)/2)/64*64\relax \fi 
+                                                  \fi  \expandafter <\z@ \ex...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...\fi  -(64-1)/2)/64*64\relax \fi \fi 
+                                                   \expandafter <\z@ \expand...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi   0\else \the \numexpr...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                    0\else \the \numexpr 0<\...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<argument> ...xpr 1024\fi \relax \fi \fi   0\else 
+                                                  \the \numexpr 0<\z@ \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  -(0<\z@ \expandafter ...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...the \numexpr 1024\fi \relax \fi \fi 
+                                                   -(0<\z@ \expandafter -\nu...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \else \e...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \else \expan...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \else.
+<recently read> \else 
+                      
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...62144-1)/2)/262144*262144\relax \fi 
+                                                  \fi  \expandafter \fi \exp...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...4-1)/2)/262144*262144\relax \fi \fi 
+                                                   \expandafter \fi \expanda...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<recently read> \fi 
+                    
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+! Extra \fi.
+<argument> ...er \the \numexpr 1024\fi \relax \fi 
+                                                  \fi  -(64-1)/2)/64*64\rela...
+
+l.1660 ...le-stream vs multi-stream + routing-key}
+                                                  
+(That makes 100 errors; please try again.)
+ 3583 words of node memory still in use:
+   14 hlist, 1 vlist, 5 rule, 2 mark, 24 disc, 3 local_par, 1 dir, 2 math, 58 g
+lue, 39 kern, 10 penalty, 2 margin_kern, 265 glyph, 32 attribute, 76 glue_spec,
+ 32 attribute_list, 1 write, 1 pdf_dest, 4 pdf_colorstack nodes
+   avail lists: 1:6,2:3448,3:1750,4:485,5:2573,6:264,7:29533,8:3,9:3243,10:65,1
+1:1386
+!  ==> Fatal error occurred, no output PDF file produced!
+Transcript written on Fusion-Report-512.log.

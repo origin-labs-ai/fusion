@@ -1,0 +1,88 @@
+\chapter{The launcher}
+
+The launcher is the smallest honest surface: it lists the registry, resolves an alias, starts
+the two seats with an entry point, and fails loud. Nine folders, seven registry parts, two
+utility trees (merger, vs-ext).
+
+\section{The registry}
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Codename & Alias & Folder & Status\\
+\midrule
+Ingot & Max & \texttt{windows/ingot} & present\\
+Onyx & Studio & \texttt{windows/onyx} & present\\
+Codeix & Pro & \texttt{windows/codeix} & present\\
+GSX-CLI & (retired \#) & \texttt{windows/gsx-cli} & present\\
+Zingma & Lite & \texttt{windows/zingma} & present\\
+Sonar & Plus & \texttt{windows/sonar} & empty (DSH seat)\\
+Zenix & Ultra & \texttt{windows/zenix} & present\\
+\bottomrule
+\end{tabular}
+
+\medskip
+The registry is \texttt{arch/windows.json}; \texttt{arch/brand.ts} is the typed mirror with
+\texttt{findPart()} / \texttt{findPartByAlias()} / \texttt{resolvePart()};
+\texttt{arch/layouts.json} maps the in-app layout picker (host: \texttt{vscode-oss} at
+\texttt{windows/onyx/SOURCE/vscode-main}, 1.147.0).
+
+\section{The launcher flow}
+
+\texttt{launch.ps1} (63 lines): no argument lists the registry; a codename matches
+case-insensitively; an alias resolves through \texttt{aliasResolve}; Ingot runs
+\texttt{pnpm dev:desktop}; Onyx starts \texttt{Onyx.exe} with its folder as working directory;
+every other codename reports contents and status; unknown input exits 1 with the known list;
+a missing exe exits 1 with the exact path.
+
+\section{The naming authority}
+
+BRAND.md separates decided from not-decided. Decided: the launcher is \textbf{Launcher Desktop},
+window title \textbf{Launcher}; the alias ladder is Lite $\to$ Plus $\to$ Pro $\to$ Studio
+$\to$ Max $\to$ Ultra (lightest to heaviest); \texttt{Core} is retired (\#) and maps to no part.
+Not decided: roles. No part is labelled main/editor/browser; \textbf{Ingot is not the main
+part} --- size says size. Provenance is a fact, not a name: Zephium, opencode, OpenAI Codex,
+Qoder, DeepSeek and Claude describe where a tree came from --- never what a part is called.
+
+\section{The seats}
+
+\textbf{Ingot} (Max): the ZCode (Zhipu) source monorepo, package \texttt{code-fusion} 3.17.0;
+160{,}239 files, 3.9 GB; entry point \texttt{pnpm dev:desktop}.
+
+\textbf{Onyx} (Studio): VS Code OSS 1.147.0 source at \texttt{SOURCE/vscode-main} (21{,}224
+files, 392 MB); the RE'd Qoder desktop build is retired; the executable is \texttt{Onyx.exe}
+(rename recorded as review-tracking D3); the windows.json junction note is stale --- disk says
+real folder.
+
+\textbf{Codeix} (Pro): two OpenAI Codex MSIX packages (ui-old 26.707.3748.0, ui-new
+26.1021.3705.0); its integrated browser is the part called Chromix --- there is no separate
+\texttt{windows/chromix} tree.
+
+\textbf{GSX-CLI} (\#): the opencode workspace (MiMoCode source, Xiaomi); 2{,}060 files; the
+alias seat is retired --- the terminal layer carries no edition label.
+
+\textbf{Zingma} (Lite): Qoder 1.18.0 native Quest/agents window (upstream codename Lingma);
+SOURCE/ raw + oxfmt-beautified, 66 files, 125 MB.
+
+\textbf{Sonar} (Plus): the DeepSeek Harness seat --- empty today; the plugin
+\texttt{dsh-claude-effort-slider} v0.9.4 (MIT) is vendored with 38/38 tests (D-25).
+
+\textbf{Zenix} (Ultra): native Claude Desktop 5.1231.2 (app.asar + ion-dist.asar + claude-vm
+VHDX); 11{,}874 files, 940 MB; the effort-slider port is parked (D-25).
+
+\section{Payloads}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Folder & Live count & Contents\\
+\midrule
+skills & 954 dirs / 6{,}959 files & per-file sha256 manifests\\
+extras & 4 zips & cloner-template, fonts, deepseek-stack, hallmark\\
+agents & populated & agent prompt packs\\
+plugins & populated & plugin payloads\\
+\bottomrule
+\end{tabular}
+
+\medskip
+The \texttt{inbuilt/bundle} $\to$ \texttt{payloads} rename (2026-11-01) moved the catalog to
+the top level; the live tree has grown far past the first counts (79 dirs / 659 files) --- the
+954/6{,}959 numbers are today's, and the stale rows are named in the README's honest flags.

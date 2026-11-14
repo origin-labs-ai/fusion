@@ -34,7 +34,11 @@
 3. **GRP base rewire down to name:** 2.625→2.00, 3.5→3.0, 4.5→4.0, 6.5625→6.00,
    8.5→8.0, 12.5→12.0, 16.5→16.0, 24.5→24.0.
 4. **K_G M/H take the M/H tiers**; K_L ids retire (both plain and GRP).
-   `Q_16_K_*` and `Q_24_K_*` keep their 16.0/24.0 wire (already exact).
+   `Q_16_K_*` wire 16.25/16.50 and `Q_24_K_*` wire 24.25/24.50 — every tier is
+   name-plus-delta, no family is exempt. (An earlier draft said these kept
+   16.0/24.0 because 16 and 24 are "already exact"; that contradicts D-01 and
+   is corrected here. `include/quant/types.h:294-298` has always carried the
+   deltas.)
 5. **Half formats fold:** the 18 half ids (73–90) retire; their wire spaces land in
    `_K_H` tiers at the same BPW. Names with a negative gap (`Q_2_5`, `Q_6_5`,
    `Q_G_2_5`, `Q_G_6_5` name x.5, wire x.4375) are retired without rewire.
@@ -62,8 +66,14 @@
 
 | Tier | bytes added over base | Layout | Layout proof |
 |---|---|---|---|
-| M (+0.25) | +8 B/block | 1 refinement byte per 32 weights = 4 × 2-bit sub-block scale multipliers {×0.75, ×1.0, ×1.25, ×1.5} | 256/32 = 8 bytes = exactly 0.25 BPW |
-| H (+0.50) | +16 B/block | doubled candidate search + wider residual term per family (per-family layout fixed in L2; engine-agnostic where the base engine allows) | 16 B = 0.50 BPW |
+| M (+0.25) | +8 B/block | signed per-span DC correction: plain 8-weight spans × 2 bits, GRP 32-weight spans × 8 bits | 256/8×2 = 64 b = 8 B; 256/32×8 = 64 b = 8 B |
+| H (+0.50) | +16 B/block | same per-span DC correction, wider q field: plain 8-weight spans, GRP 32-weight spans; H's width is resolved adaptively from the region size (see §L2 tier wire) | 16 B = 0.50 BPW |
+
+The multiplicative-gain sketch originally planned here ({×0.75, ×1.0, ×1.25, ×1.5}
+per 32 weights) was rejected at implementation time: a global-scale codec's
+dominant residual is a per-span **DC offset**, and a multiplicative gain cannot
+express an offset at all. Additive corrections dominate at identical byte cost;
+the evidence and the ordering proof are in §L2 tier wire below.
 
 | Format | wire BPW today | wire BPW target | Layout change |
 |---|---|---|---|
@@ -135,15 +145,76 @@ bits    370–383: 14 bits — covered by the 24 evenly-spread implicit-zero slo
 TOTAL = 384 bits = 48 bytes = 1.5000 BPW exact
 ```
 
-Tail sizes (n ≠ 256): per-size Diophantine solve over `T` trits + `S` slots where
-`⌈T·log2(3)⌉ + 16 + 0 = 1.5·n` bits; choose the (T, S) with |S·spread − n| minimal;
-if none exists within the budget, **never inflate** — fall back ternary → M-layout →
-L (encoder picks the largest tier that fits the name's wire budget exactly).
+Tail sizes (n ≠ 256): the shipped rule is `budget = ⌈1.5·n⌉ - 16`,
+`k = ⌊budget / log2(3)⌋` trits and `z = n - k` implicit-zero slots, with `log2(3)`
+rounded slightly **up** so `3^k ≤ 2^budget` holds by construction. The wire is
+always exactly `⌈1.5·n/8⌉` bytes — **never inflate**. Below `n = 12` no room exists
+for a 16-bit scale plus a trit, so the encoder writes the `Q_1` binary payload
+(prefix-identical) zero-padded to the same wire and the decoder returns ±1.
+Measured and pinned by `tests/test_ternary_tail.cpp` for `n = 1..512`.
 
 Gate: measured tier ordering `Q_1 < Q_1_K_M < Q_1_K_H` on the 4 fuzz distributions
 + real weights. `Q_10`/`Q_11` stay CANCELLED (binary = `Q_1`; ternary = `Q_1_K_H`).
 
-##formerly-known-as map (renames with provenance comments in code)
+## L2 tier wire (implemented 2026-11-13 — the contract the tests pin)
+
+A K tier's payload is `[ L-tier payload ][ refinement region ]`:
+
+```
+target_bytes = ceil((base_bpw + delta) * n / 8)   <- the NAME's BPW
+base_bytes   = ceil(base_bpw * n / 8)             <- the L payload
+region       = target_bytes - base_bytes          <- 8 B (M) / 16 B (H) at n = 256
+```
+
+The region carries SIGNED PER-SPAN DC CORRECTIONS added to the decoded base
+values. The unit is `span_max / div`, where `span_max` is the largest |decoded|
+value in that span; no scale is stored, so the region cannot inflate the wire.
+Spans are disjoint, so a span's unit depends only on the base decode in that
+span, never on earlier corrections.
+
+| Family | M span / q bits | H span / q bits | `div` M | `div` H |
+|---|---|---|---|---|
+| plain | 8 / 2 | 8 / 3..4 (adaptive) | `2^(B+1)` | `2 * div_M` |
+| GRP | 32 / 8 | 32 / 9..16 (adaptive) | `2^(B+3)` | `2 * div_M` |
+
+Strict ordering `L < M < H` rests on four facts, all asserted by
+`tests/test_tier_order.cpp`:
+
+1. every grid includes `q = 0`, whose refined value is bit-identical to the
+   base decode, so a tier can never lose to the tier below it;
+2. every candidate is scored by the refined MSE — the exact float add the
+   decoder performs — not by a proxy;
+3. H's candidate set contains the M winner scaled by `kdiv = div_H/div_M = 2`;
+   scaling by a power of two commutes with round-to-nearest, so the M winner is
+   exactly representable on the H wire;
+4. H funds at least as many spans as M (adaptive width, below).
+
+**Adaptive H width.** A fixed 16-bit GRP H field in a 3-byte region cannot fund
+two spans, so at n=48, b=1, H refined one span while M (2-byte region, two
+8-bit fields) refined two — measured 17.785% worse on a real trained bias.
+H therefore picks the largest width in `[9,16]` (GRP) / `[3,4]` (plain) that
+still funds `spans_m` spans; if none does, it uses M's exact layout and ties
+rather than losing. Both sides derive the layout from
+`(n, base_bpw, region_bytes)` alone.
+
+**Correction quanta.** GRP M uses `1<<(B+3)`, not `1<<(B+2)`: at span 32 on a
+Q_8 uniform block the coarser quantum rounded every q to 0 (`nz = 0/8`,
+0.000% gain); one bit finer gives 0.689% and restores strict `M < L`.
+
+**b=24 float floor.** Q_24 stores the top 24 bits of an FP32 (16-bit mantissa),
+so the base error is already at float resolution. The M-vs-H correction
+difference is ~0.03 float ULP at the span max, and the decoder's float add
+rounds both to the same float32. Strictness is required for `b < 24`; at
+`b = 24` a per-case tie is allowed (4/66 measured), while the AGGREGATE H total
+must still beat M at every rung in both families — `test_tier_order` asserts
+exactly that.
+
+**GRP bases.** Per D-22a a GRP base at B.00 is a byte-identical alias of the
+plain base; the genuine grouping lives in the GRP M/H tiers, whose 32-wide spans
+spend the region on grouped DC state. `Q_G_1` keeps its existing binary slot
+codec.
+
+## formerly-known-as map (renames with provenance comments in code)
 
 | Old name (removed) | New name | Comment in code |
 |---|---|---|

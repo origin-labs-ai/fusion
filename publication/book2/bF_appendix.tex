@@ -1,0 +1,144 @@
+\noindent\textbf{D-01: Ladder pattern L/M/H (operator: 2026-10-22, "Info 5" + "Info 2")}\\
+\noindent in EVERY family, L = base at exact `.0` BPW, M = base + `.25` exact, H = base + `.50` exact. Three genuinely different codecs. The old standalone "L" duplicate is retired; the base id IS the L tier.\\
+
+\noindent\textbf{D-02: Q 1 = binary, Q 1 K H = pure ternary (operator, 2026-10-22)}\\
+\noindent `Q\_1` keeps binary (slot-sign) at exact 1.00. `Q\_1\_K\_H` becomes pure ternary (−1/0/+1) at exact 1.50. The proposed standalone formats Q-10/Q-11 are **CANCELLED** (operator said so explicitly; recorded as F-0 in DEFECTS.md).\\
+
+\noindent\textbf{D-03: Rewire direction (operator: "BPW ko kam karo")}\\
+\noindent name says X ⇒ wire costs exactly X. The LAYOUT comes DOWN to the name; never rename a format up to its wire. (BOW was the operator's typo for BPW.)\\
+
+\noindent\textbf{D-04: GRP naming normalization}\\
+\noindent `QG2` → `Q\_G\_2` style everywhere; canonical pattern `Q\_/Q\_G\_/Q\_MX\_/Q\_G\_MX\_` + ` \_K\_M/\_K\_H` tiers. Renames carry "formerly known as <old>" comments in code. Macros/env excluded from casing rules.\\
+
+\noindent\textbf{D-05: Casing: QUANT → Quant (operator, 2026-10-19)}\\
+\noindent the ALL-CAPS token `QUANT` exists only where structurally mandatory: C/C++ macros (`QUANT\_CHECK`, `QUANT\_AVX`, …, defined via \#define) and environment variables (`QUANT\_SEED`, `QUANT\_PAGED\_KV\_DEBUG`, `QUANT\_SKIP\_FULL`, `QUANT\_SKIP\_GLA`). Everything else — type\\
+
+\noindent\textbf{D-06: BPW granularity (operator)}\\
+\noindent every format lands on exact `.0 / .25 / .50` BPW steps. No other wire values survive anywhere in the ladder (this is what kills 3.78125, 3.4375, 6.5625, 2.625 …).\\
+
+\noindent\textbf{D-07: Zero dead code / zero stubs (operator, 2026-10-18)}\\
+\noindent after Operation Clean, no dead helper and no stub remains — every dead symbol is wired up correctly or deleted.\\
+
+\noindent\textbf{D-08: Persistence compatibility (design decision, agent-verified)}\\
+\noindent old `.quant` files must survive the ladder change. Therefore: - IDs are KEPT in place (no renumber) — a renumber silently reinterprets checkpoints   because format is stored as raw `uint8\_t` per block and no version field is read. - 36 retired holes become inv\\
+
+\noindent\textbf{D-09: M-tier encoder (SUPERSEDED by D-32 on 2026-11-13)
+
+**Original rule (historical, }\\
+\noindent for block sizes where the exact-1.50 ternary layout doesn't decompose (cleanly), the encoder NEVER inflates: it drops to the largest tier that fits the name's wire budget exactly (ternary → M → L, per-size). Same policy for every rewired format: budget guard p\\
+
+\noindent\textbf{D-11: K-variant honesty (design decision)}\\
+\noindent tier logic keys off format ID/enumeration, never the NAME string (today `k\_tier()` parses `\_L/\_M/\_H` out of the name at `block\_codec.cpp:2464-2470` — a rename would silently change encoder effort). `Q\_16\_K/Q\_24\_K` trios split from their shared body (`:2740-274\\
+
+\noindent\textbf{D-12: Quality floor: scale fitting (design decision)}\\
+\noindent shared scale-fitter (`fit\_scale\_true\_mse`, currently dead at `block\_codec.cpp:632-695`) lands in Q3/Q6/Q12 + Q2/Q4 with golden-section refinement where it wins (today only `comp8\_fit\_scale\_fp16:306-358` has golden-section; Q\_12's 3-iteration LS seed is why it \\
+
+\noindent\textbf{D-13: MX quarantine (design decision, agent-verified)}\\
+\noindent the 14 MX formats are quarantined: kept, registry-marked, documented as catastrophic (2-iteration-LS tier allocator, −21..−37 dB vs industrial refs at same BPW), excluded from dominance claims, NOT deleted (their wire/persistence contracts hold). `Q\_G\_MX\_3\_5` \\
+
+\noindent\textbf{D-14: Bench honesty (design decision)}\\
+\noindent every printed bench number must be measured, not hardcoded, and every comparison must use one byte basis. Concretely: `write\_quant\_mixed` honors `target\_bpw` (today it ignores the knob — every "QUANT Mixed 1.50" row actually wrote 2.625); the `pick(rs, q\_ids, \\
+
+\noindent\textbf{D-15: Priorities (operator delegated)}\\
+\noindent DAG order is my judgment: P0 → S (memory-safety, independent of the ladder) → L (ladder, tree-swallowing) → T (tests against a frozen ladder) → Q (quality on top of final tests) → Z (hygiene sweeps last so they touch final code once) → V1 (prove dominance) → R\\
+
+\noindent\textbf{D-16: One task to 100% (operator)}\\
+\noindent serial execution, one worker session per task, DoD gate green before the next starts. Task register and gates live in PLAN.md.\\
+
+\noindent\textbf{D-17: Execution gate (operator)}\\
+\noindent implementation starts ONLY after review workflow `wf\_ce1d51d7-91d` reaches 100\%. Documented fallback if the synthesize stage keeps dying on infra: compose the final report + completeness pass from the journal + `findings\_verified.json`, mark the workflow *comp\\
+
+\noindent\textbf{D-18: Execution name (operator)}\\
+\noindent this effort is called **Operation Clean** (all user-facing references and the docs directory name).\\
+
+\noindent\textbf{D-19: Strictness (operator, general)}\\
+\noindent "koi chook nahi honi chahiye" — the most-strict-worker standard. Every task's DoD includes evidence (grep-zero counts, test names, measured numbers), not claims. Honest bench regressions after rewire are documented, not hidden; what is hidden or faked is a def\\
+
+\noindent\textbf{D-20: Known-caught-at-test-time traps (from exploration)
+
+These field-tested facts fee}\\
+\noindent the review workflow findings (A-ranges) and quant overhaul (B/C/E ranges) both execute through the same greatest-strictness process; quant tasks S1–V1 run before R-series (review) because they need a stable build/test gate. DEFECTS.md stays the ledger for both\\
+
+\noindent\textbf{D-22: LADDER COUNT RESOLVED: **69 wins** (Fusion Smash, 2026-11-01)
+
+**Conflict raised}\\
+\noindent both repos were renamed because both already live inside `fusion/` ("fusion to hai hi"). The GitHub remotes follow: `origin-labs-ai/code.git` and `origin-labs-ai/transformers.git` (old `*-fusion.git` URLs redirect; everything else unchanged). **The product/ali\\
+
+\noindent\textbf{D-25: Effort slider: DSH plugin belongs to Sonar; Zenix port parked (operator, 2026-11}\\
+\noindent `code/slider/effort` = `dsh-claude-effort-slider` v0.9.4 (MIT) — a **DeepSeek Harness (DSH) plugin** (cordis.patch.yml + `dsh.client` bundle, 6-stop Low→Ultracode, 38/38 tests). DSH == **Sonar (Plus)** natively. **Zenix (Claude Desktop)** has no cordis/slots (\\
+
+\noindent\textbf{D-26:  archive/ = reference-only port of every deleted doc (operator, 2026-11-12)}\\
+\noindent all docs ever deleted from **both** repos (the 2026-11-01 `code-fusion` purge of README/`docs/` and the earlier `transformers` history) are recovered ONCE into `.plan/\_archive/` — 288 files / ~10.6 MB: README (5,925 lines), `docs/` (38), `repo/memory/` (15, th\\
+
+\noindent\textbf{D-27: Goal hierarchy + 1.0 BPW side goal + FP/INT research direction (operator, 2026-1}\\
+\noindent the reading public (and any agent) misreads this project as "main target 1.5 BPW". Operator ruling: **MAIN GOAL = the entire Fusion Superproject** (every domain, seat, track — complete). **SIDE GOAL = MAXIMUM at EXACT 1.0 BPW** — *not* 1.5; the implemented 1.5\\
+
+\noindent\textbf{D-28: Product-name normalisation: `TransFormers-Fusion` -> `Transformers-Fusion` (oper}\\
+\noindent the capital `F` in "Formers" is dropped everywhere in the Fusion Superproject - `TransFormers-Fusion` becomes **`Transformers-Fusion`** - across documentation, code, build scripts, CI workflows, benchmarks, tests, telemetry strings and archived documents. `Cod\\
+
+\noindent\textbf{D-29: Zenix-CC -> Zenix (CC suffix removed) + alias-registry duplicate cleanup (operat}\\
+\noindent the native Claude Desktop seat is **Zenix** - the `CC` suffix is removed from the product name, the folder (`windows/zenix`), the registry entries and every current-state doc. The component folders and GitHub repos carry no `-fusion` suffix (`code/`, `origin-l\\
+
+\noindent\textbf{D-30: Wire-magic identity: engine `.idx` accepts `Transformers-FusionIDX` + `TransCend}\\
+\noindent a model name is not an engine wire identity. The `.idx` format belongs to the engine, so its magic is the engine's own identity:  | Namespace | Accepted | Rejected | |---|---|---| | Engine `.idx` | `Transformers-FusionIDX` (22 B, current); pre-D-28 capital-F s\\
+
+\noindent\textbf{D-31: Exact documentation targets: 2048 / 4096 / 6144 LOC + a 512-page DOCX and PDF (o}\\
+\noindent the three project READMEs are built to **exact** line counts, and the publishable research package is a **512-page** document in both `.docx` and `.pdf`:  | Repository | README target | Exactness | |---|---|---| | `fusion/` (superproject) | **2,048 LOC** | `wc\\
+
+\noindent\textbf{R-01: Master plan loop, Steps 1-6 (Transformers-Fusion architecture plan)}\\
+\noindent the whole master plan: 117-row source coverage map (§10X), 13 gaps, KAT inventory   (§2.1b.1), 156 line-anchors, 7-tree audit (§10Y), 8 decision gates (§6.1, D-1..D-8),   corruption scan, Phase-0 ledger, arXiv re-resolve 67/67 + browser 9/9.\\
+
+\noindent\textbf{R-02: Loop Transformers research (§5d, §5e, §5c)}\\
+\noindent three loop shapes, attention across three axes, training effects, cost/quality   market scan, Attention-Residual depth-axis mechanism, candidate G/S formulations, adaptive   routing, EAIN literature basis and its honest ceiling.\\
+
+\noindent\textbf{R-03: Traditional Transformers baseline (§5d companion)}\\
+\noindent the baseline side of the loop-vs-traditional comparison: attention/training deltas,   market scan, fixed-depth comparison protocol.\\
+
+\noindent\textbf{R-04: Traditional Quantization / Track A - the 69-format ladder}\\
+\noindent name == nominal == wire BPW contract, 1.5 BPW path, Operation Clean L1-L7 tasks,   MX family measurement + quarantine (D-13), scale-fitting (D-12), bench honesty (D-14).\\
+
+\noindent\textbf{R-05: CodeFusion per-part research (64 sections - the product's research rec}\\
+\noindent NOT a build checklist - a **research document in prose form** (the operator rejected the   1024-line and 2048-line checklist drafts for being a checklist instead of an explanation).   64 sections x exactly 32 lines, one heading + 30 lines of prose + 1 blank. It contains real   re\\
+
+\noindent\textbf{R-06: Reverse-engineering research (the 7 seats)}\\
+\noindent MSIX/ASAR extraction + beautification + REA application graph for Codeix   (ui-old/ui-new), Onyx (Qoder + official VS Code OSS 1.147.0), Zingma (Qoder Quest window),   Zenix (Claude Desktop 5.1231.2 + Cowork VHDX sandbox), Sonar (DSH), Ingot (ZCode source),   GSX-CLI (opencode/Mi\\
+
+\noindent\textbf{R-07: Effort slider reverse-engineering (DSH plugin)}\\
+\noindent `dsh-claude-effort-slider` v0.9.4 - 6-stop slider, 4 real effort values, DSH   `directory.select({reasoningEffort})` write path, cordis slot `conversation.input.right`,   fail-open DOM anchors, 38/38 tests.\\
+
+\noindent\textbf{R-08: Claude Code effort-slider archaeology}\\
+\noindent CLI 2.1.251 / 2.1.302 / 2.1.319 and extension 2.1.302 / 2.1.319 / 2.1.322 -   `EffortSlider` appears in CLI 2.1.302 and extension 2.1.319, never removed; the real   "expiry" is the server-side `supportsEffort` capability gate. 5 levels, `max` included,   per-model `effort\_cost\_in\\
+
+\noindent\textbf{R-09: Deleted-docs recovery (the 2026-10-07 purge)}\\
+\noindent commit `9c0e480` (98 files, 77 md) + `f6ee292` (34 files) in the engine repo,   and the earlier `85d2ce167` purge in the launcher repo; what survived, what was recovered.\\
+
+\noindent\textbf{R-10: Workspace rename + superproject git recovery (2026-11-12)}\\
+\noindent `code-fusion/` -> `code/`, `transformers-fusion/` -> `transformers/`, remotes ->   `code.git` / `transformers.git`, 93-file path sweep with quote-safe rules, superproject repo   re-init with full remote history adopted (8 commits), `.gitmodules` path fix, `.plan` tracked.\\
+
+\noindent\textbf{R-11: INT x FP programme (the operator's current research topic) - ACTIVE}\\
+\noindent the complete INT-vs-FP research programme: difference INT vs FP; what is already   implemented in this project; what can be touched/improved; the unique format style applied to   both families; best-in-every-dimension outcome and how to build it; **codebook merger**   (ternary {0\\
+
+\noindent\textbf{R-12: Loop Quantization (Track B) - never implemented anywhere}\\
+\noindent loop-aware quantization as a compute contract; LoopQ (`2605.16343`) and LoopQuant   (`2610.16368`) results are at ~4 BPW, our target is 1.0 BPW (D-27) / 1.5 BPW (implemented   state); loop-entry adapter fails first on INT4; no looped-model fix validated above a few-B   parameters\\
+
+\noindent\textbf{R-13: Mix Quantization}\\
+\noindent mixed-format / bit-mixing quantization literature; the MX family (14 formats)   measured and quarantined; mixed-precision allocation already implemented in Q\_MX/Q\_G\_MX.\\
+
+\noindent\textbf{R-14: NCM - Next-Concept Modeling (arXiv 2610.14162)}\\
+\noindent the generation mechanism; §3b spec already extracted from the HTML; Appendix F.1.1   and I still unread; merger with DSpine (§3c) pending.\\
+
+\noindent\textbf{R-15: EAIN (Enhanced Artificial Intelligence Neurons)}\\
+\noindent literature basis (§5c.4), the honest ceiling, scoping to the implementable subset   (per-unit importance/decay + thresholded activation + local plasticity), and choosing which   of the three parallel continual-learning stacks it sits on.\\
+
+\noindent\textbf{R-16: Inferno (kernel + training engine)}\\
+\noindent full file-by-file breakdown of the Inferno kernel and the training engine,   including the DSpine/NCM generation paths, the 7 CRITICAL defects register (§10M) and the   bench-honesty gates.\\
+
+\noindent\textbf{R-17: Publishable research report (PDF + DOCX, 512 pages)}\\
+\noindent the same data in two extensions (PDF and DOCX), ~512 pages, produced from the   completed research above; the operator audits the whole set 3x.\\
+
+\noindent\textbf{R-18: The three project READMEs (publishable depth)}\\
+\noindent the operator's documentation standard - `fusion/README.md` 4,096 LOC,   `code/README.md` 2,048 LOC, `transformers/README.md` 6,144 LOC, each written in prose with   average code snippets, each surviving a three-pass publishability audit. The superproject   README was deleted with\\
+
+\chapter{Appendix: the audit gaps and the KAT inventory}
+
+\noindent The master plan carries 13 audit gaps (GAP-1..GAP-13), the KAT inventory (known-answer tests per subsystem, including the 5th attention site in src/backend/), 156 line-anchors and the 117-row source coverage map (section 10X). The seven-tree audit (section 10Y) covers src/gle (2 files, 406 lines, clean), inferno, scripts, tests, the codeix surface, benches and payload trees.\\

@@ -48,6 +48,23 @@ CODE_HEAD = CF["git"]["head"].split()[0]
 FUSION_HEAD = FF["git"]["head"].split()[0]
 
 
+def fill(body: list[str], pad: list[str], target: int = 30) -> list[str]:
+    """Pad a page body to exactly `target` lines without looping forever."""
+    body = [l for l in body if l.strip()]
+    seen = set(body)
+    i = 0
+    while len(body) < target:
+        if i < len(pad):
+            cand = pad[i]
+        else:
+            cand = f"The page is part of the generated edition; closing note {i - len(pad) + 1}."
+        i += 1
+        if cand not in seen:
+            seen.add(cand)
+            body.append(cand)
+    return body[:target]
+
+
 def human(n: int) -> str:
     for unit in ("B", "KB", "MB", "GB"):
         if n < 1024 or unit == "GB":

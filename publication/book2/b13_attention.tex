@@ -1,0 +1,61 @@
+\chapter{The attention mathematics}
+
+\section{The attention formula and its costs}
+
+The baseline computes, for query $Q$, key $K$, value $V$:
+\[ \mathrm{Attn}(Q,K,V) = \mathrm{softmax}\!\left(\frac{QK^T}{\sqrt{d}}\right) V \]
+State $=$ the growing KV cache: $O(n)$ memory per sequence length $n$. The needle's attention
+mass collapses as $p_{\text{needle}} \to 1/n$ --- the context-rot family (Theorem 2).
+
+\section{Multi-query variants}
+
+GQA/MQA share K/V heads across query heads: cache $O(n \cdot k)$ where $k$ = shared key heads.
+MLA (DeepSeek-V4) compresses the KV into a latent: cache $O(n \cdot d_{\text{lat}})$ with
+$d_{\text{lat}} \ll d$; the Gauntlet bar freeze hashes the MLA recall curve as the measured
+bar. The ladder's $Q_{1\_K\_H}$ ternary at 1.50 BPW is the storage-side answer; MLA is the
+cache-side answer; the Cender line attacks the state itself.
+
+\section{The delta rule}
+
+The Cender/DeltaNet recurrence:
+\[ \text{state}_{t+1} = \gamma\cdot\text{state}_t + k_t \otimes e_t, \quad
+   k_t = W_k x_t, \quad e_t = v_t - \text{state}_t\, k_t \]
+with $\gamma \in [0,1]$. Retrieval $y = \text{state} \cdot q$ is one matrix-vector product ---
+no softmax over $n$. DeltaNet's hardware-efficient algorithm uses Householder products;
+1.3B/100B tokens beats Mamba and GLA. The delta associative lemma gives recall error
+$O(1/d)$ independent of $n$.
+
+\section{FlashAttention}
+
+FlashAttention-2: tiled, IO-aware exact attention ---
+\[ O = \mathrm{softmax}\!\left(\frac{QK^T}{\sqrt{d}}\right)V \ \text{computed in SRAM tiles} \]
+memory $O(n)$ instead of the naive $O(n^2)$ activation materialisation; the engine's
+\texttt{flash\_attention.h} declares \texttt{FlashAttentionConfig}, \texttt{FlashAttention}
+(the KAT-inventoried implementation). \texttt{igpu\_zero\_copy} carries the 5th attention
+site.
+
+\section{The exit gate}
+
+The loop exit (G6):
+\[ \lambda_t(x) = \sigma\!\left(\mathrm{Gate}\big(F^{(t)}(x)\big)\right), \qquad
+   \text{exit when } \mathrm{CDF}(\lambda) \ge q \]
+Q-exit is a deployment knob, no retraining. Training uses the smoothed exit loss with
+$\varepsilon = 0.05$ (G6) so abandoned steps keep gradient; LR warmup prevents the
+$p(\text{exit at step 1}) = 1.00$ silent collapse for 2{,}267 steps.
+
+\section{The KV-cache arithmetic}
+
+Baseline: $|KV| = 2nd\cdot\text{sizeof}$ --- linear in $n$. Cender: $|state| = d^2\cdot\text{sizeof}$
+--- constant. At $d{=}4096$, $n{=}4$M: 64 GB vs 64 MB (${\approx}1000\times$). Looped models
+keep $T$ separate KV sets per position (the hidden states entering each pass differ); shared-KV
+(2610.33360) cuts the sets $15 \to 4$ and removes 81--89\% of the continuation-loss penalty.
+At 1.5 BPW $\times$ a 4M window this is a first-order memory fact (S4).
+
+\section{Quantization arithmetic in the attention path}
+
+The attention projections are the conformance surface: any new format must be asserted to
+cover \texttt{q/k/v/o\_proj} (the enumeration at \texttt{test\_quant\_mix.cpp:430,
+559-562}). FP8 in attention: the special-value problem (NaN/Inf encodings) is handled by the
+FP-path engine; the G-sink amplification risk (OASIS) puts $G$ inside the quantisation test
+set from day one (S6). The Q4KV cache (\texttt{kv\_cache\_quant4.cpp}, 420 lines) is the real
+tested quantized cache.

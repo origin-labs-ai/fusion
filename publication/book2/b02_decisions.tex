@@ -1,0 +1,128 @@
+\chapter{The decision log (D-01..D-31)}
+
+The decision log is the constitution: append-only, every rule with provenance and trace. The
+digest below carries each rule distilled; the operator's verbatim traces are quoted where they
+anchor intent.
+
+\section{The quantization rules}
+
+\textbf{D-01 (ladder pattern).} In every family, L is the base at exact $0.0$ above the base
+BPW, M adds $0.25$, H adds $0.50$ --- three genuinely different codecs. The old standalone L
+duplicate is retired; the base id is the L tier.
+
+\textbf{D-02 (binary and ternary).} $Q_1$ keeps binary slot-sign at exact 1.00 BPW. $Q_{1\_K\_H}$
+is pure ternary ($-1/0/+1$) at exact 1.50 BPW: 48 bytes per 256-weight block, trits base-3
+packed plus an FP16 scale and implicit-zero slots. The standalone Q-10/Q-11 formats are
+cancelled (F-0).
+
+\textbf{D-03 (rewire direction).} Name says $X$ $\Rightarrow$ wire costs exactly $X$: the
+layout comes down to the name, never the reverse. Eight GRP rewire targets:
+$2.625\!\to\!2.00$, $3.5\!\to\!3.0$, $4.5\!\to\!4.0$, $6.5625\!\to\!6.0$, $8.5\!\to\!8.0$,
+$12.5\!\to\!12.0$, $16.5\!\to\!16.0$, $24.5\!\to\!24.0$. Negative-gap formats retire rather
+than inflate.
+
+\textbf{D-04 (GRP naming).} \texttt{QG2} becomes \texttt{Q\_G\_2} everywhere; the canonical
+pattern is \texttt{Q\_/Q\_G\_/Q\_MX\_/Q\_G\_MX\_} plus \texttt{\_K\_M/\_K\_H} tiers. Renames
+carry ``formerly known as'' comments in code.
+
+\textbf{D-05 (casing).} The all-caps \texttt{QUANT} exists only where structurally mandatory:
+C/C++ macros and environment variables. Type names, comments, docs and printf strings are
+\texttt{Quant}. The lowercase namespace \texttt{quant} stays a distinct token.
+
+\textbf{D-06 (BPW granularity).} Every format lands on exact $0.0/0.25/0.50$ steps. No other
+wire values survive --- this killed 3.78125, 3.4375, 6.5625 and 2.625.
+
+\textbf{D-07 (zero dead code).} No dead helper, no stub --- except the roughly eighteen GPU
+backends that exist but are unavailable, kept and documented accurately until the
+backend-completion effort.
+
+\textbf{D-08 (persistence compatibility).} Old \texttt{.quant} files survive the ladder change:
+ids kept in place, 36 retired holes remapped by \texttt{legacy\_format\_id\_remap()} with one
+log line per file, and all four clamp sites use \texttt{wire\_format\_valid()} from
+\texttt{format\_compat.h}.
+
+\textbf{D-09 (M-tier encoder).} The M tier is the base layout plus one refinement byte per 32
+weights (four 2-bit sub-block scale multipliers $\times0.75$, $\times1.0$, $\times1.25$,
+$\times1.5$) --- engine-agnostic, provably $+0.25$ BPW exact.
+
+\textbf{D-10 (ternary tail policy).} Where the exact-1.50 layout does not decompose cleanly,
+the encoder never inflates: it drops to the largest tier that fits the name's wire budget
+exactly (ternary $\to$ M $\to$ L, per size).
+
+\textbf{D-11 (K-variant honesty).} Tier logic keys off format id, never the name string --- a
+rename must never silently change encoder effort.
+
+\textbf{D-12 (scale fitting).} The shared fitter: LS seed, 9-point grid, 12-iteration
+golden-section refinement, FP16 snap $\pm6$ sweep, in Q3/Q6/Q12 + Q2/Q4. Acceptance:
+$Q_{12}\ge$ old K\_H within margin; the $Q_{G\_12}<Q_{G\_8}$ inversion gone.
+
+\textbf{D-13 (MX quarantine).} The 14 MX formats are quarantined: kept, registry-marked,
+documented as catastrophic (2-iteration-LS tier allocator, $-21$ to $-37$~dB), excluded from
+dominance claims, not deleted --- their wire and persistence contracts hold.
+
+\textbf{D-14 (bench honesty).} Every printed bench number is measured, not hardcoded, and every
+comparison uses one byte basis. ``Negligible'' is not a number.
+
+\section{The process rules}
+
+\textbf{D-15 (priorities).} P0 $\to$ S (memory safety) $\to$ L (ladder) $\to$ T (tests) $\to$
+Q (quality) $\to$ Z (hygiene) $\to$ V1 (dominance proof) $\to$ R (review findings).
+
+\textbf{D-16 (one task to 100\%).} Serial execution, one worker session per task, DoD gate
+green before the next starts: ``most strict worker in the world'' standard.
+
+\textbf{D-17 (execution gate).} Implementation starts only after review workflow
+\texttt{wf\_ce1d51d7-91d} reaches 100\%, with a documented complete-by-reconstruction fallback.
+
+\textbf{D-18 (execution name).} This effort is called \textbf{Operation Clean}.
+
+\textbf{D-19 (strictness).} ``koi chook nahi honi chahiye'' --- every task's DoD includes
+evidence: grep-zero counts, test names, measured numbers. What is hidden or faked is a defect
+by definition.
+
+\textbf{D-20 (known traps).} The claimed+1-byte fuzz allowance; the mis-named
+\texttt{test\_block\_codec} (it tests GEMM kernels); the N=256-only audit; the
+\texttt{singles>=19} floor; the silent GGUF zero-fill; the separate NativeFormat trainer
+id-space.
+
+\textbf{D-21 (scope).} Review findings and the quant overhaul execute through the same
+greatest-strictness process; quant tasks run before the R-series.
+
+\textbf{D-22 (ladder count).} Resolved to 69: 10 base + 18 plain M/H + 9 GRP base + 18 GRP M/H
++ 14 MX. The budget argument survives as design note D-22a (Chapter~\ref{chap:math}). Any
+future claim of 60 is stale --- this line supersedes it.
+
+\textbf{D-23 (live defect).} All four \texttt{.quant} clamp sites used the old predicate, so
+every valid format with id $\ge 69$ silently decoded as \texttt{Format::Q\_32} --- 17 valid
+formats affected. Fixed via \texttt{format\_compat.h} + \texttt{wire\_format\_valid()}.
+
+\section{The naming and governance rules}
+
+\textbf{D-24 (workspace rename).} \texttt{code-fusion/} $\to$ \texttt{code/},
+\texttt{transformers-fusion/} $\to$ \texttt{transformers/} (2026-11-12); remotes follow; the
+product vocabulary is unchanged.
+
+\textbf{D-25 (effort slider).} The DSH plugin \texttt{dsh-claude-effort-slider} v0.9.4 (MIT)
+belongs to Sonar natively; the Zenix port is parked in two shapes until the operator un-parks
+it.
+
+\textbf{D-26 (the archive).} All docs ever deleted are recovered once into
+\texttt{.plan/\_archive/} --- 288 files, $\approx$10.6 MB. Copy-once, never override.
+
+\textbf{D-27 (goal hierarchy).} Main = the entire superproject; side = maximum at exact 1.0
+BPW; FP and INT both in scope; Loop Quantization never implemented anywhere --- Track B first.
+
+\textbf{D-28 (name normalisation).} \texttt{TransFormers-Fusion} $\to$
+\texttt{Transformers-Fusion} (83 files rewritten; byte-length preserving; the \texttt{.idx}
+magic moves with the legacy spelling kept as a read-only alias).
+
+\textbf{D-29 (Zenix).} The \texttt{CC} suffix removed; the alias registry lists each accepted
+spelling exactly once; a repeated variant is a documentation defect.
+
+\textbf{D-30 (wire identity).} The engine \texttt{.idx} accepts
+\texttt{Transformers-FusionIDX} (22 B) plus legacy \texttt{TransCenderIDX} (15 B) only.
+\texttt{SolIDX} is model-manifest-only. Test 8: 28 tests, 0 failures.
+
+\textbf{D-31 (exact documentation).} The three READMEs at 2{,}048/4{,}096/6{,}144 lines; the
+512-page DOCX and PDF; OriginRouter visual style; telemetry manifests; a verifier that refuses
+off-by-one writes.

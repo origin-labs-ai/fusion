@@ -1,0 +1,71 @@
+\chapter{Operations}
+
+\section{The security audit programme}
+
+Ten audits planned; audit 1 done. An audit produces a finding, a severity, a fix and a
+regression test; a finding that cannot be reproduced is recorded as unreproduced.
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Audit & Scope & State\\
+\midrule
+1/10 & quant wire path & DONE --- 23/0 regression\\
+2/10 & MX quarantine enforcement & open (T5.3)\\
+3/10 & generation paths (V20 class) & open (T6.4)\\
+4--10 & Inferno memory safety, dead code, bench honesty, import paths, install-test header, label reads & open (T8.2)\\
+\bottomrule
+\end{tabular}
+
+\medskip
+Audit 1 (2026-11-13) fixed: the truncated-header overread in \texttt{QuantIDXReader}
+(per-magic size gates 30/23 + header-bounds guard), the writer assert-validity gap
+(\texttt{write\_block} + \texttt{write\_format\_table} throw on invalid/retired ids), and the
+MoE format-table label bug (\texttt{moe\_model.cpp:414} wrote a $Q_8$ label over raw FP32
+$\to$ now writes $Q_{32}$). The SolIDX 6-vs-7 memcmp was correct at the time and was later
+retired by D-30 entirely.
+
+\section{The grind tree (T1..T15)}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Task & Scope & State (2026-11-14)\\
+\midrule
+T1 & loop transformers research close-out & T1.1 done; T1.2--T1.6 open\\
+T2 & traditional transformers baseline & open\\
+T3 & Track A ladder + audits & T3.2/T3.3/T3.5 done\\
+T4 & loop quantization (Track B) & open --- world-first target\\
+T5 & mix quantization & open\\
+T6 & DSpine $\times$ NCM & T6.3 (V20 fix) done\\
+T7 & EAIN & open\\
+T8 & Inferno deep breakdown & open\\
+T9 & cross-cutting discipline & runs throughout\\
+T10 & the three READMEs & done (hand-authored round)\\
+T11 & archive mining & open\\
+T12 & PDF completeness audit & open\\
+T13 & the 512-page publication & this book\\
+T14 & repository hygiene & T14.1--T14.7 done\\
+T15 & documentation verification & this chapter's proof\\
+\bottomrule
+\end{tabular}
+
+\section{The gates}
+
+Seven plan verifiers run from \texttt{.plan/.rea-tmp/} and record their exits in the dashboard;
+the CodeFusion gate (\texttt{check-consistency.mjs}) runs 13 checks; the documentation
+verifier refuses an off-by-one write. A gate is not advisory: a red gate stops the step. A test
+is never weakened to make a gate green.
+
+\section{The roadmap}
+
+1. T14 hygiene (done through T14.7). 2. T10 READMEs (done, hand-authored round). 3. T13
+publication (this book). 4. T1--T8 grind. 5. T11/T12 archive mining and the PDF completeness
+audit. 6. T15 verification throughout. A roadmap item is a commitment to evidence, not a
+promise of a date.
+
+\section{Honest flags}
+
+The ladder is specified, not fully implemented; the MX family is quarantined, not fixed. 17
+valid formats silently decoded as $Q_{32}$ until D-23's fix --- recorded, not buried. One of
+ten security audits is complete. Loop Quantization has never been implemented anywhere,
+including here. The GRP base is a naming/API alias of the plain base. The publication's DOCX
+page count is pending Word verification (no COM automation available on this machine).

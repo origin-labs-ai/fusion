@@ -189,4 +189,4 @@ per-project cache snapshot under `SharedClientCache`.
 Reproduction: `node scripts/re/qoder-repo-wiki-evidence.mjs <qoder-app-dir> repowiki
 ".qoder/repowiki" knowledge.db _index.yaml` and
 `node scripts/re/qoder-knowledge-db-dump.mjs` (both read-only; the DB is copied to
-`fusion/re-tmp/qoder-repowiki/` first).
+`.plan/re-tmp/qoder-repowiki/` first).

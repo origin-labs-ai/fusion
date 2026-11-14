@@ -1,0 +1,58 @@
+\chapter{Loop vs traditional}
+
+\section{The taxonomy (§5d.0)}
+
+A traditional transformer uses each layer's parameters once; a looped (recurrent-depth,
+weight-tied) transformer applies the same parameters repeatedly --- effective depth $=$ stored
+layers $\times$ loops, parameter count unchanged. Three loop shapes:
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+Shape & What repeats & Who\\
+\midrule
+model-loop & the whole stack traversed, then repeated & the survey baseline; GPT-6 ``Astra''\\
+block-loop & only the middle segment repeats, with input injection & SMELT (2609.01343)\\
+layer-loop & each Attention/MoE layer applied recurrently & Loopie (2607.16051)\\
+\bottomrule
+\end{tabular}
+
+\medskip
+A second taxonomy (2604.17121) cuts by recurrence axis: depth (the looped transformer --- our
+subject) vs step (block-recurrent, linear attention, DeltaNet, Mamba, RWKV). The sequence-axis
+work (Softpick, LITM theory) sits on the step side --- one more reason the two must not be
+conflated.
+
+\section{What changes and what does not}
+
+\textbf{Does not change:} the sequence-axis attention (Loopie's backbone is Qwen3-MoE ---
+``its attention mechanism, sparsity pattern, and other architectural details remain the
+same''); the training objective. The loop buys depth, not a new attention.
+
+\textbf{Changes:} (1) parameters stay flat; compute scales with the loop count; training a
+looped model costs about the same as an untied model of the same executed depth --- you save
+parameters, not FLOPs. (2) The KV cache grows per stack: $T$ separate KV sets per position
+(first-order at 1.5 BPW $\times$ 4M window; S4's shared-KV cuts $15 \to 4$). (3) Backprop runs
+through every application.
+
+\section{The Loopie recipe}
+
+Jointly choose stored width, stored depth and recurrent depth to maximise performance under a
+fixed pre-training compute budget --- loops as a substitute for parameters, chosen jointly, not
+a direct swap.
+
+\section{The measured bar}
+
+LoopQ (2605.16343): W4A4 $+67.8\%$ five-task accuracy, $+75.2\%$ perplexity vs the strongest
+static PTQ. LoopQuant (2610.16368): W4A4 beats all W4A8 baselines on Ouro-2.6B, $-65.3\%$
+memory, $+3.4\%$ storage, $1.7\times$ decode. 2609.30820: feedback exposure + calibration
+blindness --- Hessian accumulation across recurrence steps wins 9/9 and recovers bf16 on
+Huginn-3.5B. The intersection thesis: the gap at 1.5 BPW on a looped model is unsolved ---
+Track B's target.
+
+\section{The design consequences for this engine}
+
+The looped seam is where the ladder meets the loop: the loop-entry adapter gets an identity
+path (S5); $G$ enters the quantisation test set from day one (S6); the KV policy decision
+(\#22) recommends shared-KV; the default loop ladder recommends $T = 2$ measured to 4 (\#17);
+the routing seam must shrink work, not just depth (G7). Every fork carries its ledger id; the
+operator stamps the rulings.

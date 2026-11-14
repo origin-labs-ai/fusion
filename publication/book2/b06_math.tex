@@ -1,0 +1,61 @@
+\chapter{The mathematics}\label{chap:math}
+
+\section{BPW and the block budget}
+
+For a 256-weight block at $B.00$ BPW, the total wire budget is $256B$ bits. The level payload
+alone is $256B$ bits, so a grouped layout at exactly $B.00$ has provably zero bits left for
+group state. Bytes per block: $\text{bytes} = \mathrm{BPW} \times 256/8$.
+
+\section{The 256-weight budget proof (D-22a)}
+
+\textbf{Statement.} A format whose name says $B$ bits per weight has a total budget of $256B$
+bits for a 256-weight block. The level payload alone is $256B$ bits, so a grouped layout at
+exactly $B.00$ cannot carry per-group state at $B.00$.
+
+\begin{quote}
+\textbf{Proof.} The block budget is $256B$ bits. At name $B.00$ the wire must be $256B$ bits
+total. If levels consume all $256B$ bits, the remaining state budget is $0$ bits; any per-group
+scale requires $>0$ bits --- contradiction. So a GRP base at $B.00$ is the plain base layout
+under a GRP name. If levels drop to $B-1$ bits, the freed state budget is $256$ bits $= 1.00$
+BPW of state, worse than the plain format at every high-BPW family ($Q_{G\_16}$ at 15-bit
+levels is strictly worse than $Q_{16}$). \hfill$\square$
+\end{quote}
+
+\textbf{Consequences.} The GRP base encoder is cut down to the plain-base layout; genuine
+grouping lives in the tiers ($Q_{G\_x\_K\_M}$ at $B.25$, $Q_{G\_x\_K\_H}$ at $B.50$).
+$Q_{G\_x}$ at $B.00$ is byte-identical in layout to $Q_x$ --- documented as a naming/API alias,
+never claimed as a distinct codec.
+
+\section{Ternary packing (the counting argument)}
+
+$Q_{1\_K\_H}$ at exact 1.50 BPW: $256 \times 1.5 = 384$ bits $= 48$ bytes per block. A ternary
+value carries $\log_2 3 \approx 1.585$ bits of information; $1.5 < 1.585$, so a straight
+packing does not fit information-theoretically. The layout closes the gap through the zero: the
+implicit zero class consumes no wire bits, base-3 digit packing spends
+$\lceil 256\log_2 3\rceil \approx 406$ bits, and the remainder lands in the FP16 scale plus
+implicit-zero slots --- 48 bytes exact, verified by gate V22.
+
+\section{Scale fitting (D-12)}
+
+Golden-section search on a unimodal MSE curve: the interval shrinks by $\varphi \approx 0.618$
+per iteration, so 12 iterations reduce the bracket to $0.618^{12} \approx 0.0045$ of the
+original --- enough to resolve the scale to FP16 resolution. The FP16 snap $\pm6$ sweep
+repairs the quantized-scale error after the continuous fit. The old $Q_{12}$ 3-iteration LS
+seed measured 46~dB vs K\_H's 24 iterations at ${\sim}59$~dB --- the acceptance gate closes the
+gap.
+
+\section{The MX shared-exponent contract}
+
+MX formats: a per-block shared exponent $X$ with narrow FP/INT element types (2310.10537). The
+14 MX ids keep, quarantine-marked (D-13): the 2-iteration-LS tier allocator measures $-21$ to
+$-37$~dB vs industrial references at the same BPW. Wire and persistence contracts hold; the
+allocator rework is a later, separate effort.
+
+\section{GPTQ on looped models (Track B mathematics)}
+
+One-step GPTQ builds its Hessian from step-0 activations only --- calibration blindness: the
+input directions used later in the recurrence are nearly unweighted in the Hessian. One-step
+GPTQ measures worse than round-to-nearest on 5 of 9 looped checkpoints (2609.30820).
+Accumulating the Hessian across recurrence steps wins on 9/9 and recovers bf16-level accuracy
+on Huginn-3.5B. Track B must (a) protect the loop-entry adapter (feedback exposure) and
+(b) accumulate calibration statistics across the recurrence.

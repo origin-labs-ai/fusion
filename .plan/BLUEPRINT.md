@@ -63,10 +63,10 @@ Rules of engagement (binding):
 |---|---|---|---|---|---|---|
 | T1 | Loop Transformers | DONE | open (G/S note) | - | - | closing research |
 | T2 | Traditional Transformers | DONE | bench spec open | - | - | mostly done |
-| T3 | Traditional Quantization (Track A) | DONE | contract DONE | DONE (ladder) | open | quality-floor rulings pending |
+| T3 | Traditional Quantization (Track A) | DONE | contract DONE | DONE (69 formats wire-exact; L2 closed 2026-11-14) | open | quality-floor rulings pending |
 | T4 | Loop Quantization (Track B) | evidence DONE | open | **never done by anyone** | - | design + implement |
 | T5 | Mix Quantization | PARTIAL (MX quarantined) | open | partial | open | literature pass needed |
-| T6 | DSpine x NCM merger | spec DONE, NCM read pending | merger doc open | V20 bug open | open | read + design |
+| T6 | DSpine x NCM merger | spec DONE, NCM read **PENDING** | merger doc open | V20 **FIXED 2026-11-13** | open | read + design |
 | T7 | EAIN | literature DONE | OPEN-DESIGN | - | - | scope + stack ruling |
 
 ## 4. Context-recovery contract (one-shot handoff)
